@@ -1,0 +1,1 @@
+from character import Character as Parentclass Character(Parent):    def properties(self):        self.health = 2000        self.maxhealth = self.health        self.name = 'Bass.EXE'        self.power = 500        self.status.add('airshoes')
