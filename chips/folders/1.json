@@ -1,14 +1,15 @@
 [
     {"chip": "cannon", "code": "A"},
-    {"chip": "hicannon", "code": "A"},
-    {"chip": "mcannon", "code": "A"},
+    {"chip": "cannon", "code": "B"},
+    {"chip": "hicannon", "code": "B"},
+    {"chip": "mcannon", "code": "C"},
     {"chip": "barr10", "code": "A"},
-    {"chip": "barr100", "code": "A"},
-    {"chip": "atk10", "code": "A"},
-    {"chip": "atk30", "code": "A"},
-    {"chip": "busterup", "code": "A"},
-    {"chip": "invisibl", "code": "A"},
-    {"chip": "recov10", "code": "A"},
-    {"chip": "recov30", "code": "A"},
-    {"chip": "recov50", "code": "A"}
+    {"chip": "barr100", "code": "*"},
+    {"chip": "atk10", "code": "*"},
+    {"chip": "atk30", "code": "*"},
+    {"chip": "busterup", "code": "*"},
+    {"chip": "invisibl", "code": "*"},
+    {"chip": "recov10", "code": "*"},
+    {"chip": "recov30", "code": "*"},
+    {"chip": "recov50", "code": "*"}
 ]

@@ -7,5 +7,12 @@ class Chip(Parent):
             return True
         return
 
+    def properties(self):
+        self.type = 'number'
+        self.properties2()
+
+    def properties2(self):
+        return
+
     def use(self):
         return
