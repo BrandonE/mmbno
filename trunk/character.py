@@ -6,7 +6,8 @@ class Character():
         self.activechips = {
             'death': {},
             'heal': {},
-            'hit': {}
+            'hit': {},
+            'time': {}
         }
         self.chips = []
         self.health = 500
@@ -14,6 +15,7 @@ class Character():
         self.name = 'MegaMan.EXE'
         self.power = 1
         self.status = set()
+        self.type = 'normal'
         self.properties()
 
     def activatechip(self, chip, type):
@@ -21,10 +23,10 @@ class Character():
             self.activechips[type][chip.priority] = chip
 
     def buster(self):
-        self.shoot(self.power)
+        self.shoot(self.power, 'normal')
 
     def charge(self):
-        self.shoot(self.power * 10)
+        self.shoot(self.power * 10, self.type)
 
     def deactivatechip(self, chip, type):
         if hasattr(chip, 'priority'):
@@ -37,7 +39,7 @@ class Character():
         self.defaultdeath()
 
     def die(self):
-        self.label = ' '
+        return
 
     def defaultdeath(self):
         if self.health <= 0:
@@ -52,6 +54,9 @@ class Character():
     def defaulthit(self, power):
         self.health -= power
 
+    def defaulttime(self):
+        return
+
     def getactivechip(self, type):
         activated = self.activechips.copy()
         activated[type] = activated[type].copy()
@@ -63,11 +68,24 @@ class Character():
             return
         self.defaultheal(health)
 
-    def hit(self, power):
+    def hit(self, power, type):
+        weaknesses = {
+            'aqua': 'electric',
+            'break': 'cursor',
+            'cursor': 'wind',
+            'electric': 'wood',
+            'fire': 'aqua',
+            'sword': 'break',
+            'wind': 'sword',
+            'wood': 'fire'
+        }
+        if self.type in weaknesses and weaknesses[self.type] == type:
+            power *= 2
         if self.activechips['hit']:
             self.getactivechip('hit').hit(power)
             return
         self.defaulthit(power)
+        self.defaultdeath()
 
     def move(self, rows = 0, cols = 0, force = False):
         newrow = self.row - rows
@@ -109,12 +127,18 @@ class Character():
     def properties(self):
         return
 
-    def shoot(self, power):
+    def shoot(self, power, type):
         row = self.field[self.row]
         for key, col in enumerate(row):
             if key > self.col and col['character']:
-                col['character'].hit(power)
+                col['character'].hit(power, type)
                 break
+
+    def time(self):
+        if self.activechips['time']:
+            self.getactivechip('time').time()
+            return
+        self.defaulttime()
 
     def usechip(self):
         chip = self.chips.pop()
