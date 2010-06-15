@@ -16,20 +16,33 @@
 
 """A version of the Chip class."""
 
-from chip import Chip as Parent
+from chips.types.grab import Chip as Parent
 
 class Chip(Parent):
-    def hit(self, power):
-        self.health -= power
-        if self.health <= 0:
-            self.owner.deactivatechip(self, 'hit')
-
-    def properties(self):
-        self.priority = 1
-        self.properties2()
-
     def properties2(self):
-        return
+        self.name = 'AreaGrab'
+        self.type = 'normal'
 
     def use(self):
-        self.owner.activatechip(self, 'hit')
+        col = 3
+        while col < 5:
+            row = 0
+            success = False
+            while row < 3:
+                if not self.owner.field[row][col]['stolen']:
+                    success = True
+                    break
+                row += 1
+            if success:
+                row = 0
+                while row < 3:
+                    panel = self.owner.field[row][col]
+                    if not panel['stolen']:
+                        if panel['character']:
+                            panel['character'].hit(self.damage)
+                        else:
+                            panel['stolen'] = True
+                            self.owner.activatechip(self, 'time')
+                    row += 1
+                break
+            col += 1
