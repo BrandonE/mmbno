@@ -1,3 +1,21 @@
+# -*- coding: utf-8 -*-
+# This file is part of MMBN Online
+# MMBN Online is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# MMBN Online is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with MMBN Online.  If not, see <http://www.gnu.org/licenses/>.
+
+# Copyright (C) 2008-2010 Chris Santiago and Brandon Evans.
+# http://mmbnonline.net/
+
+"""Handles all of the user input."""
+
 from game import game
 
 def handle(key):
@@ -25,18 +43,7 @@ def handle(key):
                 len(game.selected) < 5 and
                 game.selection < len(game.chips)
             ):
-                chip = game.chips[game.picked[game.selection]]
-                success = True
-                for value in game.selected:
-                    if (
-                        game.chips[value].code != '*' and
-                        chip.code != '*' and
-                        game.chips[value].code != chip.code and
-                        game.chips[value].name != chip.name
-                    ):
-                        success = False
-                        break
-                if success:
+                if game.equipable(game.selection):
                     game.selected.append(game.selection)
             if key == 's' and game.selected:
                 game.selected.pop()

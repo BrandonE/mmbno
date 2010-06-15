@@ -1,3 +1,21 @@
+# -*- coding: utf-8 -*-
+# This file is part of MMBN Online
+# MMBN Online is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# MMBN Online is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with MMBN Online.  If not, see <http://www.gnu.org/licenses/>.
+
+# Copyright (C) 2008-2010 Chris Santiago and Brandon Evans.
+# http://mmbnonline.net/
+
+"""Creates the text representation of the game."""
+
 import os
 import Tkinter as tk
 from game import game
@@ -38,19 +56,26 @@ def draw():
             power = ' '
             if hasattr(game.chips[chip], 'power'):
                 power = game.chips[chip].power
+            equipable = game.equipable(key)
+            if equipable:
+                equipable = ' '
+            else:
+                equipable = 'X'
             if not key in game.selected:
-                menu += '%s %s %s %s' % (
+                menu += '%s %s %s %s %s' % (
                     game.chips[chip].name,
                     power,
                     status[game.chips[chip].type],
-                    game.chips[chip].code
+                    game.chips[chip].code,
+                    equipable
                 )
             else:
-                menu += '%s %s %s %s' % (
+                menu += '%s %s %s %s %s' % (
                     ' ' * len(game.chips[chip].name),
                     ' ' * len(str(power)),
                     ' ' * len(status[game.chips[chip].type]),
-                    ' ' * len(game.chips[chip].code)
+                    ' ' * len(game.chips[chip].code),
+                    ' ' * len(equipable)
                 )
         print '%s|' % (menu)
     custom = ''
@@ -99,16 +124,7 @@ def fielddraw(character):
                 label = 'x'
                 if character == col['character']:
                     label = 'o'
-            if (
-                (
-                    (key < 0 or key > 2) and
-                    col['inverted'] == False
-                ) or
-                (
-                    (key >= 0 or key <= 2) and
-                    col['inverted'] == True
-                )
-            ):
+            if (key > 2 and not col['stolen']) or (key < 3 and col['stolen']):
                 red = 'R'
             grid += ' %s%s%s |' % (status[col['status']], label, red)
         grid += '\n ----- ----- ----- ----- ----- -----'

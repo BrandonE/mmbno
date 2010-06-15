@@ -11,5 +11,11 @@
     {"chip": "invisibl", "code": "*"},
     {"chip": "recov10", "code": "*"},
     {"chip": "recov30", "code": "*"},
-    {"chip": "recov50", "code": "*"}
+    {"chip": "recov50", "code": "*"},
+    {"chip": "panlgrab", "code": "*"},
+    {"chip": "panlgrab", "code": "*"},
+    {"chip": "panlgrab", "code": "*"},
+    {"chip": "areagrab", "code": "*"},
+    {"chip": "areagrab", "code": "*"},
+    {"chip": "areagrab", "code": "*"}
 ]

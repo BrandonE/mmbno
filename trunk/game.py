@@ -1,3 +1,21 @@
+# -*- coding: utf-8 -*-
+# This file is part of MMBN Online
+# MMBN Online is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# MMBN Online is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with MMBN Online.  If not, see <http://www.gnu.org/licenses/>.
+
+# Copyright (C) 2008-2010 Chris Santiago and Brandon Evans.
+# http://mmbnonline.net/
+
+"""Contains the game's data."""
+
 import os
 from random import randint
 try:
@@ -51,6 +69,23 @@ class Game():
         self.selection = 0
         self.selected = []
         self.time = 0
+
+    def equipable(self, chip):
+        self.selected.append(chip)
+        chip = game.chips[game.picked[chip]]
+        chips = set([])
+        codes = set([])
+        success = True
+        for value in self.selected:
+            thischip = self.chips[self.picked[value]]
+            if thischip.code != '*':
+                codes.add(thischip.code)
+            chips.add(thischip.name)
+            if len(chips) > 1 and len(codes) > 1:
+                success = False
+                break
+        self.selected.pop()
+        return success
 
     def pickchips(self):
         picked = set([])

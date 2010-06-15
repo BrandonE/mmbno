@@ -1,3 +1,21 @@
+# -*- coding: utf-8 -*-
+# This file is part of MMBN Online
+# MMBN Online is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# MMBN Online is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with MMBN Online.  If not, see <http://www.gnu.org/licenses/>.
+
+# Copyright (C) 2008-2010 Chris Santiago and Brandon Evans.
+# http://mmbnonline.net/
+
+"""A class to base the characters off of."""
+
 class Character():
     def __init__(self, field, row = 1, col = 1):
         self.field = field
@@ -23,7 +41,7 @@ class Character():
             self.activechips[type][chip.priority] = chip
 
     def buster(self):
-        self.shoot(self.power, 'normal')
+        self.shoot(self.power)
 
     def charge(self):
         self.shoot(self.power * 10, self.type)
@@ -68,7 +86,7 @@ class Character():
             return
         self.defaultheal(health)
 
-    def hit(self, power, type):
+    def hit(self, power, type = 'normal'):
         weaknesses = {
             'aqua': 'electric',
             'break': 'cursor',
@@ -88,39 +106,40 @@ class Character():
         self.defaultdeath()
 
     def move(self, rows = 0, cols = 0, force = False):
+        panel = self.field[self.row][self.col]
         newrow = self.row - rows
         newcol = self.col + cols
         if not force:
-            if self.field[self.row][self.col]['character'] != self:
+            if newrow < 0 or newrow > 2 or newcol < 0:
+                return
+        newpanel = self.field[newrow][newcol]
+        if not force:
+            if panel['character'] != self:
                 raise Exception('Field desync!')
-            if self.col > 2:
-                raise Exception('Offsides!')
             if (
-                newrow < 0 or
-                newrow > 2 or
                 (
-                    (newcol < 0 or newcol > 2) and
-                    self.field[newrow][newcol]['inverted'] == False
+                    newcol > 2 and
+                    not newpanel['stolen']
                 ) or
                 (
-                    (newcol >= 0 or newcol <= 2) and
-                    self.field[newrow][newcol]['inverted'] == True
+                    newcol < 3 and
+                    newpanel['stolen']
                 ) or
-                not self.field[newrow][newcol]['character'] == None or
+                not newpanel['character'] == None or
                 (
-                    self.field[newrow][newcol]['status'] == 'broken' and
+                    newpanel['status'] == 'broken' and
                     not 'airshoes' in self.status
                 ) or
                 'paralyzed' in self.status
             ):
                 return
-        self.field[self.row][self.col]['character'] = None
+        panel['character'] = None
         if (
-            self.field[self.row][self.col]['status'] == 'cracked' and
+            panel['status'] == 'cracked' and
             (self.row != newrow or self.col != newcol)
         ):
-            self.field[self.row][self.col]['status'] = 'broken'
-        self.field[newrow][newcol]['character'] = self
+            panel['status'] = 'broken'
+        newpanel['character'] = self
         self.row = newrow
         self.col = newcol
 
