@@ -21,13 +21,13 @@ def makefield():
     for row in range(0, 3):
         cols = []
         for col in range(0, 6):
-            box = {
+            panel = {
                 'character': None,
                 'stolen': False,
                 'status': 'normal',
-                'col': col
+                'time': 0
             }
-            cols.append(box)
+            cols.append(panel)
         field.append(cols)
     return field
 

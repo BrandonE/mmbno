@@ -16,16 +16,12 @@
 
 """A version of the Chip class."""
 
-from chip import Chip as Parent
+from chips.types.barrier import Chip as Parent
 
 class Chip(Parent):
-    def properties(self):
-        self.codes = ('*',)
-        self.description = 'Power goes up by 1'
-        self.name = 'BusterUp'
-        self.plus = 1
-        self.type = 'plus'
-        self.stars = 2
-
-    def use(self):
-        self.owner.power += self.plus
+    def properties2(self):
+        self.codes = ('A', 'F', 'R', '*')
+        self.description = 'Nullifies 100HP of damage'
+        self.health = 100
+        self.name = 'Barrier100'
+        self.stars = 3

@@ -16,8 +16,11 @@
 
 """A class to base the characters off of."""
 
+from math import ceil
+
 class Character():
-    def __init__(self, field, row = 1, col = 1):
+    def __init__(self, owner, field, row = 1, col = 1):
+        self.owner = owner
         self.field = field
         self.row = row
         self.col = col
@@ -25,6 +28,7 @@ class Character():
             'death': {},
             'heal': {},
             'hit': {},
+            'move': {},
             'time': {}
         }
         self.chips = []
@@ -32,8 +36,8 @@ class Character():
         self.maxhealth = self.health
         self.name = 'MegaMan.EXE'
         self.power = 1
-        self.status = set()
-        self.type = 'normal'
+        self.status = set([])
+        self.type = 'none'
         self.properties()
 
     def activatechip(self, chip, type):
@@ -41,10 +45,12 @@ class Character():
             self.activechips[type][chip.priority] = chip
 
     def buster(self):
-        self.shoot(self.power)
+        if not 'paralyzed' in self.status:
+            self.shoot(self.power)
 
     def charge(self):
-        self.shoot(self.power * 10, self.type)
+        if not 'paralyzed' in self.status:
+            self.shoot(self.power * 10, self.type)
 
     def deactivatechip(self, chip, type):
         if hasattr(chip, 'priority'):
@@ -72,7 +78,56 @@ class Character():
     def defaulthit(self, power):
         self.health -= power
 
+    def defaultmove(self, rows = 0, cols = 0, force = False):
+        panel = self.field[self.row][self.col]
+        newrow = self.row - rows
+        newcol = self.col + cols
+        if not force:
+            if newrow < 0 or newrow > 2 or newcol < 0:
+                return
+        newpanel = self.field[newrow][newcol]
+        if not force:
+            if panel['character'] != self:
+                raise Exception('Field desync')
+            if (
+                (
+                    newcol > 2 and
+                    not newpanel['stolen']
+                ) or
+                (
+                    newcol < 3 and
+                    newpanel['stolen']
+                ) or
+                newpanel['character'] or
+                (
+                    newpanel['status'] == 'broken' and
+                    not 'airshoes' in self.status
+                ) or
+                'paralyzed' in self.status
+            ):
+                return
+        panel['character'] = None
+        newpanel['character'] = self
+        self.row = newrow
+        self.col = newcol
+        if not 'floatshoes' in self.status:
+            if (
+                panel['status'] == 'cracked' and
+                (self.row != newrow or self.col != newcol)
+            ):
+                panel['status'] = 'broken'
+            if newpanel['status'] == 'lava' and self.type != 'fire':
+                self.hit(10, 'fire')
+                newpanel['status'] = 'normal'
+            if newpanel['status'] == 'ice':
+                self.move(rows, cols)
+
     def defaulttime(self):
+        panel = self.field[self.row][self.col]
+        if panel['status'] == 'grass' and self.type == 'wood':
+            self.heal(1)
+        if panel['status'] == 'poison' and not 'floatshoes' in self.status:
+            self.hit(1)
         return
 
     def getactivechip(self, type):
@@ -86,7 +141,7 @@ class Character():
             return
         self.defaultheal(health)
 
-    def hit(self, power, type = 'normal'):
+    def hit(self, power, type = 'none'):
         weaknesses = {
             'aqua': 'electric',
             'break': 'cursor',
@@ -99,6 +154,15 @@ class Character():
         }
         if self.type in weaknesses and weaknesses[self.type] == type:
             power *= 2
+        weaknesses = {
+            'grass': 'fire',
+            'ice': 'electric'
+        }
+        status = self.field[self.row][self.col]['status']
+        if status in weaknesses and weaknesses[status] == type:
+            power *= 2
+        if status == 'holy':
+            power = int(ceil(power / 2))
         if self.activechips['hit']:
             self.getactivechip('hit').hit(power)
             return
@@ -106,51 +170,21 @@ class Character():
         self.defaultdeath()
 
     def move(self, rows = 0, cols = 0, force = False):
-        panel = self.field[self.row][self.col]
-        newrow = self.row - rows
-        newcol = self.col + cols
-        if not force:
-            if newrow < 0 or newrow > 2 or newcol < 0:
-                return
-        newpanel = self.field[newrow][newcol]
-        if not force:
-            if panel['character'] != self:
-                raise Exception('Field desync!')
-            if (
-                (
-                    newcol > 2 and
-                    not newpanel['stolen']
-                ) or
-                (
-                    newcol < 3 and
-                    newpanel['stolen']
-                ) or
-                not newpanel['character'] == None or
-                (
-                    newpanel['status'] == 'broken' and
-                    not 'airshoes' in self.status
-                ) or
-                'paralyzed' in self.status
-            ):
-                return
-        panel['character'] = None
-        if (
-            panel['status'] == 'cracked' and
-            (self.row != newrow or self.col != newcol)
-        ):
-            panel['status'] = 'broken'
-        newpanel['character'] = self
-        self.row = newrow
-        self.col = newcol
+        if self.activechips['move']:
+            self.getactivechip('move').move(rows, cols, force)
+            return
+        self.defaultmove(rows, cols, force)
 
     def properties(self):
         return
 
-    def shoot(self, power, type):
+    def shoot(self, power, type = 'none'):
         row = self.field[self.row]
         for key, col in enumerate(row):
             if key > self.col and col['character']:
                 col['character'].hit(power, type)
+                if col['status'] == 'grass' and type == 'fire':
+                    col['status'] = 'normal'
                 break
 
     def time(self):
@@ -160,11 +194,12 @@ class Character():
         self.defaulttime()
 
     def usechip(self):
-        chip = self.chips.pop()
-        result = True
-        while self.chips and result:
-            chip2 = self.chips.pop()
-            result = chip2.next(chip)
-            if not result:
-                self.chips.append(chip2)
-        chip.use()
+        if not 'paralyzed' in self.status:
+            chip = self.chips.pop()
+            result = True
+            while self.chips and result:
+                chip2 = self.chips.pop()
+                result = chip2.next(chip)
+                if not result:
+                    self.chips.append(chip2)
+            chip.use()

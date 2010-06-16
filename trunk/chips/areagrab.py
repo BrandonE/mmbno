@@ -20,16 +20,22 @@ from chips.types.grab import Chip as Parent
 
 class Chip(Parent):
     def properties2(self):
+        self.codes = ('B', 'F', 'S')
+        self.description = 'Steals left edge from enemy'
         self.name = 'AreaGrab'
-        self.type = 'normal'
+        self.stars = 2
 
     def use(self):
-        col = 3
+        col = 1
         while col < 5:
             row = 0
             success = False
             while row < 3:
-                if not self.owner.field[row][col]['stolen']:
+                panel = self.owner.field[row][col]
+                if (
+                    (col > 2 and not panel['stolen']) or
+                    (col < 3 and panel['stolen'])
+                ):
                     success = True
                     break
                 row += 1
@@ -37,12 +43,17 @@ class Chip(Parent):
                 row = 0
                 while row < 3:
                     panel = self.owner.field[row][col]
-                    if not panel['stolen']:
+                    if (
+                        (col > 2 and not panel['stolen']) or
+                        (col < 3 and panel['stolen'])
+                    ):
                         if panel['character']:
                             panel['character'].hit(self.damage)
                         else:
-                            panel['stolen'] = True
-                            self.owner.activatechip(self, 'time')
+                            panel['stolen'] = not panel['stolen']
+                            if panel['stolen']:
+                                self.owner.activatechip(self, 'move')
+                                self.owner.activatechip(self, 'time')
                     row += 1
                 break
             col += 1

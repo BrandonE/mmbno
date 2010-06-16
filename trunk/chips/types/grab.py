@@ -19,6 +19,39 @@
 from chip import Chip as Parent
 
 class Chip(Parent):
+    def move(self, rows, cols, force):
+        self.owner.defaultmove(rows, cols, force)
+        if self.count == self.limit:
+            deactivate = True
+            col = 5
+            while col > 2:
+                row = 0
+                success = False
+                breakout = False
+                while row < 3:
+                    panel = self.owner.field[row][col]
+                    if panel['stolen']:
+                        success = True
+                        if panel['character']:
+                            deactivate = False
+                            breakout = True
+                            break
+                    row += 1
+                if breakout:
+                    break
+                if success:
+                    deactivate = True
+                    if col != 3:
+                        deactivate = False
+                    row = 0
+                    while row < 3:
+                        self.owner.field[row][col]['stolen'] = False
+                        row += 1
+                col -= 1
+            if deactivate:
+                self.owner.deactivatechip(self, 'move')
+                self.owner.deactivatechip(self, 'time')
+
     def properties(self):
         self.count = 0
         self.damage = 10
@@ -29,35 +62,6 @@ class Chip(Parent):
         return
 
     def time(self):
+        self.owner.defaulttime()
         if self.count != self.limit:
             self.count += 1
-            if self.count != self.limit:
-                return
-        deactivate = True
-        col = 5
-        while col > 2:
-            row = 0
-            success = False
-            breakout = False
-            while row < 3:
-                panel = self.owner.field[row][col]
-                if panel['stolen']:
-                    success = True
-                    if panel['character']:
-                        deactivate = False
-                        breakout = True
-                        break
-                row += 1
-            if breakout:
-                break
-            if success:
-                deactivate = True
-                if col != 3:
-                    deactivate = False
-                row = 0
-                while row < 3:
-                    self.owner.field[row][col]['stolen'] = False
-                    row += 1
-            col -= 1
-        if deactivate:
-            self.owner.deactivatechip(self, 'time')

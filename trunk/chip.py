@@ -21,7 +21,8 @@ class Chip():
         self.owner = owner
         self.settings = settings
         self.priority = 0
-        self.type = 'normal'
+        self.type = 'none'
+        self.stars = 1
         self.properties()
 
     def dead(self):

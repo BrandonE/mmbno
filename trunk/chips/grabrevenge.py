@@ -16,9 +16,12 @@
 
 """A version of the Chip class."""
 
-from chips.types.atk import Chip as Parent
+from chips.types.banish import Chip as Parent
 
 class Chip(Parent):
-    def properties2(self):
-        self.name = 'Atk+30'
-        self.plus = 30
+    def properties(self):
+        self.codes = ('I', 'Q', 'Z')
+        self.damage = 40
+        self.description = '40 damage for every stolen square'
+        self.name = 'GrabRevenge'
+        self.stars = 4
