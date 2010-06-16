@@ -17,7 +17,7 @@
 """Contains the game's data."""
 
 import os
-from random import randint
+from random import randint, shuffle
 try:
     import simplejson as json
 except ImportError:
@@ -31,19 +31,29 @@ class Game():
         field = makefield()
         opponentfield = flipfield(field)
         from characters.mega import Character
-        self.player = Character(field)
+        self.player = Character(self, field)
         self.player.move(0, 0, True)
         from characters.bass import Character
-        self.opponent = Character(opponentfield)
+        self.opponent = Character(self, opponentfield)
         self.opponent.move(0, 0, True)
         field[0][0]['status'] = 'broken'
-        field[2][0]['status'] = 'cracked'
+        field[0][1]['status'] = 'grass'
+        field[0][2]['status'] = 'poison'
         field[0][5]['status'] = 'broken'
+        field[1][0]['status'] = 'cracked'
+        field[1][1]['status'] = 'ice'
+        field[1][2]['status'] = 'holy'
+        field[2][0]['status'] = 'lava'
+        field[1][4]['status'] = 'grass'
         self.chips = json.loads(
             open(
                 os.path.join('chips', 'folders', config['chipfolder'])
             ).read()
         )
+        if len(self.chips) > 30:
+            raise Exception('Too many chips')
+        if len(self.chips) < 30:
+            raise Exception('Too few chips')
         self.chips = self.chips[0:30]
         for key, value in enumerate(self.chips):
             module = __import__(
@@ -54,6 +64,8 @@ class Game():
                 -1
             )
             self.chips[key] = module.Chip(self.player, value)
+            if not value['code'] in self.chips[key].codes:
+                raise Exception('Improper chip code')
             self.chips[key].code = value['code']
         self.custom()
 
@@ -63,14 +75,20 @@ class Game():
             self.selection = newcol
 
     def custom(self):
+        self.custombar = 0
         self.player.chips = []
         self.pickchips()
         self.select = True
         self.selection = 0
         self.selected = []
-        self.time = 0
 
     def equipable(self, chip):
+        if (
+            self.selection in self.selected or
+            len(self.selected) > 4 and
+            self.selection > len(self.chips) - 1
+        ):
+            return False
         self.selected.append(chip)
         chip = game.chips[game.picked[chip]]
         chips = set([])
@@ -92,5 +110,19 @@ class Game():
         while len(self.chips) != len(picked) and len(picked) < 10:
             picked.add(randint(0, len(self.chips) - 1))
         self.picked = list(picked)
+        shuffle(self.picked)
+
+    def time(self):
+        if self.custombar != 10:
+            self.custombar += 1
+        for key, row in enumerate(self.player.field):
+            for key2, col in enumerate(row):
+                if col['status'] == 'broken':
+                    self.player.field[key][key2]['time'] += 1
+                    if col['time'] == 10:
+                        self.player.field[key][key2]['status'] = 'normal'
+                        self.player.field[key][key2]['time'] = 0
+        self.player.time()
+        self.opponent.time()
 
 game = Game()

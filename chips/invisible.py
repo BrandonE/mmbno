@@ -16,9 +16,27 @@
 
 """A version of the Chip class."""
 
-from chips.types.recov import Chip as Parent
+from chip import Chip as Parent
 
 class Chip(Parent):
+    def hit(self, power):
+        return
+
     def properties(self):
-        self.health = 50
-        self.name = 'Recov50'
+        self.codes = ('*',)
+        self.count = 0
+        self.description = 'Invisible for a while'
+        self.limit = 10
+        self.name = 'Invisible'
+        self.stars = 3
+
+    def time(self):
+        self.owner.defaulttime()
+        self.count += 1
+        if self.count == self.limit:
+            self.owner.deactivatechip(self, 'hit')
+            self.owner.deactivatechip(self, 'time')
+
+    def use(self):
+        self.owner.activatechip(self, 'hit')
+        self.owner.activatechip(self, 'time')

@@ -22,8 +22,8 @@ from game import game
 from controls import handle
 
 status = {
-    'normal': 'N',
-    'number': '/'
+    'none': 'N',
+    'plus': 'P'
 }
 
 def chardraw(character):
@@ -79,9 +79,9 @@ def draw():
                 )
         print '%s|' % (menu)
     custom = ''
-    if game.time >= 10:
+    if game.custombar >= 10:
         custom = ' Custom'
-    print '%s%s' % (('*' * game.time), custom)
+    print '%s%s' % (('*' * game.custombar), custom)
     fielddraw(game.player)
     fielddraw(game.opponent)
     chardraw(game.player)
@@ -102,6 +102,7 @@ def draw():
     print 'S: Use Buster / Remove Chip'
     print 'D: Prompt Chip Selection'
     print 'C: Charge Shot'
+    print 'T: Advance time (Test)'
     print 'F: Deal 25 damage to player (Test)'
     print 'G: Deal 100 damage to player (Test)'
     print 'Enter: End Chip Selection'
@@ -115,10 +116,18 @@ def fielddraw(character):
         for key, col in enumerate(row):
             label = ' '
             red = ' '
-            status = {
+            panelstatus = {
                 'broken': 'B',
                 'cracked': 'C',
-                'normal': ' '
+                'grass': 'G',
+                'holy': 'H',
+                'ice': 'I',
+                'lava': 'L',
+                'normal': ' ',
+                'metal': 'M',
+                'poison': 'P',
+                'sand': 'S',
+                'water': 'W'
             }
             if col['character'] and col['character'].health:
                 label = 'x'
@@ -126,7 +135,7 @@ def fielddraw(character):
                     label = 'o'
             if (key > 2 and not col['stolen']) or (key < 3 and col['stolen']):
                 red = 'R'
-            grid += ' %s%s%s |' % (status[col['status']], label, red)
+            grid += ' %s%s%s |' % (panelstatus[col['status']], label, red)
         grid += '\n ----- ----- ----- ----- ----- -----'
     print grid
 

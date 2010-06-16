@@ -16,26 +16,12 @@
 
 """A version of the Chip class."""
 
-from chips.types.grab import Chip as Parent
+from chips.types.banish import Chip as Parent
 
 class Chip(Parent):
-    def properties2(self):
-        self.name = 'PanlGrab'
-        self.type = 'normal'
-
-    def use(self):
-        row = self.owner.field[self.owner.row]
-        for key, col in enumerate(row):
-            if (
-                key != 5 and
-                (
-                    (key > 2 and not col['stolen']) or
-                    (key < 3 and col['stolen'])
-                )
-            ):
-                if col['character']:
-                    col['character'].hit(self.damage)
-                else:
-                    col['stolen'] = True
-                    self.owner.activatechip(self, 'time')
-                break
+    def properties(self):
+        self.codes = ('B', 'M', 'S')
+        self.damage = 20
+        self.description = '20 damage for every stolen square'
+        self.name = 'GrabBanish'
+        self.stars = 3

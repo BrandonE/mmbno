@@ -16,9 +16,12 @@
 
 """A version of the Chip class."""
 
-from chips.types.barr import Chip as Parent
+from chips.types.recovery import Chip as Parent
 
 class Chip(Parent):
-    def properties2(self):
-        self.health = 100
-        self.name = 'Barr100'
+    def properties(self):
+        self.codes = ('J', 'O', 'Y')
+        self.description = 'Recovers 300HP'
+        self.health = 300
+        self.name = 'Recovery300'
+        self.stars = 4

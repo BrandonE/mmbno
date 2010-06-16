@@ -37,43 +37,27 @@ def handle(key):
                 game.cursor(1)
             if key == 'Left':
                 game.cursor(-1)
-            if (
-                key == 'a' and
-                not game.selection in game.selected and
-                len(game.selected) < 5 and
-                game.selection < len(game.chips)
-            ):
-                if game.equipable(game.selection):
-                    game.selected.append(game.selection)
+            if key == 'a' and game.equipable(game.selection):
+                game.selected.append(game.selection)
             if key == 's' and game.selected:
                 game.selected.pop()
         else:
+            if key == 't':
+                game.time()
             if key == 'Up':
                 game.player.move(rows=1)
-                game.player.time()
-                if game.time < 10:
-                    game.time += 1
             if key == 'Down':
                 game.player.move(rows=-1)
-                game.player.time()
-                if game.time < 10:
-                    game.time += 1
             if key == 'Right':
                 game.player.move(cols=1)
-                game.player.time()
-                if game.time < 10:
-                    game.time += 1
             if key == 'Left':
                 game.player.move(cols=-1)
-                game.player.time()
-                if game.time < 10:
-                    game.time += 1
             if key == 'a' and game.player.chips:
                 game.player.usechip()
             if key == 's':
                 game.player.buster()
             if key == 'd':
-                if game.time >= 10:
+                if game.custombar == 10:
                     game.custom()
             if key == 'c':
                 game.player.charge()

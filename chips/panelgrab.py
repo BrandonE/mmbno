@@ -16,9 +16,29 @@
 
 """A version of the Chip class."""
 
-from chips.types.atk import Chip as Parent
+from chips.types.grab import Chip as Parent
 
 class Chip(Parent):
     def properties2(self):
-        self.name = 'Atk+10'
-        self.plus = 10
+        self.codes = ('*',)
+        self.description = 'Steals 1 enemy square'
+        self.name = 'PanelGrab'
+
+    def use(self):
+        row = self.owner.field[self.owner.row]
+        for key, col in enumerate(row):
+            if (
+                key != 5 and
+                (
+                    (key > 2 and not col['stolen']) or
+                    (key < 3 and col['stolen'])
+                )
+            ):
+                if col['character']:
+                    col['character'].hit(self.damage)
+                else:
+                    col['stolen'] = not col['stolen']
+                    if col['stolen']:
+                        self.owner.activatechip(self, 'move')
+                        self.owner.activatechip(self, 'time')
+                break

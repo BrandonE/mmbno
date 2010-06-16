@@ -19,13 +19,14 @@
 from chip import Chip as Parent
 
 class Chip(Parent):
-    def properties(self):
-        self.codes = ('*',)
-        self.description = 'Power goes up by 1'
-        self.name = 'BusterUp'
-        self.plus = 1
-        self.type = 'plus'
-        self.stars = 2
-
     def use(self):
-        self.owner.power += self.plus
+        col = 0
+        while col < 3:
+            row = 0
+            while row < 3:
+                panel = self.owner.field[row][col]
+                if panel['stolen']:
+                    self.owner.field[row][col]['stolen'] = False
+                    self.owner.owner.opponent.hit(self.damage)
+                row += 1
+            col += 1

@@ -16,9 +16,13 @@
 
 """A version of the Chip class."""
 
-from chips.types.barr import Chip as Parent
+from chips.types.attack import Chip as Parent
 
 class Chip(Parent):
     def properties2(self):
-        self.health = 10
-        self.name = 'Barr10'
+        self.codes = ('*',)
+        self.description = '+30 for selected attack chip'
+        self.name = 'Attack+30'
+        self.plus = 30
+        self.stars = 4
+        self.type = 'plus'
