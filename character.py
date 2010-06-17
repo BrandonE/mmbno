@@ -83,7 +83,7 @@ class Character():
         newrow = self.row - rows
         newcol = self.col + cols
         if not force:
-            if newrow < 0 or newrow > 2 or newcol < 0:
+            if newrow < 0 or newrow > 2 or newcol < 0 or newcol > 5:
                 return
         newpanel = self.field[newrow][newcol]
         if not force:
@@ -108,8 +108,6 @@ class Character():
                 return
         panel['character'] = None
         newpanel['character'] = self
-        self.row = newrow
-        self.col = newcol
         if not 'floatshoes' in self.status:
             if (
                 panel['status'] == 'cracked' and
@@ -119,6 +117,9 @@ class Character():
             if newpanel['status'] == 'lava' and self.type != 'fire':
                 self.hit(10, 'fire')
                 newpanel['status'] = 'normal'
+        self.row = newrow
+        self.col = newcol
+        if not 'floatshoes' in self.status:
             if newpanel['status'] == 'ice':
                 self.move(rows, cols)
 
@@ -179,12 +180,11 @@ class Character():
         return
 
     def shoot(self, power, type = 'none'):
-        row = self.field[self.row]
-        for key, col in enumerate(row):
-            if key > self.col and col['character']:
-                col['character'].hit(power, type)
-                if col['status'] == 'grass' and type == 'fire':
-                    col['status'] = 'normal'
+        for key, panel in enumerate(self.field[self.row]):
+            if key > self.col and panel['character']:
+                panel['character'].hit(power, type)
+                if panel['status'] == 'grass' and type == 'fire':
+                    panel['status'] = 'normal'
                 break
 
     def time(self):

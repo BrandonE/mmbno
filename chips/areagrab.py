@@ -26,11 +26,9 @@ class Chip(Parent):
         self.stars = 2
 
     def use(self):
-        col = 1
-        while col < 5:
-            row = 0
+        for col in range(1, 5):
             success = False
-            while row < 3:
+            for row in range(0, 3):
                 panel = self.owner.field[row][col]
                 if (
                     (col > 2 and not panel['stolen']) or
@@ -38,10 +36,8 @@ class Chip(Parent):
                 ):
                     success = True
                     break
-                row += 1
             if success:
-                row = 0
-                while row < 3:
+                for row in range(0, 3):
                     panel = self.owner.field[row][col]
                     if (
                         (col > 2 and not panel['stolen']) or
@@ -54,6 +50,4 @@ class Chip(Parent):
                             if panel['stolen']:
                                 self.owner.activatechip(self, 'move')
                                 self.owner.activatechip(self, 'time')
-                    row += 1
                 break
-            col += 1

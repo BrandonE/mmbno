@@ -22,6 +22,7 @@ from game import game
 from controls import handle
 
 status = {
+    'air': 'A',
     'none': 'N',
     'plus': 'P'
 }
@@ -30,13 +31,13 @@ def chardraw(character):
     print '\n%s' % (character.name)
     print '-HP: %s' % (str(character.health))
     print '-Status: %s' % (', '.join(character.status))
-    print '-Type %s' % (character.type)
+    print '-Type: %s' % (character.type)
     chips = []
     for value in character.chips:
-        power = ' '
+        power = ''
         if hasattr(value, 'power'):
-            power = value.power
-        chips.append('%s %s %s' % (value.name, power, status[value.type]))
+            power = ' %s' % (value.power)
+        chips.append('%s%s %s' % (value.name, power, status[value.type]))
     print '-Chips: %s' % (', '.join(chips))
     print '-Active Chip:'
     for key, value in character.activechips.items():
@@ -53,16 +54,16 @@ def draw():
             if key == game.selection:
                 cursor = '+ '
             menu += cursor
-            power = ' '
+            power = ''
             if hasattr(game.chips[chip], 'power'):
-                power = game.chips[chip].power
+                power = ' %s' % (game.chips[chip].power)
             equipable = game.equipable(key)
             if equipable:
                 equipable = ' '
             else:
                 equipable = 'X'
             if not key in game.selected:
-                menu += '%s %s %s %s %s' % (
+                menu += '%s%s %s %s %s' % (
                     game.chips[chip].name,
                     power,
                     status[game.chips[chip].type],
@@ -70,7 +71,7 @@ def draw():
                     equipable
                 )
             else:
-                menu += '%s %s %s %s %s' % (
+                menu += '%s%s %s %s %s' % (
                     ' ' * len(game.chips[chip].name),
                     ' ' * len(str(power)),
                     ' ' * len(status[game.chips[chip].type]),

@@ -16,13 +16,13 @@
 
 """A version of the Chip class."""
 
-from chip import Chip as Parent
+from chips.types.vulcan import Chip as Parent
 
 class Chip(Parent):
-    def use(self):
-        for row in range(0, 3):
-            for col in range(0, 3):
-                panel = self.owner.field[row][col]
-                if panel['stolen']:
-                    panel['stolen'] = False
-                    self.owner.owner.opponent.hit(self.damage)
+    def properties(self):
+        self.codes = ('V',)
+        self.description = '10-shot vulcan cannon'
+        self.name = 'SuperVulcan'
+        self.power = 20
+        self.shots = 10
+        self.stars = 4

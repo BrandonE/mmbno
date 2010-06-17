@@ -27,15 +27,17 @@ from field import flipfield, makefield
 config = json.loads(open('config.json').read())
 
 class Game():
+    """Contains the game's data."""
     def __init__(self):
+        """Create the initial game data."""
         field = makefield()
         opponentfield = flipfield(field)
         from characters.mega import Character
         self.player = Character(self, field)
-        self.player.move(0, 0, True)
+        self.player.move(force=True)
         from characters.bass import Character
         self.opponent = Character(self, opponentfield)
-        self.opponent.move(0, 0, True)
+        self.opponent.move(force=True)
         field[0][0]['status'] = 'broken'
         field[0][1]['status'] = 'grass'
         field[0][2]['status'] = 'poison'
@@ -47,14 +49,18 @@ class Game():
         field[1][4]['status'] = 'grass'
         self.chips = json.loads(
             open(
-                os.path.join('chips', 'folders', config['chipfolder'])
+                os.path.join(
+                    'chips',
+                    'folders',
+                    '%s%s' % (config['chipfolder'], '.json')
+                )
             ).read()
         )
         if len(self.chips) > 30:
             raise Exception('Too many chips')
         if len(self.chips) < 30:
             raise Exception('Too few chips')
-        self.chips = self.chips[0:30]
+        # Convert the list of chip names and codes to a list of chip instances.
         for key, value in enumerate(self.chips):
             module = __import__(
                 'chips.%s' % (value['chip']),
@@ -70,11 +76,13 @@ class Game():
         self.custom()
 
     def cursor(self, cols):
+        """Move the cursor for chip selection."""
         newcol = self.selection + cols
         if newcol >= 0 and newcol < len(self.picked):
             self.selection = newcol
 
     def custom(self):
+        """Redefine all the necessary values when prompting the custom bar."""
         self.custombar = 0
         self.player.chips = []
         self.pickchips()
@@ -83,45 +91,59 @@ class Game():
         self.selected = []
 
     def equipable(self, chip):
+        """Check if a chip can be equipped."""
+        # If the chip has already been selected, you have already selected
+        # five, or the chip is out of range.
         if (
-            self.selection in self.selected or
-            len(self.selected) > 4 and
-            self.selection > len(self.chips) - 1
+            chip in self.selected or
+            len(self.selected) > 4 or
+            chip > len(self.chips) - 1
         ):
-            return False
+            return
+        # Add the chip in question to see if the new set fits the conditions.
         self.selected.append(chip)
         chip = game.chips[game.picked[chip]]
-        chips = set([])
         codes = set([])
+        names = set([])
         success = True
         for value in self.selected:
             thischip = self.chips[self.picked[value]]
             if thischip.code != '*':
                 codes.add(thischip.code)
-            chips.add(thischip.name)
-            if len(chips) > 1 and len(codes) > 1:
+            names.add(thischip.name)
+            # If you have two different names and two different codes, fail.
+            if len(names) > 1 and len(codes) > 1:
                 success = False
                 break
+        # Remove the chip.
         self.selected.pop()
         return success
 
     def pickchips(self):
+        """Pick a certain amount of random chips for selection."""
         picked = set([])
+        # While there are chips to pick and the list is under 10, pick.
         while len(self.chips) != len(picked) and len(picked) < 10:
             picked.add(randint(0, len(self.chips) - 1))
         self.picked = list(picked)
         shuffle(self.picked)
 
     def time(self):
+        """Handle a unit of time."""
+        # Fill the custom bar if not full.
         if self.custombar != 10:
             self.custombar += 1
-        for key, row in enumerate(self.player.field):
-            for key2, col in enumerate(row):
-                if col['status'] == 'broken':
-                    self.player.field[key][key2]['time'] += 1
-                    if col['time'] == 10:
-                        self.player.field[key][key2]['status'] = 'normal'
-                        self.player.field[key][key2]['time'] = 0
+        for row in self.player.field:
+            for panel in row:
+                # If the panel is broken
+                if panel['status'] == 'broken':
+                    # Prepare to restore.
+                    panel['time'] += 1
+                    # Restore if ready.
+                    if panel['time'] == 10:
+                        panel['status'] = 'normal'
+                        panel['time'] = 0
+        # Have the player and opponent run handle a unit of time.
         self.player.time()
         self.opponent.time()
 

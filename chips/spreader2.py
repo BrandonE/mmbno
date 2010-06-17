@@ -16,13 +16,12 @@
 
 """A version of the Chip class."""
 
-from chip import Chip as Parent
+from chips.types.spreader import Chip as Parent
 
 class Chip(Parent):
-    def use(self):
-        for row in range(0, 3):
-            for col in range(0, 3):
-                panel = self.owner.field[row][col]
-                if panel['stolen']:
-                    panel['stolen'] = False
-                    self.owner.owner.opponent.hit(self.damage)
+    def properties(self):
+        self.codes = ('A', 'B', 'C', '*')
+        self.description = 'Spreads damage to adjacent panels'
+        self.name = 'Spreader2'
+        self.power = 60
+        self.stars = 2
