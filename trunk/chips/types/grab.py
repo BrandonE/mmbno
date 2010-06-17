@@ -23,12 +23,10 @@ class Chip(Parent):
         self.owner.defaultmove(rows, cols, force)
         if self.count == self.limit:
             deactivate = True
-            col = 5
-            while col > 2:
-                row = 0
+            for col in range(5, 2, -1):
                 success = False
                 breakout = False
-                while row < 3:
+                for row in range(0, 3):
                     panel = self.owner.field[row][col]
                     if panel['stolen']:
                         success = True
@@ -36,18 +34,14 @@ class Chip(Parent):
                             deactivate = False
                             breakout = True
                             break
-                    row += 1
                 if breakout:
                     break
                 if success:
                     deactivate = True
                     if col != 3:
                         deactivate = False
-                    row = 0
-                    while row < 3:
+                    for row in range(0, 3):
                         self.owner.field[row][col]['stolen'] = False
-                        row += 1
-                col -= 1
             if deactivate:
                 self.owner.deactivatechip(self, 'move')
                 self.owner.deactivatechip(self, 'time')

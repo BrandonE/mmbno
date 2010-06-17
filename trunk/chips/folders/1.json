@@ -1,10 +1,13 @@
 [
     {"chip": "cannon", "code": "A"},
-    {"chip": "cannon", "code": "B"},
-    {"chip": "cannon", "code": "C"},
-    {"chip": "cannon", "code": "*"},
     {"chip": "highcannon", "code": "L"},
     {"chip": "megacannon", "code": "R"},
+    {"chip": "airshot", "code": "*"},
+    {"chip": "vulcan1", "code": "B"},
+    {"chip": "vulcan2", "code": "D"},
+    {"chip": "supervulcan", "code": "V"},
+    {"chip": "spreader1", "code": "L"},
+    {"chip": "tankcannon1", "code": "A"},
     {"chip": "barrier", "code": "A"},
     {"chip": "barrier100", "code": "A"},
     {"chip": "barrier200", "code": "A"},
@@ -22,11 +25,8 @@
     {"chip": "recovery300", "code": "J"},
     {"chip": "panelgrab", "code": "*"},
     {"chip": "panelgrab", "code": "*"},
-    {"chip": "panelgrab", "code": "*"},
     {"chip": "grabbanish", "code": "B"},
     {"chip": "grabrevenge", "code": "I"},
-    {"chip": "areagrab", "code": "B"},
-    {"chip": "areagrab", "code": "B"},
     {"chip": "areagrab", "code": "B"},
     {"chip": "areagrab", "code": "B"}
 ]

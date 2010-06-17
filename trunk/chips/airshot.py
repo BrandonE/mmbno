@@ -16,28 +16,20 @@
 
 """A version of the Chip class."""
 
-from chips.types.grab import Chip as Parent
+from chip import Chip as Parent
 
 class Chip(Parent):
-    def properties2(self):
-        self.codes = ('*',)
-        self.description = 'Steals 1 enemy square'
-        self.name = 'PanelGrab'
+    def properties(self):
+        self.codes = ('*')
+        self.description = 'Knock enemy back 1 square'
+        self.name = 'Airshot'
+        self.power = 20
+        self.stars = 2
+        self.type = 'air'
 
     def use(self):
+        self.owner.shoot(self.power, self.type)
         for key, panel in enumerate(self.owner.field[self.owner.row]):
-            if (
-                key != 5 and
-                (
-                    (key > 2 and not panel['stolen']) or
-                    (key < 3 and panel['stolen'])
-                )
-            ):
-                if panel['character']:
-                    panel['character'].hit(self.damage)
-                else:
-                    panel['stolen'] = not panel['stolen']
-                    if panel['stolen']:
-                        self.owner.activatechip(self, 'move')
-                        self.owner.activatechip(self, 'time')
+            if key > self.owner.col and panel['character']:
+                panel['character'].move(cols=-1)
                 break

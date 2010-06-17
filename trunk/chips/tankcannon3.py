@@ -16,13 +16,11 @@
 
 """A version of the Chip class."""
 
-from chip import Chip as Parent
+from chips.types.tankcannon import Chip as Parent
 
 class Chip(Parent):
-    def use(self):
-        for row in range(0, 3):
-            for col in range(0, 3):
-                panel = self.owner.field[row][col]
-                if panel['stolen']:
-                    panel['stolen'] = False
-                    self.owner.owner.opponent.hit(self.damage)
+    def properties(self):
+        self.codes = ('B', 'M', 'P')
+        self.description = '3-square blast if hits end row'
+        self.name = 'TankCannon3'
+        self.power = 200
