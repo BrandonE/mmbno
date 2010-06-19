@@ -40,9 +40,14 @@ def chardraw(character):
         chips.append('%s%s %s' % (value.name, power, status[value.type]))
     print '-Chips: %s' % (', '.join(chips))
     print '-Active Chip:'
-    for key, value in character.activechips.items():
-        if value:
-            print '--%s: %s' % (key, character.getactivechip(key).name)
+    for key, type in character.activechips.items():
+        if type:
+            names = []
+            if isinstance(type, dict):
+                type = list(dict([(v, k) for (k, v) in type.iteritems()]))
+            for chip in type:
+                names.append(chip.name)
+            print '--%s: %s' % (key, ', '.join(names))
 
 def draw():
     os.system('cls')

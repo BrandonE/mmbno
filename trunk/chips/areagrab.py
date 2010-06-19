@@ -48,6 +48,5 @@ class Chip(Parent):
                         else:
                             panel['stolen'] = not panel['stolen']
                             if panel['stolen']:
-                                self.owner.activatechip(self, 'move')
-                                self.owner.activatechip(self, 'time')
+                                self.activate()
                 break
