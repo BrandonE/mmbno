@@ -26,10 +26,10 @@ class Character():
         self.col = col
         self.activechips = {
             'death': {},
-            'heal': {},
+            'heal': set([]),
             'hit': {},
-            'move': {},
-            'time': {}
+            'move': set([]),
+            'time': set([])
         }
         self.chips = []
         self.health = 500
@@ -41,8 +41,10 @@ class Character():
         self.properties()
 
     def activatechip(self, chip, type):
-        if hasattr(chip, 'priority'):
+        if isinstance(self.activechips[type], dict):
             self.activechips[type][chip.priority] = chip
+            return
+        self.activechips[type].add(chip)
 
     def buster(self):
         if not 'paralyzed' in self.status:
@@ -53,12 +55,17 @@ class Character():
             self.shoot(self.power * 10, self.type)
 
     def deactivatechip(self, chip, type):
-        if hasattr(chip, 'priority'):
+        if (
+            isinstance(self.activechips[type], dict) and
+            chip.priority in self.activechips[type]
+        ):
             del self.activechips[type][chip.priority]
+            return
+        self.activechips[type].discard(chip)
 
     def death(self):
         if self.activechips['death']:
-            self.getactivechip('death').dead()
+            self.getactivechip('death').death()
             return
         self.defaultdeath()
 
@@ -70,15 +77,51 @@ class Character():
             self.health = 0
             self.die()
 
-    def defaultheal(self, health):
+    def defaulthit(self, power):
+        self.health -= power
+        self.death()
+
+    def getactivechip(self, type):
+        activated = self.activechips.copy()
+        activated[type] = activated[type].copy()
+        return self.activechips[type][sorted(activated[type]).pop()]
+
+    def heal(self, health):
         self.health += health
         if self.health > self.maxhealth:
             self.health = self.maxhealth
+        converted = list(self.activechips['heal'])
+        for value in converted:
+            value.heal()
 
-    def defaulthit(self, power):
-        self.health -= power
+    def hit(self, power, type = 'none'):
+        weaknesses = {
+            'aqua': 'electric',
+            'break': 'cursor',
+            'cursor': 'wind',
+            'electric': 'wood',
+            'fire': 'aqua',
+            'sword': 'break',
+            'wind': 'sword',
+            'wood': 'fire'
+        }
+        if self.type in weaknesses and weaknesses[self.type] == type:
+            power *= 2
+        weaknesses = {
+            'grass': 'fire',
+            'ice': 'electric'
+        }
+        status = self.field[self.row][self.col]['status']
+        if status in weaknesses and weaknesses[status] == type:
+            power *= 2
+        if status == 'holy':
+            power = int(ceil(power / 2))
+        if self.activechips['hit']:
+            self.getactivechip('hit').hit(power)
+            return
+        self.defaulthit(power)
 
-    def defaultmove(self, rows = 0, cols = 0, force = False):
+    def move(self, rows = 0, cols = 0, force = False):
         panel = self.field[self.row][self.col]
         newrow = self.row - rows
         newcol = self.col + cols
@@ -119,62 +162,12 @@ class Character():
                 newpanel['status'] = 'normal'
         self.row = newrow
         self.col = newcol
+        converted = list(self.activechips['move'])
+        for value in converted:
+            value.move()
         if not 'floatshoes' in self.status:
             if newpanel['status'] == 'ice':
                 self.move(rows, cols)
-
-    def defaulttime(self):
-        panel = self.field[self.row][self.col]
-        if panel['status'] == 'grass' and self.type == 'wood':
-            self.heal(1)
-        if panel['status'] == 'poison' and not 'floatshoes' in self.status:
-            self.hit(1)
-        return
-
-    def getactivechip(self, type):
-        activated = self.activechips.copy()
-        activated[type] = activated[type].copy()
-        return self.activechips[type][sorted(activated[type]).pop()]
-
-    def heal(self, health):
-        if self.activechips['heal']:
-            self.getactivechip('heal').heal(health)
-            return
-        self.defaultheal(health)
-
-    def hit(self, power, type = 'none'):
-        weaknesses = {
-            'aqua': 'electric',
-            'break': 'cursor',
-            'cursor': 'wind',
-            'electric': 'wood',
-            'fire': 'aqua',
-            'sword': 'break',
-            'wind': 'sword',
-            'wood': 'fire'
-        }
-        if self.type in weaknesses and weaknesses[self.type] == type:
-            power *= 2
-        weaknesses = {
-            'grass': 'fire',
-            'ice': 'electric'
-        }
-        status = self.field[self.row][self.col]['status']
-        if status in weaknesses and weaknesses[status] == type:
-            power *= 2
-        if status == 'holy':
-            power = int(ceil(power / 2))
-        if self.activechips['hit']:
-            self.getactivechip('hit').hit(power)
-            return
-        self.defaulthit(power)
-        self.defaultdeath()
-
-    def move(self, rows = 0, cols = 0, force = False):
-        if self.activechips['move']:
-            self.getactivechip('move').move(rows, cols, force)
-            return
-        self.defaultmove(rows, cols, force)
 
     def properties(self):
         return
@@ -188,10 +181,14 @@ class Character():
                 break
 
     def time(self):
-        if self.activechips['time']:
-            self.getactivechip('time').time()
-            return
-        self.defaulttime()
+        panel = self.field[self.row][self.col]
+        if panel['status'] == 'grass' and self.type == 'wood':
+            self.heal(1)
+        if panel['status'] == 'poison' and not 'floatshoes' in self.status:
+            self.hit(1)
+        converted = list(self.activechips['time'])
+        for value in converted:
+            value.time()
 
     def usechip(self):
         if not 'paralyzed' in self.status:

@@ -31,7 +31,6 @@ class Chip(Parent):
         self.stars = 3
 
     def time(self):
-        self.owner.defaulttime()
         self.count += 1
         if self.count == self.limit:
             self.owner.deactivatechip(self, 'hit')

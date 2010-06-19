@@ -19,8 +19,18 @@
 from chip import Chip as Parent
 
 class Chip(Parent):
-    def move(self, rows, cols, force):
-        self.owner.defaultmove(rows, cols, force)
+    def activate(self):
+        for type in ['move', 'time']:
+            discard = []
+            for chip in self.owner.activechips[type]:
+                if chip.name in ['AreaGrab', 'PanelGrab']:
+                    discard.append(chip)
+            for value in discard:
+                self.owner.activechips[type].discard(chip)
+        self.owner.activatechip(self, 'move')
+        self.owner.activatechip(self, 'time')
+
+    def move(self):
         if self.count == self.limit:
             deactivate = True
             for col in range(5, 2, -1):
@@ -56,6 +66,6 @@ class Chip(Parent):
         return
 
     def time(self):
-        self.owner.defaulttime()
         if self.count != self.limit:
             self.count += 1
+        self.move()
