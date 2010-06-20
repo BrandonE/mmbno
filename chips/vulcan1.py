@@ -18,10 +18,14 @@
 
 from chips.types.vulcan import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties(self):
+        """Overwrite the default properties."""
+        self.bullets = 3
         self.codes = ('B', 'D', 'S', '*')
         self.description = '3-Shot to pierce one panel'
         self.name = 'Vulcan1'
         self.power = 10
-        self.shots = 3

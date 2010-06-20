@@ -18,14 +18,20 @@
 
 from chips.types.grab import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties2(self):
+        """Overwrite the default properties."""
         self.codes = ('*',)
         self.description = 'Steals 1 enemy square'
         self.name = 'PanelGrab'
 
     def use(self):
+        """Use the chip."""
         for key, panel in enumerate(self.owner.field[self.owner.row]):
+            # If the panel is not in the last column and is not already yours
             if (
                 key != 5 and
                 (
@@ -33,9 +39,11 @@ class Chip(Parent):
                     (key < 3 and panel['stolen'])
                 )
             ):
+                # If this panel contains a character
                 if panel['character']:
                     panel['character'].hit(self.damage)
                 else:
+                    # Take it.
                     panel['stolen'] = not panel['stolen']
                     if panel['stolen']:
                         self.activate()

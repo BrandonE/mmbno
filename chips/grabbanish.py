@@ -18,8 +18,12 @@
 
 from chips.types.banish import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties(self):
+        """Overwrite the default properties."""
         self.codes = ('B', 'M', 'S')
         self.damage = 20
         self.description = '20 damage for every stolen square'

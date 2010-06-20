@@ -18,28 +18,33 @@
 
 import os
 import Tkinter as tk
+from twisted.internet import tksupport, reactor
 from game import game
 from controls import handle
 
-status = {
+# Graphically display a character or chip's type.
+types = {
     'air': 'A',
     'none': 'N',
     'plus': 'P'
 }
 
 def chardraw(character):
+    """Draw a character's statistics."""
     print '\n%s' % (character.name)
     print '-HP: %s' % (str(character.health))
     print '-Status: %s' % (', '.join(character.status))
     print '-Type: %s' % (character.type)
     chips = []
+    # Display the usable chips.
     for value in character.chips:
         power = ''
         if hasattr(value, 'power'):
             power = ' %s' % (value.power)
-        chips.append('%s%s %s' % (value.name, power, status[value.type]))
+        chips.append('%s%s %s' % (value.name, power, types[value.type]))
     print '-Chips: %s' % (', '.join(chips))
     print '-Active Chip:'
+    # Display the active chips.
     for key, type in character.activechips.items():
         if type:
             names = []
@@ -50,9 +55,13 @@ def chardraw(character):
             print '--%s: %s' % (key, ', '.join(names))
 
 def draw():
+    """Draw the screen"""
+    # Start by clearing the screen.
     os.system('cls')
+    # If the player is prompted to select a chip
     if game.select:
-        menu = ''
+        # Display the chip selection.
+        menu = 'Custom: '
         for key, chip in enumerate(game.picked):
             menu += '|'
             cursor = '  '
@@ -71,7 +80,7 @@ def draw():
                 menu += '%s%s %s %s %s' % (
                     game.chips[chip].name,
                     power,
-                    status[game.chips[chip].type],
+                    types[game.chips[chip].type],
                     game.chips[chip].code,
                     equipable
                 )
@@ -79,12 +88,16 @@ def draw():
                 menu += '%s%s %s %s %s' % (
                     ' ' * len(game.chips[chip].name),
                     ' ' * len(str(power)),
-                    ' ' * len(status[game.chips[chip].type]),
+                    ' ' * len(types[game.chips[chip].type]),
                     ' ' * len(game.chips[chip].code),
                     ' ' * len(equipable)
                 )
-        print '%s|' % (menu)
+        if game.picked:
+            menu += '|'
+        print menu
+    # Display the custom bar.
     custom = ''
+    # If the bar is full, display a message.
     if game.custombar >= 10:
         custom = ' Custom'
     print '%s%s' % (('*' * game.custombar), custom)
@@ -92,6 +105,7 @@ def draw():
     fielddraw(game.opponent)
     chardraw(game.player)
     chardraw(game.opponent)
+    # If the game is over, display the winner and loser and prompt restarting.
     if not game.player.health or not game.opponent.health:
         winner = game.player
         loser = game.opponent
@@ -115,6 +129,7 @@ def draw():
     print 'Escape - End Game'
 
 def fielddraw(character):
+    """Draw a character's field."""
     grid = ''
     for row in character.field:
         grid += '\n ----- ----- ----- ----- ----- -----'
@@ -122,7 +137,7 @@ def fielddraw(character):
         for key, col in enumerate(row):
             label = ' '
             red = ' '
-            panelstatus = {
+            status = {
                 'broken': 'B',
                 'cracked': 'C',
                 'grass': 'G',
@@ -135,23 +150,30 @@ def fielddraw(character):
                 'sand': 'S',
                 'water': 'W'
             }
+            # Place all living characters.
             if col['character'] and col['character'].health:
                 label = 'x'
+                # If the player is this character, change the symbol.
                 if character == col['character']:
                     label = 'o'
+            # Label a red panels.
             if (key > 2 and not col['stolen']) or (key < 3 and col['stolen']):
                 red = 'R'
-            grid += ' %s%s%s |' % (panelstatus[col['status']], label, red)
+            grid += ' %s%s%s |' % (status[col['status']], label, red)
         grid += '\n ----- ----- ----- ----- ----- -----'
     print grid
 
 def keypress(event):
+    """Forward a key press."""
     key = event.keysym
-    handle(key)
+    if handle(key):
+        # End Tkinter's binding.
+        root.destroy()
     draw()
 
 draw()
-root = tk.Tk()
+root = tk.Tk() 
+tksupport.install(root)
 root.bind_all('<Key>', keypress)
 root.withdraw()
-root.mainloop()
+reactor.run()

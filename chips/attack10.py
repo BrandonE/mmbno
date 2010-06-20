@@ -18,8 +18,12 @@
 
 from chips.types.attack import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties2(self):
+        """Overwrite the default properties."""
         self.codes = ('*',)
         self.description = '+10 for selected attack chip'
         self.name = 'Attack+10'

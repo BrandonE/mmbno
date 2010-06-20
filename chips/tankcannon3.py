@@ -18,8 +18,12 @@
 
 from chips.types.tankcannon import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties(self):
+        """Overwrite the default properties."""
         self.codes = ('B', 'M', 'P')
         self.description = '3-square blast if hits end row'
         self.name = 'TankCannon3'

@@ -18,8 +18,12 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties(self):
+        """Overwrite the default properties."""
         self.codes = ('*',)
         self.description = 'Power goes up by 1'
         self.name = 'BusterUp'

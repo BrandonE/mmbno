@@ -18,8 +18,12 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties(self):
+        """Overwrite the default properties."""
         self.codes = ('*')
         self.description = 'Knock enemy back 1 square'
         self.name = 'Airshot'
@@ -28,8 +32,12 @@ class Chip(Parent):
         self.type = 'air'
 
     def use(self):
-        self.owner.shoot(self.power, self.type)
-        for key, panel in enumerate(self.owner.field[self.owner.row]):
-            if key > self.owner.col and panel['character']:
+        """Use the chip."""
+        for col in range(self.owner.col + 1, 6):
+            panel = self.owner.field[self.owner.row][col]
+            # If this panel contains a character
+            if panel['character']:
+                panel['character'].hit(self.power)
+                # Move it back 1.
                 panel['character'].move(cols=-1)
                 break
