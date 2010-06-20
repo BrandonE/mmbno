@@ -18,11 +18,16 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def use(self):
+        """Use the chip."""
         for row in range(0, 3):
             for col in range(0, 3):
                 panel = self.owner.field[row][col]
+                # If this panel has been stolen, take it back and do damage.
                 if panel['stolen']:
                     panel['stolen'] = False
                     self.owner.owner.opponent.hit(self.damage)

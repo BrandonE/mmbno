@@ -18,18 +18,25 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def hit(self, power):
+        """Handle damage."""
         self.health -= power
         if self.health <= 0:
             self.owner.deactivatechip(self, 'hit')
 
     def properties(self):
+        """Overwrite the default properties."""
         self.priority = 1
         self.properties2()
 
     def properties2(self):
+        """Overwrite the default properties."""
         return
 
     def use(self):
+        """Use the chip."""
         self.owner.activatechip(self, 'hit')

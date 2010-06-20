@@ -16,8 +16,12 @@
 
 """A class to base the chips off of."""
 
+__all__ = ['Chip']
+
 class Chip():
+    """A class to base the chips off of."""
     def __init__(self, owner, settings):
+        """A class to base the chips off of."""
         self.owner = owner
         self.settings = settings
         self.priority = 0
@@ -25,23 +29,30 @@ class Chip():
         self.stars = 1
         self.properties()
 
-    def dead(self):
+    def death(self):
+        """Check if the character should die."""
         self.owner.defaultdead()
 
     def hit(self, power):
+        """Handle damage."""
         self.owner.defaulthit(self, power)
 
     def heal(self, health):
-        self.owner.defaultheal(self, health)
+        """Heal the character."""
+        return
 
     def next(self, chip):
+        """Handle a chain."""
         return
 
     def properties(self):
+        """Overwrite the default properties."""
         return
 
     def time(self):
-        self.owner.defaulttime(self)
+        """Handle a unit of time."""
+        return
 
     def use(self):
+        """Use the chip."""
         return

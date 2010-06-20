@@ -18,20 +18,29 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def use(self):
-        row = self.owner.field[self.owner.row]
-        for key, panel in enumerate(row):
-            if key > self.owner.col and panel['character']:
+        """Use the chip."""
+        for col in range(self.owner.col + 1, 6):
+            panel = self.owner.field[self.owner.row][col]
+            # If this panel contains a character, use this column.
+            if panel['character']:
                 break
         top = self.owner.row - 1
         left = key - 1
         for rowoffset in range(0, 3):
             for coloffset in range(0, 3):
+                # Offset the coordinates to spread to the adjacent panels.
                 row = top + rowoffset
                 col = left + coloffset
+                # If the offsetted coordinates are on the field
                 if row > -1 and row < 3 and col > -1 and col < 6:
                     panel = self.owner.field[row][col]
+                    # If this panel contains a character and is on the
+                    # opponent's side
                     if (
                         panel['character'] and
                         (col > 2 or panel['stolen']) and

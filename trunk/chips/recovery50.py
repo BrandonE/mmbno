@@ -18,8 +18,12 @@
 
 from chips.types.recovery import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties(self):
+        """Overwrite the default properties."""
         self.codes = ('C', 'M', 'P', '*')
         self.description = 'Recovers 50HP'
         self.health = 50

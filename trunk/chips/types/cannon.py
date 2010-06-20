@@ -18,6 +18,10 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def use(self):
+        """Use the chip."""
         self.owner.shoot(self.power, self.type)

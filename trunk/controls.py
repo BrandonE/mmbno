@@ -18,16 +18,26 @@
 
 from game import game
 
+__all__ = ['handle']
+
 def handle(key):
+    """Handle a key press."""
     if key == 'Escape':
-        root.destroy()
+        # Prepare to exit.
+        return True
+    # If the game is not over
     if game.player.health and game.opponent.health:
+        # If the player is prompted to select a chip
         if game.select:
             if key == 'Return':
+                # Finish the selection.
                 game.select = False
+                # Add the chips to the player.
                 for value in game.selected:
                     game.player.chips.append(game.chips[game.picked[value]])
+                # Make the first selected the first used.
                 game.player.chips.reverse()
+                # Remove the chips from the library.
                 game.selected.sort()
                 offset = 0
                 for value in game.selected:
@@ -38,8 +48,10 @@ def handle(key):
             if key == 'Left':
                 game.cursor(-1)
             if key == 'a' and game.equipable(game.selection):
+                # Prepare to add the chip.
                 game.selected.append(game.selection)
             if key == 's' and game.selected:
+                # Undo the selection.
                 game.selected.pop()
         else:
             if key == 't':
@@ -57,6 +69,7 @@ def handle(key):
             if key == 's':
                 game.player.buster()
             if key == 'd':
+                # Start the selection if the custom bar is full.
                 if game.custombar == 10:
                     game.custom()
             if key == 'c':

@@ -16,7 +16,18 @@
 
 """Handles field generation / mutation."""
 
+__all__ = ['flipfield', 'makefield']
+
+def flipfield(field):
+    """Flip the columns in the field."""
+    field = field[:]
+    for key in enumerate(field):
+        field[key[0]] = field[key[0]][:]
+        field[key[0]].reverse()
+    return field
+
 def makefield():
+    """Generate a field."""
     field = []
     for row in range(0, 3):
         cols = []
@@ -29,11 +40,4 @@ def makefield():
             }
             cols.append(panel)
         field.append(cols)
-    return field
-
-def flipfield(field):
-    field = field[:]
-    for key in enumerate(field):
-        field[key[0]] = field[key[0]][:]
-        field[key[0]].reverse()
     return field

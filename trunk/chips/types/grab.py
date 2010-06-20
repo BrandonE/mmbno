@@ -18,8 +18,13 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def activate(self):
+        """Add the chip to the active chips."""
+        # Remove the old Grab active chips.
         for type in ['move', 'time']:
             discard = []
             for chip in self.owner.activechips[type]:
@@ -31,6 +36,8 @@ class Chip(Parent):
         self.owner.activatechip(self, 'time')
 
     def move(self):
+        """Do something after moving."""
+        # If the counter has expired
         if self.count == self.limit:
             deactivate = True
             for col in range(5, 2, -1):
@@ -38,8 +45,10 @@ class Chip(Parent):
                 breakout = False
                 for row in range(0, 3):
                     panel = self.owner.field[row][col]
+                    # If this panel has been stolen
                     if panel['stolen']:
                         success = True
+                        # If this panel contains a character
                         if panel['character']:
                             deactivate = False
                             breakout = True
@@ -47,9 +56,11 @@ class Chip(Parent):
                 if breakout:
                     break
                 if success:
-                    deactivate = True
+                    # If none of the stolen panels contain a character,
+                    # deactivate the chips
                     if col != 3:
                         deactivate = False
+                    # Restore the panels.
                     for row in range(0, 3):
                         self.owner.field[row][col]['stolen'] = False
             if deactivate:
@@ -57,15 +68,19 @@ class Chip(Parent):
                 self.owner.deactivatechip(self, 'time')
 
     def properties(self):
+        """Overwrite the default properties."""
         self.count = 0
         self.damage = 10
         self.limit = 10
         self.properties2()
 
     def properties2(self):
+        """Overwrite the default properties."""
         return
 
     def time(self):
+        """Handle a unit of time."""
+        # Increment the counter if not expired.
         if self.count != self.limit:
             self.count += 1
         self.move()

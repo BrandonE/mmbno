@@ -18,9 +18,12 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def use(self):
-        shots = self.shots
-        while shots:
+        """Use the chip."""
+        # Shoot all of the bullets.
+        for bullet in range(0, self.bullets):
             self.owner.shoot(self.power, self.type)
-            shots -= 1

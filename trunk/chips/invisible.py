@@ -18,11 +18,12 @@
 
 from chip import Chip as Parent
 
-class Chip(Parent):
-    def hit(self, power):
-        return
+__all__ = ['Chip']
 
+class Chip(Parent):
+    """A version of the Chip class."""
     def properties(self):
+        """Overwrite the default properties."""
         self.codes = ('*',)
         self.count = 0
         self.description = 'Invisible for a while'
@@ -31,11 +32,15 @@ class Chip(Parent):
         self.stars = 3
 
     def time(self):
-        self.count += 1
-        if self.count == self.limit:
-            self.owner.deactivatechip(self, 'hit')
-            self.owner.deactivatechip(self, 'time')
+        """Handle a unit of time."""
+        # Increment the counter if not expired.
+        if self.count != self.limit:
+            self.count += 1
+            return
+        self.owner.deactivatechip(self, 'hit')
+        self.owner.deactivatechip(self, 'time')
 
     def use(self):
+        """Use the chip."""
         self.owner.activatechip(self, 'hit')
         self.owner.activatechip(self, 'time')

@@ -18,8 +18,12 @@
 
 from chips.types.barrier import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def properties2(self):
+        """Overwrite the default properties."""
         self.codes = ('A', 'F', 'R', '*')
         self.description = 'Nullifies 100HP of damage'
         self.health = 100

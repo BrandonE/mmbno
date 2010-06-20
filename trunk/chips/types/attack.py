@@ -19,18 +19,19 @@
 from chip import Chip as Parent
 
 class Chip(Parent):
+    """A version of the Chip class."""
     def next(self, chip):
+        """Handle a chain."""
+        # Add to the power to the previous chip if it has one.
         if hasattr(chip, 'power'):
             chip.power += self.plus
             return True
-        return
 
     def properties(self):
+        """Overwrite the default properties."""
         self.type = 'number'
         self.properties2()
 
     def properties2(self):
-        return
-
-    def use(self):
+        """Overwrite the default properties."""
         return

@@ -24,6 +24,8 @@ except ImportError:
     import json
 from field import flipfield, makefield
 
+__all__ = ['config', 'Game', 'game']
+
 config = json.loads(open('config.json').read())
 
 class Game():

@@ -18,21 +18,31 @@
 
 from chip import Chip as Parent
 
+__all__ = ['Chip']
+
 class Chip(Parent):
+    """A version of the Chip class."""
     def use(self):
-        row = self.owner.field[self.owner.row]
-        for key, panel in enumerate(row):
-            if key > self.owner.col and panel['character']:
+        """Use the chip."""
+        for col in range(self.owner.col + 1, 6):
+            panel = self.owner.field[self.owner.row][col]
+            # If this panel contains a character
+            if panel['character']:
                 panel['character'].hit(self.power, self.type)
                 return
         top = self.owner.row - 1
         for rowoffset in range(0, 3):
+            # Offset the row to spread to the panel on the top and bottom.
             row = top + rowoffset
+            # If the offsetted row is on the field.
             if row > -1 and row < 3:
                 panel = self.owner.field[row][5]
+                # If this panel contains a character
                 if panel['character']:
                     panel['character'].hit(self.power, self.type)
+                # If the panel is cracked, break it.
                 if panel['status'] == 'cracked':
                     panel['status'] = 'broken'
                 else:
+                    # Crack it.
                     panel['status'] = 'cracked'
