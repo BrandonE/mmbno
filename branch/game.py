@@ -62,9 +62,9 @@ class Game(object):
             ).read()
         )
         if len(self.chips) > 30:
-            raise Exception('Too many chips')
+            raise Exception('Your folder cannot have more than 30 chips.')
         if len(self.chips) < 30:
-            raise Exception('Too few chips')
+            raise Exception('Your folder must have 30 chips.')
         # Convert the list of chip names and codes to a list of chip instances.
         for key, value in enumerate(self.chips):
             chip = 'chips.%s' % (value['chip'])
@@ -169,10 +169,8 @@ class GameProtocol(LineReceiver):
             line['col'] = range(5, -1, -1)[line['col']]
             if line['function'] == 'move':
                 line['rows'] = -line['rows']
-        getattr(
-            game.field[line['row']][line['col']]['character'],
-            line['function']
-        )(**line['kwargs'])
+        character = game.field[line['row']][line['col']]['character']
+        getattr(character, line['function'])(**line['kwargs'])
 
 game = Game()
 factory = protocol.ClientFactory()
