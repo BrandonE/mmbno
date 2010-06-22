@@ -37,11 +37,9 @@ class GameProtocol(LineReceiver):
         self.factory.players.remove(self)
 
     def lineReceived(self, line):
-        # Messages are sent as JSON encoded strings, to later be decoded.
-        msg = json.dumps(line)
         # Send a message to every player.
         for player in self.factory.players:
-            player.sendLine(msg)
+            player.sendLine(line)
 
 factory = ServerFactory()
 factory.protocol = GameProtocol

@@ -18,19 +18,22 @@
 
 import os
 from random import randint, shuffle
+from pprint import pprint
 try:
     import simplejson as json
 except ImportError:
     import json
 
+from twisted.internet import reactor, protocol
+from twisted.protocols.basic import LineReceiver
+
 from messages import move
 from field import flipfield, makefield
+from config import config
 
-__all__ = ['config', 'Game', 'game']
+__all__ = ['factory', 'Game', 'game', 'GameProtocol']
 
-config = json.loads(open('config.json').read())
-
-class Game():
+class Game(object):
     """Contains the game's data."""
     def __init__(self):
         """Create the initial game data."""
@@ -38,10 +41,8 @@ class Game():
         opponentfield = flipfield(field)
         from characters.mega import Character
         self.player = Character(self, field)
-        move(self.player, force=True)
         from characters.bass import Character
         self.opponent = Character(self, opponentfield)
-        move(self.opponent, force=True)
         field[0][0]['status'] = 'broken'
         field[0][1]['status'] = 'grass'
         field[0][2]['status'] = 'poison'
@@ -56,7 +57,7 @@ class Game():
                 os.path.join(
                     'chips',
                     'folders',
-                    '%s%s' % (config['chipfolder'], '.json')
+                    '%s.json' % (config['chipfolder'])
                 )
             ).read()
         )
@@ -66,13 +67,8 @@ class Game():
             raise Exception('Too few chips')
         # Convert the list of chip names and codes to a list of chip instances.
         for key, value in enumerate(self.chips):
-            module = __import__(
-                'chips.%s' % (value['chip']),
-                globals(),
-                locals(),
-                ('Chip',),
-                -1
-            )
+            chip = 'chips.%s' % (value['chip'])
+            module = __import__(chip, globals(), locals(), ('Chip',), -1)
             self.chips[key] = module.Chip(self.player, value)
             if not value['code'] in self.chips[key].codes:
                 raise Exception('Improper chip code')
@@ -151,4 +147,33 @@ class Game():
         self.player.time()
         self.opponent.time()
 
+class GameProtocol(LineReceiver):
+    """Client for Twisted Server."""
+    def connectionMade(self):
+        reactor.protocol = self
+        self.positionPlayers()
+
+    def positionPlayers(self):
+        """Position the two players at the start of the match."""
+        move(game.player, force=True)
+        move(game.opponent, force=True)
+
+    def send(self, line):
+        """Messages are always to be sent as a JSON string."""
+        self.sendLine('%s%s' % (json.dumps(line), self.delimiter))
+
+    def lineReceived(self, line):
+        line = json.loads(line)
+
+        if 'blue' in line and config['blue'] != line['blue']:
+            line['col'] = range(5, -1, -1)[line['col']]
+            if line['function'] == 'move':
+                line['rows'] = -line['rows']
+        getattr(
+            game.field[line['row']][line['col']]['character'],
+            line['function']
+        )(**line['kwargs'])
+
 game = Game()
+factory = protocol.ClientFactory()
+factory.protocol = GameProtocol

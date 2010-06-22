@@ -18,10 +18,11 @@
 
 import os
 import Tkinter as tk
+
 from twisted.internet import reactor, tksupport
-from client import factory
+
 from controls import handle
-from game import game
+from game import game, factory
 
 # Graphically display a character or chip's type.
 types = {
@@ -169,7 +170,7 @@ def keypress(event):
     key = event.keysym
     if handle(key):
         # End Tkinter's binding.
-        root.destroy()
+        reactor.stop()
     draw()
 
 draw()

@@ -14,18 +14,12 @@
 # Copyright (C) 2008-2010 Chris Santiago and Brandon Evans.
 # http://mmbnonline.net/
 
-"""Handles sending of Twisted messages."""
+"""Loads the configuration."""
 
-from twisted.internet import reactor
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
-from config import config
-
-def move(who, rows = 0, cols = 0, force = False):
-    """Move the character if possible."""
-    reactor.protocol.send({
-        'blue': config['blue'],
-        'col': who.col,
-        'function': 'move',
-        'kwargs': {'rows': rows, 'cols': -cols, 'force': force},
-        'row': who.row
-    })
+__all__ = ['config']
+config = json.loads(open('config.json').read())
