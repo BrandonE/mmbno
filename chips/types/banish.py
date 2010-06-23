@@ -26,7 +26,7 @@ class Chip(Parent):
         """Use the chip."""
         for row in range(0, 3):
             for col in range(0, 3):
-                panel = self.owner.field[row][col]
+                panel = self.owner.owner.field[row][col]
                 # If this panel has been stolen, take it back and do damage.
                 if panel['stolen']:
                     panel['stolen'] = False

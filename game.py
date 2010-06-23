@@ -22,55 +22,73 @@ try:
     import simplejson as json
 except ImportError:
     import json
-from field import flipfield, makefield
 
-__all__ = ['config', 'Game', 'game']
+import Tkinter as tk
+from twisted.internet import  protocol, reactor, tksupport
+from twisted.protocols.basic import LineReceiver
+from config import config
+from messages import move, reset
 
-config = json.loads(open('config.json').read())
+__all__ = [
+    'factory', 'Game', 'game', 'GameProtocol', 'keypress', 'root', 'stats',
+    'types'
+]
 
-class Game():
+# Graphically display a character or chip's type.
+types = {
+    'air': 'A',
+    'none': 'N',
+    'plus': 'P'
+}
+
+class Game(object):
     """Contains the game's data."""
     def __init__(self):
         """Create the initial game data."""
-        field = makefield()
-        opponentfield = flipfield(field)
-        from characters.mega import Character
-        self.player = Character(self, field)
-        self.player.move(force=True)
-        from characters.bass import Character
-        self.opponent = Character(self, opponentfield)
-        self.opponent.move(force=True)
-        field[0][0]['status'] = 'broken'
-        field[0][1]['status'] = 'grass'
-        field[0][2]['status'] = 'poison'
-        field[0][5]['status'] = 'broken'
-        field[1][0]['status'] = 'cracked'
-        field[1][1]['status'] = 'ice'
-        field[1][2]['status'] = 'holy'
-        field[2][0]['status'] = 'lava'
-        field[1][4]['status'] = 'grass'
+        module = __import__(
+            'characters.%s' % (config['character']),
+            globals(),
+            locals(),
+            ('Character',),
+            -1
+        )
+        self.player = module.Character(self)
+        self.opponent = module.Character(self, col=4)
+        self.field = []
+        for row in range(0, 3):
+            cols = []
+            for col in range(0, 6):
+                character = None
+                if row == 1:
+                    if col == 1:
+                        character = self.player
+                    if col == 4:
+                        character = self.opponent
+                panel = {
+                    'character': character,
+                    'stolen': False,
+                    'status': 'normal',
+                    'time': 0
+                }
+                cols.append(panel)
+            self.field.append(cols)
         self.chips = json.loads(
             open(
                 os.path.join(
                     'chips',
                     'folders',
-                    '%s%s' % (config['chipfolder'], '.json')
+                    '%s.json' % (config['chipfolder'])
                 )
             ).read()
         )
         if len(self.chips) > 30:
-            raise Exception('Too many chips')
+            raise Exception('Your folder cannot have more than 30 chips.')
         if len(self.chips) < 30:
-            raise Exception('Too few chips')
+            raise Exception('Your folder must have 30 chips.')
         # Convert the list of chip names and codes to a list of chip instances.
         for key, value in enumerate(self.chips):
-            module = __import__(
-                'chips.%s' % (value['chip']),
-                globals(),
-                locals(),
-                ('Chip',),
-                -1
-            )
+            chip = 'chips.%s' % (value['chip'])
+            module = __import__(chip, globals(), locals(), ('Chip',), -1)
             self.chips[key] = module.Chip(self.player, value)
             if not value['code'] in self.chips[key].codes:
                 raise Exception('Improper chip code')
@@ -91,6 +109,114 @@ class Game():
         self.select = True
         self.selection = 0
         self.selected = []
+
+    def draw(self):
+        """Draw the screen"""
+        # Start by clearing the screen.
+        os.system('cls')
+        # If the player is prompted to select a chip
+        if self.select:
+            # Display the chip selection.
+            menu = 'Custom: '
+            for key, chip in enumerate(self.picked):
+                menu += '|'
+                cursor = '  '
+                if key == self.selection:
+                    cursor = '+ '
+                menu += cursor
+                power = ''
+                if hasattr(self.chips[chip], 'power'):
+                    power = ' %s' % (self.chips[chip].power)
+                equipable = self.equipable(key)
+                if equipable:
+                    equipable = ' '
+                else:
+                    equipable = 'X'
+                if not key in self.selected:
+                    menu += '%s%s %s %s %s' % (
+                        self.chips[chip].name,
+                        power,
+                        types[self.chips[chip].type],
+                        self.chips[chip].code,
+                        equipable
+                    )
+                else:
+                    menu += '%s%s %s %s %s' % (
+                        ' ' * len(self.chips[chip].name),
+                        ' ' * len(str(power)),
+                        ' ' * len(types[self.chips[chip].type]),
+                        ' ' * len(self.chips[chip].code),
+                        ' ' * len(equipable)
+                    )
+            if self.picked:
+                menu += '|'
+            print menu
+        # Display the custom bar.
+        custom = ''
+        # If the bar is full, display a message.
+        if self.custombar >= 10:
+            custom = ' Custom'
+        print '%s%s' % (('*' * self.custombar), custom)
+        grid = ''
+        for row in self.field:
+            grid += '\n ----- ----- ----- ----- ----- -----'
+            grid += '\n|'
+            for key, col in enumerate(row):
+                label = ' '
+                red = ' '
+                status = {
+                    'broken': 'B',
+                    'cracked': 'C',
+                    'grass': 'G',
+                    'holy': 'H',
+                    'ice': 'I',
+                    'lava': 'L',
+                    'normal': ' ',
+                    'metal': 'M',
+                    'poison': 'P',
+                    'sand': 'S',
+                    'water': 'W'
+                }
+                # Place all living characters.
+                if col['character'] and col['character'].health:
+                    label = 'x'
+                    # If the player is this character, change the symbol.
+                    if col['character'] == self.player:
+                        label = 'o'
+                # Label a red panels.
+                if (
+                    (key > 2 and not col['stolen']) or
+                    (key < 3 and col['stolen'])
+                ):
+                    red = 'R'
+                grid += ' %s%s%s |' % (status[col['status']], label, red)
+            grid += '\n ----- ----- ----- ----- ----- -----'
+        print grid
+        stats(self.player)
+        stats(self.opponent)
+        # If the game is over, display the winner and loser and prompt
+        # restarting.
+        if not self.player.health or not self.opponent.health:
+            winner = self.player
+            loser = self.opponent
+            if not self.player.health:
+                winner = self.opponent
+                loser = self.player
+            print '\n%s defeated! %s wins! Press "r" to restart.' % (
+                loser.name,
+                winner.name
+            )
+        print '\nControls:'
+        print 'Directional Keys - Move Player / Chip Selection'
+        print 'A: Use / Select Chip'
+        print 'S: Use Buster / Remove Chip'
+        print 'D: Prompt Chip Selection'
+        print 'C: Charge Shot'
+        print 'T: Advance time (Test)'
+        print 'F: Deal 25 damage to player (Test)'
+        print 'G: Deal 100 damage to player (Test)'
+        print 'Enter: End Chip Selection'
+        print 'Escape - End Game'
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
@@ -135,7 +261,7 @@ class Game():
         # Fill the custom bar if not full.
         if self.custombar != 10:
             self.custombar += 1
-        for row in self.player.field:
+        for row in self.field:
             for panel in row:
                 # If the panel is broken
                 if panel['status'] == 'broken':
@@ -149,4 +275,125 @@ class Game():
         self.player.time()
         self.opponent.time()
 
+class GameProtocol(LineReceiver):
+    """Client for Twisted Server."""
+    def connectionMade(self):
+        reactor.protocol = self
+
+    def send(self, line):
+        """Messages are always to be sent as a JSON string."""
+        self.sendLine(json.dumps(line))
+
+    def lineReceived(self, line):
+        line = json.loads(line)
+        if 'blue' in line and config['blue'] != line['blue']:
+            line['col'] = range(5, -1, -1)[line['col']]
+            if line['function'] == 'move':
+                line['rows'] = -line['rows']
+        character = game.field[line['row']][line['col']]['character']
+        for key, value in line['kwargs'].items():
+            del line['kwargs'][key]
+            line['kwargs'][str(key)] = value
+        getattr(character, line['function'])(**line['kwargs'])
+        game.draw()
+        if line['reset']:
+            reset()
+
+def keypress(event):
+    """Handle a key press."""
+    key = event.keysym
+    if key == 'Escape':
+        # Prepare to exit.
+        root.destroy()
+    # If the game is not over
+    if game.player.health and game.opponent.health:
+        # If the player is prompted to select a chip
+        if game.select:
+            if key == 'Return':
+                # Finish the selection.
+                game.select = False
+                # Add the chips to the player.
+                for value in game.selected:
+                    game.player.chips.append(game.chips[game.picked[value]])
+                # Make the first selected the first used.
+                game.player.chips.reverse()
+                # Remove the chips from the library.
+                game.selected.sort()
+                offset = 0
+                for value in game.selected:
+                    del game.chips[game.picked[value] - offset]
+                    offset += 1
+            if key == 'Right':
+                game.cursor(1)
+            if key == 'Left':
+                game.cursor(-1)
+            if key == 'a' and game.equipable(game.selection):
+                # Prepare to add the chip.
+                game.selected.append(game.selection)
+            if key == 's' and game.selected:
+                # Undo the selection.
+                game.selected.pop()
+        else:
+            if key == 't':
+                game.time()
+            if key == 'Up':
+                move(game.player, rows=1)
+            if key == 'Down':
+                move(game.player, rows=-1)
+            if key == 'Right':
+                move(game.player, cols=1)
+            if key == 'Left':
+                move(game.player, cols=-1)
+            if key == 'a' and game.player.chips:
+                game.player.usechip()
+            if key == 's':
+                game.player.buster()
+            if key == 'd':
+                # Start the selection if the custom bar is full.
+                if game.custombar == 10:
+                    game.custom()
+            if key == 'c':
+                game.player.charge()
+            if key == 'f':
+                game.player.hit(25)
+            if key == 'g':
+                game.player.hit(100)
+    elif key == 'r':
+        game.__init__()
+    game.draw()
+
+def stats(character):
+    """Draw a character's statistics."""
+    print '\n%s' % (character.name)
+    print '-HP: %s' % (str(character.health))
+    print '-Status: %s' % (', '.join(character.status))
+    print '-Type: %s' % (character.type)
+    chips = []
+    # Display the usable chips.
+    for value in character.chips:
+        power = ''
+        if hasattr(value, 'power'):
+            power = ' %s' % (value.power)
+        chips.append('%s%s %s' % (value.name, power, types[value.type]))
+    print '-Chips: %s' % (', '.join(chips))
+    print '-Active Chip:'
+    # Display the active chips.
+    for key, type in character.activechips.items():
+        if type:
+            names = []
+            if isinstance(type, dict):
+                type = list(dict([(v, k) for (k, v) in type.iteritems()]))
+            for chip in type:
+                names.append(chip.name)
+            print '--%s: %s' % (key, ', '.join(names))
+
 game = Game()
+factory = protocol.ClientFactory()
+factory.protocol = GameProtocol
+game.draw()
+root = tk.Tk()
+tksupport.install(root)
+root.bind_all('<Key>', keypress)
+root.withdraw()
+reactor.connectTCP('localhost', 9634, factory)
+reactor.run()

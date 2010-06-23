@@ -25,7 +25,7 @@ class Chip(Parent):
     def use(self):
         """Use the chip."""
         for col in range(self.owner.col + 1, 6):
-            panel = self.owner.field[self.owner.row][col]
+            panel = self.owner.owner.field[self.owner.row][col]
             # If this panel contains a character
             if panel['character']:
                 panel['character'].hit(self.power, self.type)
@@ -36,7 +36,7 @@ class Chip(Parent):
             row = top + rowoffset
             # If the offsetted row is on the field.
             if row > -1 and row < 3:
-                panel = self.owner.field[row][5]
+                panel = self.owner.owner.field[row][5]
                 # If this panel contains a character
                 if panel['character']:
                     panel['character'].hit(self.power, self.type)
