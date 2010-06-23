@@ -26,7 +26,12 @@ def move(character, rows = 0, cols = 0, force = False):
         'blue': config['blue'],
         'col': character.col,
         'function': 'move',
-        'kwargs': {'rows': rows, 'cols': cols, 'force': force},
+        'kwargs': {
+            'rows': rows,
+            'cols': cols,
+            'blue': config['blue'],
+            'force': force
+        },
         'object': 'character',
         'row': character.row
     })

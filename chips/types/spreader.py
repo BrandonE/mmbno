@@ -30,7 +30,7 @@ class Chip(Parent):
             if panel['character']:
                 break
         top = self.owner.row - 1
-        left = key - 1
+        left = col - 1
         for rowoffset in range(0, 3):
             for coloffset in range(0, 3):
                 # Offset the coordinates to spread to the adjacent panels.
@@ -43,7 +43,6 @@ class Chip(Parent):
                     # opponent's side
                     if (
                         panel['character'] and
-                        (col > 2 or panel['stolen']) and
-                        (col < 3 or not panel['stolen'])
+                        (col > 2 ^ (not panel['stolen']))
                     ):
                         panel['character'].hit(self.power, self.type)

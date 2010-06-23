@@ -189,10 +189,7 @@ class Game(object):
                     if col['character'] == self.player:
                         label = 'o'
                 # Label a red panels.
-                if (
-                    (key > 2 and not col['stolen']) or
-                    (key < 3 and col['stolen'])
-                ):
+                if key > 2 ^ col['stolen']:
                     red = 'R'
                 grid += ' %s%s%s |' % (status[col['status']], label, red)
             grid += '\n ----- ----- ----- ----- ----- -----'
@@ -297,12 +294,11 @@ class GameProtocol(LineReceiver):
         if 'blue' in line and config['blue'] != line['blue']:
             line['col'] = range(5, -1, -1)[line['col']]
             if line['function'] == 'move':
-                line['kwargs']['rows'] = -line['kwargs']['rows']
+                line['kwargs']['cols'] = -line['kwargs']['cols']
         if line['object'] == 'character':
             callable = game.field[line['row']][line['col']]['character']
         if line['object'] == 'game':
             callable = game
-        print callable
         getattr(callable, line['function'])(**line['kwargs'])
         game.draw()
         if line['reset']:
