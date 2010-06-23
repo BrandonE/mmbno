@@ -31,10 +31,19 @@ class GameProtocol(LineReceiver):
     def connectionMade(self):
         print 'Client Connected.'
         self.factory.players.append(self)
+        self.send({
+            'function': 'countplayers',
+            'kwargs': {'count': len(self.factory.players)},
+            'object': 'game'
+        })
 
     def connectionLost(self, reason):
         print 'Client Disconnected.'
         self.factory.players.remove(self)
+
+    def send(self, line):
+        """Messages are always to be sent as a JSON string."""
+        self.sendLine(json.dumps(line))
 
     def lineReceived(self, line):
         line = json.loads(line)
@@ -49,7 +58,7 @@ class GameProtocol(LineReceiver):
             # Allow more messages if the last player has handled it.
             if key == len(self.factory.players) - 1:
                 line['reset'] = True
-            player.sendLine(json.dumps(line))
+            player.send(line)
 
 factory = ServerFactory()
 factory.protocol = GameProtocol

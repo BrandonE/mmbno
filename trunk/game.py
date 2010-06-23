@@ -72,6 +72,7 @@ class Game(object):
                 }
                 cols.append(panel)
             self.field.append(cols)
+        self.players = 0
         self.chips = json.loads(
             open(
                 os.path.join(
@@ -94,6 +95,9 @@ class Game(object):
                 raise Exception('Improper chip code')
             self.chips[key].code = value['code']
         self.custom()
+
+    def countplayers(self, count):
+        self.players = count
 
     def cursor(self, cols):
         """Move the cursor for chip selection."""
@@ -151,6 +155,7 @@ class Game(object):
             if self.picked:
                 menu += '|'
             print menu
+        print 'Players: %s' % (self.players)
         # Display the custom bar.
         custom = ''
         # If the bar is full, display a message.
@@ -286,15 +291,19 @@ class GameProtocol(LineReceiver):
 
     def lineReceived(self, line):
         line = json.loads(line)
-        if 'blue' in line and config['blue'] != line['blue']:
-            line['col'] = range(5, -1, -1)[line['col']]
-            if line['function'] == 'move':
-                line['rows'] = -line['rows']
-        character = game.field[line['row']][line['col']]['character']
         for key, value in line['kwargs'].items():
             del line['kwargs'][key]
             line['kwargs'][str(key)] = value
-        getattr(character, line['function'])(**line['kwargs'])
+        if 'blue' in line and config['blue'] != line['blue']:
+            line['col'] = range(5, -1, -1)[line['col']]
+            if line['function'] == 'move':
+                line['kwargs']['rows'] = -line['kwargs']['rows']
+        if line['object'] == 'character':
+            callable = game.field[line['row']][line['col']]['character']
+        if line['object'] == 'game':
+            callable = game
+        print callable
+        getattr(callable, line['function'])(**line['kwargs'])
         game.draw()
         if line['reset']:
             reset()
@@ -304,7 +313,7 @@ def keypress(event):
     key = event.keysym
     if key == 'Escape':
         # Prepare to exit.
-        root.destroy()
+        reactor.stop()
     # If the game is not over
     if game.player.health and game.opponent.health:
         # If the player is prompted to select a chip

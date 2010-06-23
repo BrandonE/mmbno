@@ -27,6 +27,7 @@ def move(character, rows = 0, cols = 0, force = False):
         'col': character.col,
         'function': 'move',
         'kwargs': {'rows': rows, 'cols': cols, 'force': force},
+        'object': 'character',
         'row': character.row
     })
 
