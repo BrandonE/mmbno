@@ -22,4 +22,5 @@ except ImportError:
     import json
 
 __all__ = ['config']
+
 config = json.loads(open('config.json').read())

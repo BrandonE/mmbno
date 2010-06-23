@@ -30,7 +30,7 @@ class Chip(Parent):
 
     def use(self):
         """Use the chip."""
-        for key, panel in enumerate(self.owner.field[self.owner.row]):
+        for key, panel in enumerate(self.owner.owner.field[self.owner.row]):
             # If the panel is not in the last column and is not already yours
             if (
                 key != 5 and

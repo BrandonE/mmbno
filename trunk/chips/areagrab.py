@@ -34,7 +34,7 @@ class Chip(Parent):
         breakout = False
         for col in range(1, 5):
             for row in range(0, 3):
-                panel = self.owner.field[row][col]
+                panel = self.owner.owner.field[row][col]
                 # If this panel can be stolen
                 if (
                     (col > 2 and not panel['stolen']) or

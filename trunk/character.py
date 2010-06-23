@@ -17,15 +17,16 @@
 """A class to base the characters off of."""
 
 from math import ceil
+from config import config
+import messages
 
-__all__ = ['Character']
+__all__ = ['Character', 'config']
 
 class Character():
     """A class to base the characters off of."""
-    def __init__(self, owner, field, row = 1, col = 1):
+    def __init__(self, owner, row = 1, col = 1):
         """A class to base the characters off of."""
         self.owner = owner
-        self.field = field
         self.row = row
         self.col = col
         # Chips that modify the character temporarily.
@@ -122,7 +123,7 @@ class Character():
             'grass': 'fire',
             'ice': 'electric'
         }
-        status = self.field[self.row][self.col]['status']
+        status = self.owner.field[self.row][self.col]['status']
         # Double the damage if the attack is the panel's weakness.
         if status in weaknesses and weaknesses[status] == type:
             power *= 2
@@ -135,10 +136,10 @@ class Character():
             return
         self.defaulthit(power)
 
-    def move(self, rows = 0, cols = 0, force = False):
+    def move(self, rows, cols, force):
         """Move the character if possible."""
         # Grab the panel the character is on.
-        panel = self.field[self.row][self.col]
+        panel = self.owner.field[self.row][self.col]
         # Define the new coordinates.
         newrow = self.row - rows
         newcol = self.col + cols
@@ -147,7 +148,7 @@ class Character():
             if newrow < 0 or newrow > 2 or newcol < 0 or newcol > 5:
                 return
         # As the coordinates are valid, grab the new panel.
-        newpanel = self.field[newrow][newcol]
+        newpanel = self.owner.field[newrow][newcol]
         if not force:
             # If the panel doesn't contain the character, something went
             # horribly wrong.
@@ -199,7 +200,7 @@ class Character():
         if not 'floatshoes' in self.status:
             # Slide if on ice.
             if newpanel['status'] == 'ice':
-                self.move(rows, cols)
+                messages.move(self, rows, cols)
 
     def priority(self, type):
         """Grab the active chip with the highest priority."""
@@ -214,7 +215,7 @@ class Character():
         """Hit the first person across from the character."""
         if not 'paralyzed' in self.status:
             for col in range(self.col + 1, 6):
-                panel = self.field[self.row][col]
+                panel = self.owner.field[self.row][col]
                 # If this panel contains a character
                 if panel['character']:
                     panel['character'].hit(power, type)
@@ -226,7 +227,7 @@ class Character():
 
     def time(self):
         """Handle a unit of time."""
-        panel = self.field[self.row][self.col]
+        panel = self.owner.field[self.row][self.col]
         # If the character is on a grass panel and is a wood type
         if panel['status'] == 'grass' and self.type == 'wood':
             self.heal(1)

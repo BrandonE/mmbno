@@ -14,25 +14,21 @@
 # Copyright (C) 2008-2010 Chris Santiago and Brandon Evans.
 # http://mmbnonline.net/
 
-"""Send messages to the Twisted Server."""
+"""Handles sending of Twisted messages."""
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
+from twisted.internet import reactor
 
-from client import factory
+from config import config
 
-__all__ = ['config', 'move']
-
-config = json.loads(open('config.json').read())
-
-def move(self, rows = 0, cols = 0, force = False):
+def move(character, rows = 0, cols = 0, force = False):
     """Move the character if possible."""
-    factory.protocol.sendLine({
+    reactor.protocol.send({
         'blue': config['blue'],
-        'col': self.col,
+        'col': character.col,
         'function': 'move',
-        'kwargs': {'rows': rows, 'cols': -cols, 'force': force},
-        'row': self.row
+        'kwargs': {'rows': rows, 'cols': cols, 'force': force},
+        'row': character.row
     })
+
+def reset():
+    reactor.protocol.send('Reset')

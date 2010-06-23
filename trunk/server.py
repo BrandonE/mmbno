@@ -37,15 +37,24 @@ class GameProtocol(LineReceiver):
         self.factory.players.remove(self)
 
     def lineReceived(self, line):
-        # Messages are sent as JSON encoded strings, to later be decoded.
-        msg = json.dumps(line)
+        line = json.loads(line)
+        if self.factory.queue:
+            if line == 'Reset':
+                self.factory.queue = False
+            return
+        self.factory.queue = True
         # Send a message to every player.
-        for player in self.factory.players:
-            player.sendLine(msg)
+        line['reset'] = False
+        for key, player in enumerate(self.factory.players):
+            # Allow more messages if the last player has handled it.
+            if key == len(self.factory.players) - 1:
+                line['reset'] = True
+            player.sendLine(json.dumps(line))
 
 factory = ServerFactory()
 factory.protocol = GameProtocol
 factory.players = []
+factory.queue = False
 application = service.Application('mmbnonline')
 server = internet.TCPServer(9634, factory)
 server.setName('MMBN Online Server')

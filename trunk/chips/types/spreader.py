@@ -25,7 +25,7 @@ class Chip(Parent):
     def use(self):
         """Use the chip."""
         for col in range(self.owner.col + 1, 6):
-            panel = self.owner.field[self.owner.row][col]
+            panel = self.owner.owner.field[self.owner.row][col]
             # If this panel contains a character, use this column.
             if panel['character']:
                 break
@@ -38,7 +38,7 @@ class Chip(Parent):
                 col = left + coloffset
                 # If the offsetted coordinates are on the field
                 if row > -1 and row < 3 and col > -1 and col < 6:
-                    panel = self.owner.field[row][col]
+                    panel = self.owner.owner.field[row][col]
                     # If this panel contains a character and is on the
                     # opponent's side
                     if (

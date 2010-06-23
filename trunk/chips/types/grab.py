@@ -44,7 +44,7 @@ class Chip(Parent):
                 success = False
                 breakout = False
                 for row in range(0, 3):
-                    panel = self.owner.field[row][col]
+                    panel = self.owner.owner.field[row][col]
                     # If this panel has been stolen
                     if panel['stolen']:
                         success = True
@@ -62,7 +62,7 @@ class Chip(Parent):
                         deactivate = False
                     # Restore the panels.
                     for row in range(0, 3):
-                        self.owner.field[row][col]['stolen'] = False
+                        self.owner.owner.field[row][col]['stolen'] = False
             if deactivate:
                 self.owner.deactivatechip(self, 'move')
                 self.owner.deactivatechip(self, 'time')
