@@ -136,7 +136,7 @@ class Character():
             return
         self.defaulthit(power)
 
-    def move(self, rows, cols, force):
+    def move(self, rows, cols, blue, force):
         """Move the character if possible."""
         # Grab the panel the character is on.
         panel = self.owner.field[self.row][self.col]
@@ -159,12 +159,8 @@ class Character():
             # paralyzed, fail.
             if (
                 (
-                    newcol > 2 and
-                    not newpanel['stolen']
-                ) or
-                (
-                    newcol < 3 and
-                    newpanel['stolen']
+                    (newcol > 2 ^ newpanel['stolen']) ^
+                    blue != config['blue']
                 ) or
                 newpanel['character'] or
                 (

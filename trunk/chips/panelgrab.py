@@ -32,13 +32,7 @@ class Chip(Parent):
         """Use the chip."""
         for key, panel in enumerate(self.owner.owner.field[self.owner.row]):
             # If the panel is not in the last column and is not already yours
-            if (
-                key != 5 and
-                (
-                    (key > 2 and not panel['stolen']) or
-                    (key < 3 and panel['stolen'])
-                )
-            ):
+            if key != 5 and (key > 2 ^ panel['stolen']):
                 # If this panel contains a character
                 if panel['character']:
                     panel['character'].hit(self.damage)
