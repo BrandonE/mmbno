@@ -45,27 +45,16 @@ class GameProtocol(LineReceiver):
             'kwargs': {'count': len(self.factory.players)},
             'object': 'game'
         })
-        if not self.factory.players:
-            self.factory.queue = False
 
     def send(self, line):
         """Messages are always to be sent as a JSON string."""
         self.lineReceived(json.dumps(line))
 
     def lineReceived(self, line):
-        line = json.loads(line)
-        if self.factory.queue:
-            if line == 'Reset':
-                self.factory.queue = False
-            return
-        self.factory.queue = True
         # Send a message to every player.
-        line['reset'] = False
         for key, player in enumerate(self.factory.players):
             # Allow more messages if the last player has handled it.
-            if key == len(self.factory.players) - 1:
-                line['reset'] = True
-            player.sendLine(json.dumps(line))
+            player.sendLine(line)
 
 factory = ServerFactory()
 factory.protocol = GameProtocol

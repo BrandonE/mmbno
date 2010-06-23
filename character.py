@@ -24,9 +24,10 @@ __all__ = ['Character', 'config']
 
 class Character():
     """A class to base the characters off of."""
-    def __init__(self, owner, row = 1, col = 1):
+    def __init__(self, owner, id, row = 1, col = 1):
         """A class to base the characters off of."""
         self.owner = owner
+        self.id = id
         self.row = row
         self.col = col
         # Chips that modify the character temporarily.
