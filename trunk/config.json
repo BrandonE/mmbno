@@ -1,5 +1,7 @@
 {
     "blue": true,
     "character": "mega",
-    "chipfolder": "1"
+    "chipfolder": "1",
+    "charid": 1,
+    "oppid": 2
 }

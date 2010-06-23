@@ -24,17 +24,13 @@ def move(character, rows = 0, cols = 0, force = False):
     """Move the character if possible."""
     reactor.protocol.send({
         'blue': config['blue'],
-        'col': character.col,
         'function': 'move',
+        'id': character.id,
         'kwargs': {
             'rows': rows,
             'cols': cols,
             'blue': config['blue'],
             'force': force
         },
-        'object': 'character',
-        'row': character.row
+        'object': 'character'
     })
-
-def reset():
-    reactor.protocol.send('Reset')

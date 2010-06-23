@@ -27,7 +27,7 @@ import Tkinter as tk
 from twisted.internet import  protocol, reactor, tksupport
 from twisted.protocols.basic import LineReceiver
 from config import config
-from messages import move, reset
+from messages import move
 
 __all__ = [
     'factory', 'Game', 'game', 'GameProtocol', 'keypress', 'root', 'stats',
@@ -52,8 +52,8 @@ class Game(object):
             ('Character',),
             -1
         )
-        self.player = module.Character(self)
-        self.opponent = module.Character(self, col=4)
+        self.player = module.Character(self, config['charid'])
+        self.opponent = module.Character(self, config['oppid'], col=4)
         self.field = []
         for row in range(0, 3):
             cols = []
@@ -291,18 +291,17 @@ class GameProtocol(LineReceiver):
         for key, value in line['kwargs'].items():
             del line['kwargs'][key]
             line['kwargs'][str(key)] = value
-        if 'blue' in line and config['blue'] != line['blue']:
-            line['col'] = range(5, -1, -1)[line['col']]
-            if line['function'] == 'move':
-                line['kwargs']['cols'] = -line['kwargs']['cols']
+        if line['function'] == 'move' and config['blue'] != line['blue']:
+            line['kwargs']['cols'] = -line['kwargs']['cols']
         if line['object'] == 'character':
-            callable = game.field[line['row']][line['col']]['character']
+            if line['id'] == game.player.id:
+                callable = game.player
+            if line['id'] == game.opponent.id:
+                callable = game.opponent
         if line['object'] == 'game':
             callable = game
         getattr(callable, line['function'])(**line['kwargs'])
         game.draw()
-        if line['reset']:
-            reset()
 
 def keypress(event):
     """Handle a key press."""
