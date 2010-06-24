@@ -18,7 +18,7 @@
 
 from math import ceil
 from config import config
-from messages import move, hit
+from messages import move, update
 
 __all__ = ['Character', 'config']
 
@@ -134,8 +134,10 @@ class Character():
         # If an active chip exists, override the original handling.
         if self.activechips['hit']:
             self.priority('hit').hit(power)
+            update(self)
             return
         self.defaulthit(power)
+        update(self)
 
     def move(self, rows, cols, blue, force):
         """Move the character if possible."""
@@ -184,7 +186,7 @@ class Character():
                 panel['status'] = 'broken'
             # If the character moved onto a lava panel and is not a fire type
             if newpanel['status'] == 'lava' and self.type != 'fire':
-                hit(self, 10, 'fire')
+                self.hit(10, 'fire')
                 # Revert the panel.
                 newpanel['status'] = 'normal'
         # Adjust to the new coordinates.
@@ -215,7 +217,7 @@ class Character():
                 panel = self.owner.field[self.row][col]
                 # If this panel contains a character
                 if panel['character']:
-                    hit(panel['character'], power, type)
+                    panel['character'].hit(power, type)
                     # If the attack is a fire type and the panel has grass,
                     # burn it.
                     if panel['status'] == 'grass' and type == 'fire':
@@ -231,11 +233,17 @@ class Character():
         # If the character is on a poison panel and does not have floatshoes
         # activated
         if panel['status'] == 'poison' and not 'floatshoes' in self.status:
-            hit(self, 1)
+            self.hit(1)
         # Run all of the active chip modifiers.
         converted = list(self.activechips['time'])
         for value in converted:
             value.time()
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            if 'key' == 'status':
+                value = set(value)
+            setattr(self, key, value)
 
     def usechip(self):
         """Use the next chip or set of chips."""

@@ -18,7 +18,7 @@
 
 from chip import Chip as Parent
 from config import config
-from messages import move, hit
+from messages import move
 
 __all__ = ['Chip']
 
@@ -39,7 +39,7 @@ class Chip(Parent):
             panel = self.owner.owner.field[self.owner.row][col]
             # If this panel contains a character and is not yours
             if panel['character'] and (col > 2 ^ panel['stolen']):
-                hit(panel['character'], self.power)
+                panel['character'].hit(self.power)
                 # Move it back 1.
                 move(
                     panel['character'],

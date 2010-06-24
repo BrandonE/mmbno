@@ -20,18 +20,6 @@ from twisted.internet import reactor
 
 from config import config
 
-def hit(character, power, type = 'none'):
-    """Move the character if possible."""
-    reactor.protocol.send({
-        'function': 'hit',
-        'id': character.id,
-        'kwargs': {
-            'power': power,
-            'type': type
-        },
-        'object': 'character'
-    })
-
 def move(character, rows = 0, cols = 0, blue = config['blue'], force = False):
     """Move the character if possible."""
     reactor.protocol.send({
@@ -42,6 +30,22 @@ def move(character, rows = 0, cols = 0, blue = config['blue'], force = False):
             'cols': cols,
             'blue': blue,
             'force': force
+        },
+        'object': 'character'
+    })
+
+def update(character):
+    """Move the character if possible."""
+    reactor.protocol.send({
+        'function': 'update',
+        'id': character.id,
+        'kwargs': {
+            'health': character.health,
+            'maxhealth': character.maxhealth,
+            'name': character.name,
+            'power': character.power,
+            'status': list(character.status),
+            'type': character.type
         },
         'object': 'character'
     })

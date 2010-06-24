@@ -27,7 +27,7 @@ import Tkinter as tk
 from twisted.internet import  protocol, reactor, tksupport
 from twisted.protocols.basic import LineReceiver
 from config import config
-from messages import move
+from messages import move, update
 
 __all__ = [
     'factory', 'Game', 'game', 'GameProtocol', 'keypress', 'root', 'stats',
@@ -53,7 +53,9 @@ class Game(object):
             -1
         )
         self.player = module.Character(self, config['playid'])
+        update(self.player)
         self.opponent = module.Character(self, config['oppid'], col=4)
+        update(self.opponent)
         self.field = []
         for row in range(0, 3):
             cols = []
@@ -230,7 +232,7 @@ class Game(object):
             return
         # Add the chip in question to see if the new set fits the conditions.
         self.selected.append(chip)
-        chip = game.chips[game.picked[chip]]
+        chip = reactor.game.chips[reactor.game.picked[chip]]
         codes = set([])
         names = set([])
         success = True
@@ -279,6 +281,8 @@ class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
     def connectionMade(self):
         reactor.protocol = self
+        reactor.game = Game()
+        reactor.game.draw()
 
     def send(self, line):
         """Messages are always to be sent as a JSON string."""
@@ -295,14 +299,14 @@ class GameProtocol(LineReceiver):
         ):
             line['kwargs']['cols'] = -line['kwargs']['cols']
         if line['object'] == 'character':
-            if line['id'] == game.player.id:
-                callable = game.player
-            if line['id'] == game.opponent.id:
-                callable = game.opponent
+            if line['id'] == reactor.game.player.id:
+                callable = reactor.game.player
+            if line['id'] == reactor.game.opponent.id:
+                callable = reactor.game.opponent
         if line['object'] == 'game':
-            callable = game
+            callable = reactor.game
         getattr(callable, line['function'])(**line['kwargs'])
-        game.draw()
+        reactor.game.draw()
 
 def keypress(event):
     """Handle a key press."""
@@ -311,57 +315,59 @@ def keypress(event):
         # Prepare to exit.
         reactor.stop()
     # If the game is not over
-    if game.player.health and game.opponent.health:
+    if reactor.game.player.health and reactor.game.opponent.health:
         # If the player is prompted to select a chip
-        if game.select:
+        if reactor.game.select:
             if key == 'Return':
                 # Finish the selection.
-                game.select = False
+                reactor.game.select = False
                 # Add the chips to the player.
-                for value in game.selected:
-                    game.player.chips.append(game.chips[game.picked[value]])
+                for value in reactor.game.selected:
+                    reactor.game.player.chips.append(
+                        reactor.game.chips[reactor.game.picked[value]]
+                    )
                 # Make the first selected the first used.
-                game.player.chips.reverse()
+                reactor.game.player.chips.reverse()
                 # Remove the chips from the library.
-                game.selected.sort()
+                reactor.game.selected.sort()
                 offset = 0
-                for value in game.selected:
-                    del game.chips[game.picked[value] - offset]
+                for value in reactor.game.selected:
+                    del reactor.game.chips[reactor.game.picked[value] - offset]
                     offset += 1
             if key == 'Right':
-                game.cursor(1)
+                reactor.game.cursor(1)
             if key == 'Left':
-                game.cursor(-1)
-            if key == 'a' and game.equipable(game.selection):
+                reactor.game.cursor(-1)
+            if key == 'a' and reactor.game.equipable(reactor.game.selection):
                 # Prepare to add the chip.
-                game.selected.append(game.selection)
-            if key == 's' and game.selected:
+                reactor.game.selected.append(reactor.game.selection)
+            if key == 's' and reactor.game.selected:
                 # Undo the selection.
-                game.selected.pop()
+                reactor.game.selected.pop()
         else:
             if key == 'Up':
-                move(game.player, rows=1)
+                move(reactor.game.player, rows=1)
             if key == 'Down':
-                move(game.player, rows=-1)
+                move(reactor.game.player, rows=-1)
             if key == 'Right':
-                move(game.player, cols=1)
+                move(reactor.game.player, cols=1)
             if key == 'Left':
-                move(game.player, cols=-1)
-            if key == 'a' and game.player.chips:
-                game.player.usechip()
+                move(reactor.game.player, cols=-1)
+            if key == 'a' and reactor.game.player.chips:
+                reactor.game.player.usechip()
             if key == 's':
-                game.player.buster()
+                reactor.game.player.buster()
             if key == 'd':
                 # Start the selection if the custom bar is full.
-                if game.custombar == 10:
-                    game.custom()
+                if reactor.game.custombar == 10:
+                    reactor.game.custom()
             if key == 'f':
-                game.time()
+                reactor.game.time()
             if key == 'c':
-                game.player.charge()
+                reactor.game.player.charge()
     elif key == 'r':
-        game.__init__()
-    game.draw()
+        reactor.game.__init__()
+    reactor.game.draw()
 
 def stats(character):
     """Draw a character's statistics."""
@@ -388,10 +394,8 @@ def stats(character):
                 names.append(chip.name)
             print '--%s: %s' % (key, ', '.join(names))
 
-game = Game()
 factory = protocol.ClientFactory()
 factory.protocol = GameProtocol
-game.draw()
 root = tk.Tk()
 tksupport.install(root)
 root.bind_all('<Key>', keypress)
