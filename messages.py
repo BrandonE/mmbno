@@ -35,7 +35,6 @@ def hit(character, power, type = 'none'):
 def move(character, rows = 0, cols = 0, blue = config['blue'], force = False):
     """Move the character if possible."""
     reactor.protocol.send({
-        'blue': blue,
         'function': 'move',
         'id': character.id,
         'kwargs': {

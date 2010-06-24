@@ -289,7 +289,10 @@ class GameProtocol(LineReceiver):
         for key, value in line['kwargs'].items():
             del line['kwargs'][key]
             line['kwargs'][str(key)] = value
-        if line['function'] == 'move' and config['blue'] != line['blue']:
+        if (
+            line['function'] == 'move' and
+            config['blue'] != line['kwargs']['blue']
+        ):
             line['kwargs']['cols'] = -line['kwargs']['cols']
         if line['object'] == 'character':
             if line['id'] == game.player.id:
