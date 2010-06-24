@@ -26,12 +26,13 @@ except ImportError:
 import Tkinter as tk
 from twisted.internet import  protocol, reactor, tksupport
 from twisted.protocols.basic import LineReceiver
+from character import Character
 from config import config
 from messages import move, update
 
 __all__ = [
-    'factory', 'Game', 'game', 'GameProtocol', 'keypress', 'root', 'stats',
-    'types'
+    'factory', 'Game', 'game', 'GameProtocol', 'keypress', 'properties',
+    'root', 'types'
 ]
 
 # Graphically display a character or chip's type.
@@ -53,9 +54,12 @@ class Game(object):
             -1
         )
         self.player = module.Character(self, config['playid'])
-        update(self.player)
-        self.opponent = module.Character(self, config['oppid'], col=4)
-        update(self.opponent)
+        update(self.player, 'character')
+        self.opponent = Character(self, config['oppid'], col=4)
+        self.characters = {
+            config['playid']: self.player,
+            config['oppid']: self.opponent
+        }
         self.field = []
         for row in range(0, 3):
             cols = []
@@ -196,8 +200,8 @@ class Game(object):
                 grid += ' %s%s%s |' % (status[col['status']], label, red)
             grid += '\n ----- ----- ----- ----- ----- -----'
         print grid
-        stats(self.player)
-        stats(self.opponent)
+        properties(self.player)
+        properties(self.opponent)
         # If the game is over, display the winner and loser and prompt
         # restarting.
         if not self.player.health or not self.opponent.health:
@@ -277,6 +281,14 @@ class Game(object):
         self.player.time()
         self.opponent.time()
 
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        for row in self.field:
+            for panel in row:
+                if panel['character']:
+                    panel['character'] = self.characters[panel['character']]
+
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
     def connectionMade(self):
@@ -346,13 +358,13 @@ def keypress(event):
                 reactor.game.selected.pop()
         else:
             if key == 'Up':
-                move(reactor.game.player, rows=1)
+                reactor.game.player.move(rows=1)
             if key == 'Down':
-                move(reactor.game.player, rows=-1)
+                reactor.game.player.move(rows=-1)
             if key == 'Right':
-                move(reactor.game.player, cols=1)
+                reactor.game.player.move(cols=1)
             if key == 'Left':
-                move(reactor.game.player, cols=-1)
+                reactor.game.player.move(cols=-1)
             if key == 'a' and reactor.game.player.chips:
                 reactor.game.player.usechip()
             if key == 's':
@@ -368,9 +380,10 @@ def keypress(event):
     elif key == 'r':
         reactor.game.__init__()
     reactor.game.draw()
+    update(reactor.game, 'game')
 
-def stats(character):
-    """Draw a character's statistics."""
+def properties(character):
+    """Draw a character's properties."""
     print '\n%s' % (character.name)
     print '-HP: %s' % (str(character.health))
     print '-Status: %s' % (', '.join(character.status))
