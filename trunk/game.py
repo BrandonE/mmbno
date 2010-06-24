@@ -52,7 +52,7 @@ class Game(object):
             ('Character',),
             -1
         )
-        self.player = module.Character(self, config['charid'])
+        self.player = module.Character(self, config['playid'])
         self.opponent = module.Character(self, config['oppid'], col=4)
         self.field = []
         for row in range(0, 3):
@@ -189,7 +189,7 @@ class Game(object):
                     if col['character'] == self.player:
                         label = 'o'
                 # Label a red panels.
-                if key > 2 ^ col['stolen']:
+                if (key > 2) ^ col['stolen']:
                     red = 'R'
                 grid += ' %s%s%s |' % (status[col['status']], label, red)
             grid += '\n ----- ----- ----- ----- ----- -----'
@@ -214,9 +214,7 @@ class Game(object):
         print 'S: Use Buster / Remove Chip'
         print 'D: Prompt Chip Selection'
         print 'C: Charge Shot'
-        print 'T: Advance time (Test)'
-        print 'F: Deal 25 damage to player (Test)'
-        print 'G: Deal 100 damage to player (Test)'
+        print 'F: Go forward time'
         print 'Enter: End Chip Selection'
         print 'Escape - End Game'
 
@@ -338,8 +336,6 @@ def keypress(event):
                 # Undo the selection.
                 game.selected.pop()
         else:
-            if key == 't':
-                game.time()
             if key == 'Up':
                 move(game.player, rows=1)
             if key == 'Down':
@@ -356,12 +352,10 @@ def keypress(event):
                 # Start the selection if the custom bar is full.
                 if game.custombar == 10:
                     game.custom()
+            if key == 'f':
+                game.time()
             if key == 'c':
                 game.player.charge()
-            if key == 'f':
-                game.player.hit(25)
-            if key == 'g':
-                game.player.hit(100)
     elif key == 'r':
         game.__init__()
     game.draw()
@@ -399,5 +393,5 @@ root = tk.Tk()
 tksupport.install(root)
 root.bind_all('<Key>', keypress)
 root.withdraw()
-reactor.connectTCP('localhost', 9634, factory)
+reactor.connectTCP(config['ip'], 9634, factory)
 reactor.run()

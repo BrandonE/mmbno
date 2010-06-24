@@ -2,6 +2,7 @@
     "blue": true,
     "character": "mega",
     "chipfolder": "1",
-    "charid": 1,
-    "oppid": 2
+    "ip": "74.73.67.193",
+    "oppid": 2,
+    "playid": 1
 }
