@@ -20,6 +20,8 @@ from twisted.internet import reactor
 
 from config import config
 
+__all__ = ['move', 'hit', 'update']
+
 def move(character, rows = 0, cols = 0, blue = config['blue'], force = False):
     """Move the character if possible."""
     reactor.protocol.send({
@@ -34,18 +36,42 @@ def move(character, rows = 0, cols = 0, blue = config['blue'], force = False):
         'object': 'character'
     })
 
-def update(character):
-    """Move the character if possible."""
+def hit(character, power, type = 'none'):
     reactor.protocol.send({
-        'function': 'update',
+        'function': 'hit',
         'id': character.id,
         'kwargs': {
-            'health': character.health,
-            'maxhealth': character.maxhealth,
-            'name': character.name,
-            'power': character.power,
-            'status': list(character.status),
-            'type': character.type
+            'power': power,
+            'type': type
         },
         'object': 'character'
     })
+
+def update(callable, name):
+    """Update the character's properties"""
+    message = {
+        'function': 'update',
+        'kwargs': {},
+        'object': name
+    }
+    if name == 'character':
+        message['id'] = callable.id
+        message['kwargs'] = {
+            'health': callable.health,
+            'maxhealth': callable.maxhealth,
+            'name': callable.name,
+            'power': callable.power,
+            'status': list(callable.status),
+            'type': callable.type
+        }
+    if name == 'game':
+        message['kwargs'] = {'field': []}
+        for row in callable.field[:]:
+            cols = []
+            for panel in row[:]:
+                panel = panel.copy()
+                if panel['character']:
+                    panel['character'] = panel['character'].id
+                cols.append(panel)
+            message['kwargs']['field'].append(cols)
+    reactor.protocol.send(message)
