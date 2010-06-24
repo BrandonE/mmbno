@@ -17,6 +17,7 @@
 """A version of the Chip class."""
 
 from chips.types.grab import Chip as Parent
+import messages
 
 __all__ = ['Chip']
 
@@ -36,10 +37,10 @@ class Chip(Parent):
             for row in range(0, 3):
                 panel = self.owner.owner.field[row][col]
                 # If this panel can be stolen
-                if col > 2 ^ panel['stolen']:
+                if (col > 2) ^ panel['stolen']:
                     # If this panel contains a character
                     if panel['character']:
-                        panel['character'].hit(self.damage)
+                        messages.hit(panel['character'], self.damage)
                     else:
                         # Take it.
                         panel['stolen'] = not panel['stolen']

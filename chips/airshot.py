@@ -17,6 +17,8 @@
 """A version of the Chip class."""
 
 from chip import Chip as Parent
+from config import config
+import messages
 
 __all__ = ['Chip']
 
@@ -24,7 +26,7 @@ class Chip(Parent):
     """A version of the Chip class."""
     def properties(self):
         """Overwrite the default properties."""
-        self.codes = ('*')
+        self.codes = ('*',)
         self.description = 'Knock enemy back 1 square'
         self.name = 'Airshot'
         self.power = 20
@@ -35,9 +37,13 @@ class Chip(Parent):
         """Use the chip."""
         for col in range(self.owner.col + 1, 6):
             panel = self.owner.owner.field[self.owner.row][col]
-            # If this panel contains a character
-            if panel['character']:
-                panel['character'].hit(self.power)
+            # If this panel contains a character and is not yours
+            if panel['character'] and (col > 2 ^ panel['stolen']):
+                messages.hit(panel['character'], self.power)
                 # Move it back 1.
-                panel['character'].move(cols=-1)
+                messages.move(
+                    panel['character'],
+                    cols=-1,
+                    blue=(not config['blue'])
+                )
                 break

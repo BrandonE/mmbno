@@ -17,6 +17,7 @@
 """A version of the Chip class."""
 
 from chip import Chip as Parent
+import messages
 
 __all__ = ['Chip']
 
@@ -43,6 +44,6 @@ class Chip(Parent):
                     # opponent's side
                     if (
                         panel['character'] and
-                        (col > 2 ^ (not panel['stolen']))
+                        ((col > 2) ^ (not panel['stolen']))
                     ):
-                        panel['character'].hit(self.power, self.type)
+                        messages.hit(panel['character'], self.power, self.type)

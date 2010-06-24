@@ -160,7 +160,7 @@ class Character():
             # paralyzed, fail.
             if (
                 (
-                    (newcol > 2 ^ newpanel['stolen']) ^
+                    ((newcol > 2) ^ newpanel['stolen']) ^
                     blue != config['blue']
                 ) or
                 newpanel['character'] or
@@ -184,7 +184,7 @@ class Character():
                 panel['status'] = 'broken'
             # If the character moved onto a lava panel and is not a fire type
             if newpanel['status'] == 'lava' and self.type != 'fire':
-                self.hit(10, 'fire')
+                messages.hit(self, 10, 'fire')
                 # Revert the panel.
                 newpanel['status'] = 'normal'
         # Adjust to the new coordinates.
@@ -215,7 +215,7 @@ class Character():
                 panel = self.owner.field[self.row][col]
                 # If this panel contains a character
                 if panel['character']:
-                    panel['character'].hit(power, type)
+                    messages.hit(panel['character'], power, type)
                     # If the attack is a fire type and the panel has grass,
                     # burn it.
                     if panel['status'] == 'grass' and type == 'fire':
@@ -231,7 +231,7 @@ class Character():
         # If the character is on a poison panel and does not have floatshoes
         # activated
         if panel['status'] == 'poison' and not 'floatshoes' in self.status:
-            self.hit(1)
+            messages.hit(self, 1)
         # Run all of the active chip modifiers.
         converted = list(self.activechips['time'])
         for value in converted:

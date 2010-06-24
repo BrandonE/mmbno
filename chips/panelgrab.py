@@ -17,6 +17,7 @@
 """A version of the Chip class."""
 
 from chips.types.grab import Chip as Parent
+import messages
 
 __all__ = ['Chip']
 
@@ -32,10 +33,10 @@ class Chip(Parent):
         """Use the chip."""
         for key, panel in enumerate(self.owner.owner.field[self.owner.row]):
             # If the panel is not in the last column and is not already yours
-            if key != 5 and (key > 2 ^ panel['stolen']):
+            if key != 5 and ((key > 2) ^ panel['stolen']):
                 # If this panel contains a character
                 if panel['character']:
-                    panel['character'].hit(self.damage)
+                    messages.hit(panel['character'], self.damage)
                 else:
                     # Take it.
                     panel['stolen'] = not panel['stolen']
