@@ -17,7 +17,6 @@
 """A version of the Chip class."""
 
 from chip import Chip as Parent
-from messages import hit
 
 __all__ = ['Chip']
 
@@ -31,4 +30,4 @@ class Chip(Parent):
                 # If this panel has been stolen, take it back and do damage.
                 if panel['stolen']:
                     panel['stolen'] = False
-                    hit(self.owner.owner.opponent, self.damage)
+                    self.owner.owner.opponent.hit(self.damage)

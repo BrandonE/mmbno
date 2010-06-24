@@ -17,7 +17,6 @@
 """A version of the Chip class."""
 
 from chips.types.grab import Chip as Parent
-from messages import hit
 
 __all__ = ['Chip']
 
@@ -36,7 +35,7 @@ class Chip(Parent):
             if key != 5 and ((key > 2) ^ panel['stolen']):
                 # If this panel contains a character
                 if panel['character']:
-                    hit(panel['character'], self.damage)
+                    panel['character'].hit(self.damage)
                 else:
                     # Take it.
                     panel['stolen'] = not panel['stolen']

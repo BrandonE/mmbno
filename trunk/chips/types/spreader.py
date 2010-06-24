@@ -17,7 +17,6 @@
 """A version of the Chip class."""
 
 from chip import Chip as Parent
-from messages import hit
 
 __all__ = ['Chip']
 
@@ -46,4 +45,4 @@ class Chip(Parent):
                         panel['character'] and
                         ((col > 2) ^ (not panel['stolen']))
                     ):
-                        hit(panel['character'], self.power, self.type)
+                        panel['character'].hit(self.power, self.type)
