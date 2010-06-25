@@ -220,7 +220,7 @@ class Game(object):
         print 'S: Use Buster / Remove Chip'
         print 'D: Prompt Chip Selection'
         print 'C: Charge Shot'
-        print 'F: Go forward time'
+        print 'F: Go forward in time'
         print 'Enter: End Chip Selection'
         print 'Escape - End Game'
 
@@ -281,13 +281,13 @@ class Game(object):
         self.player.time()
         self.opponent.time()
 
-    def update(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-        for row in self.field:
-            for panel in row:
-                if panel['character']:
-                    panel['character'] = self.characters[panel['character']]
+    def update(self, field, blue):
+        for row in range(0, 3):
+            if blue != config['blue']:
+                field[row].reverse()
+            for col in range(0, 5):
+                for key, value in field[row][col].items():
+                    self.field[row][col][key] = value
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
@@ -302,6 +302,8 @@ class GameProtocol(LineReceiver):
 
     def lineReceived(self, line):
         line = json.loads(line)
+        if 'client' in line and config['client'] == line['client']:
+            return
         for key, value in line['kwargs'].items():
             del line['kwargs'][key]
             line['kwargs'][str(key)] = value
