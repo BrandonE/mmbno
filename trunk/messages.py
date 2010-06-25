@@ -25,6 +25,7 @@ __all__ = ['move', 'hit', 'update']
 def move(character, rows = 0, cols = 0, blue = config['blue'], force = False):
     """Move the character if possible."""
     reactor.protocol.send({
+        'client': config['client'],
         'function': 'move',
         'id': character.id,
         'kwargs': {
@@ -38,6 +39,7 @@ def move(character, rows = 0, cols = 0, blue = config['blue'], force = False):
 
 def hit(character, power, type = 'none'):
     reactor.protocol.send({
+        'client': config['client'],
         'function': 'hit',
         'id': character.id,
         'kwargs': {
@@ -50,6 +52,7 @@ def hit(character, power, type = 'none'):
 def update(callable, name):
     """Update the character's properties"""
     message = {
+        'client': config['client'],
         'function': 'update',
         'kwargs': {},
         'object': name
@@ -57,21 +60,22 @@ def update(callable, name):
     if name == 'character':
         message['id'] = callable.id
         message['kwargs'] = {
+            'col': callable.col,
             'health': callable.health,
             'maxhealth': callable.maxhealth,
             'name': callable.name,
             'power': callable.power,
+            'row': callable.row,
             'status': list(callable.status),
             'type': callable.type
         }
     if name == 'game':
-        message['kwargs'] = {'field': []}
-        for row in callable.field[:]:
-            cols = []
-            for panel in row[:]:
+        field = callable.field[:]
+        message['kwargs'] = {'blue': config['blue'], 'field': []}
+        for row in range(0, 3):
+            field[row] = field[row][:]
+            for col in range(0, 6):
+                panel = field[row][col]
                 panel = panel.copy()
-                if panel['character']:
-                    panel['character'] = panel['character'].id
-                cols.append(panel)
-            message['kwargs']['field'].append(cols)
+                del panel['character']
     reactor.protocol.send(message)

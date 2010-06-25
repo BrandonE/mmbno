@@ -189,10 +189,12 @@ class Character():
         update(self, 'character')
 
     def update(self, **kwargs):
+        self.owner.field[self.row][self.col] = None
         for key, value in kwargs.items():
             if 'key' == 'status':
                 value = set(value)
             setattr(self, key, value)
+        self.owner.field[self.row][self.col] = self
 
     def usechip(self):
         """Use the next chip or set of chips."""
