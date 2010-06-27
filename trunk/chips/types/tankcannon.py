@@ -17,7 +17,6 @@
 """A version of the Chip class."""
 
 from chip import Chip as Parent
-from messages import hit
 
 __all__ = ['Chip']
 
@@ -25,11 +24,12 @@ class Chip(Parent):
     """A version of the Chip class."""
     def use(self):
         """Use the chip."""
+        row = self.owner.row
         for col in range(self.owner.col + 1, 6):
-            panel = self.owner.owner.field[self.owner.row][col]
-            # If this panel contains a character
-            if panel['character']:
-                hit(panel['character'], self.power, self.type)
+            panel = self.owner.owner.field[row][col]
+            # If this panel contains a character and is not on this side
+            if panel['character'] and (col > 2 ^ panel['stolen']):
+                self.owner.owner.hit(row, col, self.power, self.type)
                 return
         top = self.owner.row - 1
         for rowoffset in range(0, 3):
@@ -40,10 +40,11 @@ class Chip(Parent):
                 panel = self.owner.owner.field[row][5]
                 # If this panel contains a character
                 if panel['character']:
-                    hit(panel['character'], self.power, self.type)
+                    self.owner.owner.hit(row, 5, self.power, self.type)
                 # If the panel is cracked, break it.
                 if panel['status'] == 'cracked':
                     panel['status'] = 'broken'
+                    self.owner.owner.panel(row, 5, status='broken')
                 else:
                     # Crack it.
-                    panel['status'] = 'cracked'
+                    self.owner.owner.panel(row, 5, status='cracked')

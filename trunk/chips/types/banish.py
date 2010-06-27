@@ -17,7 +17,6 @@
 """A version of the Chip class."""
 
 from chip import Chip as Parent
-from messages import hit
 
 __all__ = ['Chip']
 
@@ -26,9 +25,15 @@ class Chip(Parent):
     def use(self):
         """Use the chip."""
         for row in range(0, 3):
+            damage = 0
             for col in range(0, 3):
                 panel = self.owner.owner.field[row][col]
                 # If this panel has been stolen, take it back and do damage.
                 if panel['stolen']:
-                    panel['stolen'] = False
-                    hit(self.owner.owner.opponent, self.damage)
+                    self.owner.owner.panel(row, col, stolen=False)
+                    damage += self.damage
+            for col in range(1, 6):
+                panel = self.owner.owner.field[row][col]
+                # If this panel contains a character and is not on this side
+                if panel['character'] and (col > 2 ^ panel['stolen']):
+                    self.owner.owner.hit(row, col, damage)

@@ -17,34 +17,14 @@
 """A class to base the characters off of."""
 
 from math import ceil
-from config import config
-from messages import hit, move, update
 
 __all__ = ['Character']
 
 class Character():
     """A class to base the characters off of."""
-    def __init__(self, owner, id, row = 1, col = 1):
+    def __init__(self, owner):
         """A class to base the characters off of."""
         self.owner = owner
-        self.id = id
-        self.row = row
-        self.col = col
-        self.chips = []
-        # Chips that modify the character temporarily.
-        self.activechips = {
-            'death': {},
-            'heal': set([]),
-            'hit': {},
-            'move': set([]),
-            'time': set([])
-        }
-        self.health = -1
-        self.maxhealth = self.health
-        self.name = 'Empty'
-        self.power = 0
-        self.status = set([])
-        self.type = 'none'
         self.properties()
 
     def activatechip(self, chip, type):
@@ -56,13 +36,11 @@ class Character():
 
     def buster(self):
         """Use a regular buster shot."""
-        if not 'paralyzed' in self.status:
-            self.shoot(self.power)
+        self.shoot(self.power)
 
     def charge(self):
         """Use a charge shot."""
-        if not 'paralyzed' in self.status:
-            self.shoot(self.power * 10, self.type)
+        self.shoot(self.power * 10, self.type)
 
     def deactivatechip(self, chip, type):
         """Remove a chip to the active chips."""
@@ -81,36 +59,30 @@ class Character():
             self.priority('death').death()
             return
         self.defaultdeath()
-        update(self, 'character')
+
+    def die(self):
+        """Handle death."""
+        self.health = 0
 
     def defaultdeath(self):
         """The default handling for checking if a character should die."""
-        return
-
-    def defaultheal(self, health):
-        return
+        if self.health <= 0:
+            self.die()
 
     def defaulthit(self, power):
         """The default handling for damage."""
-        return
-
-    def defaultmove(self, rows, cols, blue, force):
-        return
-
-    def defaultslide(self, rows, cols, blue, force):
-        return
-
-    def defaulttime(self):
-        return
+        self.health -= power
+        self.death()
 
     def heal(self, health):
         """Heal the character."""
-        self.defaultheal(health)
+        self.health += health
+        if self.health > self.maxhealth:
+            self.health = self.maxhealth
         # Run all of the active chip modifiers.
         converted = list(self.activechips['heal'])
         for value in converted:
             value.heal()
-        update(self, 'character')
 
     def hit(self, power, type = 'none'):
         """Handle damage."""
@@ -141,20 +113,21 @@ class Character():
         # If an active chip exists, override the original handling.
         if self.activechips['hit']:
             self.priority('hit').hit(power)
-            update(self)
             return
         self.defaulthit(power)
-        update(self, 'character')
 
-    def move(self, rows = 0, cols = 0, blue = config['blue'], force = False):
-        """Move the character if possible."""
-        self.defaultmove(rows, cols, blue, force)
+    def move(self, row, col, fire):
+        """Handle movement."""
+        self.row = row
+        self.col = col
+        if self.owner.flip:
+            self.col = range(5, -1, -1)[col]
+        if fire:
+            self.hit(10, 'fire')
         # Run all of the active chip modifiers.
         converted = list(self.activechips['move'])
         for value in converted:
             value.move()
-        update(self, 'character')
-        self.defaultslide(rows, cols, blue, force)
 
     def priority(self, type):
         """Grab the active chip with the highest priority."""
@@ -162,39 +135,53 @@ class Character():
         return self.activechips[type][sorted(chips).pop()]
 
     def properties(self):
-        """Overwrite the default properties."""
-        return
+        """Set the character's properties."""
+        # Chips that modify the character temporarily.
+        self.activechips = {
+            'death': {},
+            'heal': set([]),
+            'hit': {},
+            'move': set([]),
+            'time': set([])
+        }
+        self.chips = []
+        # Default to MegaMan.EXE's properties.
+        self.health = 500
+        self.maxhealth = self.health
+        self.name = 'MegaMan.EXE'
+        self.power = 1
+        self.status = set([])
+        self.type = 'none'
 
     def shoot(self, power, type = 'none'):
         """Hit the first person across from the character."""
         if not 'paralyzed' in self.status:
+            row = self.row
             for col in range(self.col + 1, 6):
-                panel = self.owner.field[self.row][col]
-                # If this panel contains a character
-                if panel['character']:
-                    hit(panel['character'], power, type)
+                panel = self.owner.field[row][col]
+                # If this panel contains a character and is not on this side
+                if panel['character'] and ((col > 2) ^ panel['stolen']):
+                    self.owner.hit(row, col, power, type)
                     # If the attack is a fire type and the panel has grass,
                     # burn it.
                     if panel['status'] == 'grass' and type == 'fire':
-                        panel['status'] = 'normal'
+                        self.owner.panel(row, col, status='normal')
                     break
 
     def time(self):
         """Handle a unit of time."""
-        self.defaulttime()
+        panel = self.owner.field[self.row][self.col]
+        # If the character is on a grass panel and is a wood type
+        if panel['status'] == 'grass' and self.type == 'wood':
+            self.heal(1)
+        # If the character is on a poison panel and does not have floatshoes
+        # activated
+        if panel['status'] == 'poison' and not 'floatshoes' in self.status:
+            self.hit(1)
         # Run all of the active chip modifiers.
         converted = list(self.activechips['time'])
         for value in converted:
             value.time()
-        update(self, 'character')
-
-    def update(self, **kwargs):
-        self.owner.field[self.row][self.col] = None
-        for key, value in kwargs.items():
-            if 'key' == 'status':
-                value = set(value)
-            setattr(self, key, value)
-        self.owner.field[self.row][self.col] = self
 
     def usechip(self):
         """Use the next chip or set of chips."""

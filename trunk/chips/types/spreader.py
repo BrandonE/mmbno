@@ -17,7 +17,6 @@
 """A version of the Chip class."""
 
 from chip import Chip as Parent
-from messages import hit
 
 __all__ = ['Chip']
 
@@ -27,8 +26,9 @@ class Chip(Parent):
         """Use the chip."""
         for col in range(self.owner.col + 1, 6):
             panel = self.owner.owner.field[self.owner.row][col]
-            # If this panel contains a character, use this column.
-            if panel['character']:
+            # If this panel contains a character and is not on this side, use
+            # this column.
+            if panel['character'] and (col > 2 ^ panel['stolen']):
                 break
         top = self.owner.row - 1
         left = col - 1
@@ -40,10 +40,7 @@ class Chip(Parent):
                 # If the offsetted coordinates are on the field
                 if row > -1 and row < 3 and col > -1 and col < 6:
                     panel = self.owner.owner.field[row][col]
-                    # If this panel contains a character and is on the
-                    # opponent's side
-                    if (
-                        panel['character'] and
-                        ((col > 2) ^ (not panel['stolen']))
-                    ):
-                        hit(panel['character'], self.power, self.type)
+                    # If this panel contains a character and is not on this
+                    # side
+                    if panel['character'] and ((col > 2) ^ panel['stolen']):
+                        self.owner.owner.hit(row, col, self.power, self.type)
