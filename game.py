@@ -26,59 +26,30 @@ except ImportError:
 import Tkinter as tk
 from twisted.internet import  protocol, reactor, tksupport
 from twisted.protocols.basic import LineReceiver
-from character import Character
 from config import config
-from messages import move, update
 
 __all__ = [
-    'factory', 'Game', 'game', 'GameProtocol', 'keypress', 'properties',
-    'root', 'types'
+    'factory', 'Game', 'game', 'GameProtocol', 'keypress', 'root', 'stats',
+    'types'
 ]
 
-# Graphically display a character or chip's type.
-types = {
-    'air': 'A',
-    'none': 'N',
-    'plus': 'P'
-}
+class GameProtocol(LineReceiver):
+    """Client for Twisted Server."""
+    def characters(self):
+        """Send this characters data."""
+        reactor.protocol.send({
+            'function': 'characters',
+            'kwargs': {
+                'player': self.player,
+                'health': self.character.health,
+                'name': self.character.name,
+                'status': list(self.character.status),
+                'type': self.character.type
+            }
+        })
 
-class Game(object):
-    """Contains the game's data."""
-    def __init__(self):
-        """Create the initial game data."""
-        module = __import__(
-            'characters.%s' % (config['character']),
-            globals(),
-            locals(),
-            ('Character',),
-            -1
-        )
-        self.player = module.Character(self, config['playid'])
-        update(self.player, 'character')
-        self.opponent = Character(self, config['oppid'], col=4)
-        self.characters = {
-            config['playid']: self.player,
-            config['oppid']: self.opponent
-        }
-        self.field = []
-        for row in range(0, 3):
-            cols = []
-            for col in range(0, 6):
-                character = None
-                if row == 1:
-                    if col == 1:
-                        character = self.player
-                    if col == 4:
-                        character = self.opponent
-                panel = {
-                    'character': character,
-                    'stolen': False,
-                    'status': 'normal',
-                    'time': 0
-                }
-                cols.append(panel)
-            self.field.append(cols)
-        self.players = 0
+    def connectionMade(self):
+        reactor.protocol = self
         self.chips = json.loads(
             open(
                 os.path.join(
@@ -88,22 +59,26 @@ class Game(object):
                 )
             ).read()
         )
-        if len(self.chips) > 30:
-            raise Exception('Your folder cannot have more than 30 chips.')
-        if len(self.chips) < 30:
-            raise Exception('Your folder must have 30 chips.')
+        module = __import__(
+            'characters.%s' % (config['character']),
+            globals(),
+            locals(),
+            ('Character',),
+            -1
+        )
+        self.character = module.Character(self)
         # Convert the list of chip names and codes to a list of chip instances.
         for key, value in enumerate(self.chips):
             chip = 'chips.%s' % (value['chip'])
             module = __import__(chip, globals(), locals(), ('Chip',), -1)
-            self.chips[key] = module.Chip(self.player, value)
+            self.chips[key] = module.Chip(self.character, value)
             if not value['code'] in self.chips[key].codes:
                 raise Exception('Improper chip code')
             self.chips[key].code = value['code']
-        self.custom()
-
-    def countplayers(self, count):
-        self.players = count
+        if len(self.chips) > 30:
+            raise Exception('Your folder cannot have more than 30 chips.')
+        if len(self.chips) < 30:
+            raise Exception('Your folder must have 30 chips.')
 
     def cursor(self, cols):
         """Move the cursor for chip selection."""
@@ -114,7 +89,7 @@ class Game(object):
     def custom(self):
         """Redefine all the necessary values when prompting the custom bar."""
         self.custombar = 0
-        self.player.chips = []
+        self.character.chips = []
         self.pickchips()
         self.select = True
         self.selection = 0
@@ -124,6 +99,12 @@ class Game(object):
         """Draw the screen"""
         # Start by clearing the screen.
         os.system('cls')
+        # Graphically display a character or chip's type.
+        types = {
+            'air': 'A',
+            'none': 'N',
+            'plus': 'P'
+        }
         # If the player is prompted to select a chip
         if self.select:
             # Display the chip selection.
@@ -161,7 +142,7 @@ class Game(object):
             if self.picked:
                 menu += '|'
             print menu
-        print 'Players: %s' % (self.players)
+        print 'Players: %s' % (len(self.players))
         # Display the custom bar.
         custom = ''
         # If the bar is full, display a message.
@@ -189,7 +170,7 @@ class Game(object):
                     'water': 'W'
                 }
                 # Place all living characters.
-                if col['character'] and col['character'].health:
+                if col['character']:# and col['character'].health:
                     label = 'x'
                     # If the player is this character, change the symbol.
                     if col['character'] == self.player:
@@ -200,29 +181,57 @@ class Game(object):
                 grid += ' %s%s%s |' % (status[col['status']], label, red)
             grid += '\n ----- ----- ----- ----- ----- -----'
         print grid
-        properties(self.player)
-        properties(self.opponent)
-        # If the game is over, display the winner and loser and prompt
-        # restarting.
-        if not self.player.health or not self.opponent.health:
-            winner = self.player
-            loser = self.opponent
-            if not self.player.health:
-                winner = self.opponent
-                loser = self.player
-            print '\n%s defeated! %s wins! Press "r" to restart.' % (
-                loser.name,
-                winner.name
-            )
+        for value in self.players:
+            if value:
+                print '\n%s' % (value['name'])
+                print '-HP: %s' % (value['health'])
+                print '-Status: %s' % (', '.join(value['status']))
+                print '-Type: %s' % (value['type'])
+        chips = []
+        # Display the usable chips.
+        for value in self.character.chips:
+            power = ''
+            if hasattr(value, 'power'):
+                power = ' %s' % (value.power)
+            chips.append('%s%s %s' % (value.name, power, types[value.type]))
+        print '-Chips: %s' % (', '.join(chips))
+        print '-Active Chip:'
+        # Display the active chips.
+        for key, type in self.character.activechips.items():
+            if type:
+                names = []
+                if isinstance(type, dict):
+                    type = list(dict([(v, k) for (k, v) in type.iteritems()]))
+                for chip in type:
+                    names.append(chip.name)
+                print '--%s: %s' % (key, ', '.join(names))
+        # If the game is over, display the winner prompt restarting.
+        winner = []
+        for value in self.players:
+            if value and value['health']:
+                winner.append(value['name'])
+        if not self.select and len(winner) == 1:
+            print '\n%s wins! Press "r" to restart.' % (winner[0])
         print '\nControls:'
         print 'Directional Keys - Move Player / Chip Selection'
         print 'A: Use / Select Chip'
         print 'S: Use Buster / Remove Chip'
         print 'D: Prompt Chip Selection'
         print 'C: Charge Shot'
-        print 'F: Go forward in time'
+        print 'F: Go forward time'
         print 'Enter: End Chip Selection'
         print 'Escape - End Game'
+        player = self.players[self.player - 1]
+        if (
+            player and
+            (
+                self.character.health != player['health'] or
+                self.character.name != player['name'] or
+                list(self.character.status) != player['status'] or
+                self.character.type != player['type']
+            )
+        ):
+            self.characters()
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
@@ -236,7 +245,7 @@ class Game(object):
             return
         # Add the chip in question to see if the new set fits the conditions.
         self.selected.append(chip)
-        chip = reactor.game.chips[reactor.game.picked[chip]]
+        chip = self.chips[self.picked[chip]]
         codes = set([])
         names = set([])
         success = True
@@ -253,6 +262,61 @@ class Game(object):
         self.selected.pop()
         return success
 
+    def hit(self, row, col, power, type = 'none'):
+        """Handle damage."""
+        reactor.protocol.send({
+            'function': 'hit',
+            'kwargs': {
+                'row': row,
+                'col': col,
+                'flip': self.flip,
+                'power': power,
+                'type': type
+            }
+        })
+
+    def lineReceived(self, line):
+        line = json.loads(line)
+        callable = self
+        if line['object'] == 'character':
+            callable = self.character
+        for key, value in line['kwargs'].items():
+            del line['kwargs'][key]
+            line['kwargs'][str(key)] = value
+        getattr(callable, line['function'])(**line['kwargs'])
+        self.draw()
+
+    def move(self, row, col, rows = 0, cols = 0, force = False):
+        """Move the player if possible."""
+        reactor.protocol.send({
+            'function': 'move',
+            'kwargs': {
+                'row': row,
+                'col': col,
+                'flip': self.flip,
+                'info': {
+                    'status': list(self.character.status),
+                    'type': self.character.type
+                },
+                'rows': rows,
+                'cols': cols,
+                'force': force
+            }
+        })
+
+    def panel(self, row, col, status = None, stolen = None):
+        """Change a panel."""
+        reactor.protocol.send({
+            'function': 'panel',
+            'kwargs': {
+                'row': row,
+                'col': col,
+                'flip': self.flip,
+                'status': status,
+                'stolen': stolen
+            }
+        })
+
     def pickchips(self):
         """Pick a certain amount of random chips for selection."""
         picked = set([])
@@ -262,152 +326,113 @@ class Game(object):
         self.picked = list(picked)
         shuffle(self.picked)
 
+    def send(self, line):
+        """Messages are always to be sent as a JSON string."""
+        self.sendLine(json.dumps(line))
+
+    def start(self, field, row, col, flip, player):
+        """Set up the data for the beginning of the game."""
+        self.flip = flip
+        self.player = player
+        players = []
+        for value in range(0, player):
+            players.append(None)
+        self.update(field, players)
+        self.character.row = row
+        self.character.col = col
+        if self.flip:
+            self.character.col = range(5, -1, -1)[col]
+        self.custom()
+        self.characters()
+
     def time(self):
         """Handle a unit of time."""
         # Fill the custom bar if not full.
         if self.custombar != 10:
             self.custombar += 1
-        for row in self.field:
-            for panel in row:
-                # If the panel is broken
-                if panel['status'] == 'broken':
-                    # Prepare to restore.
-                    panel['time'] += 1
-                    # Restore if ready.
-                    if panel['time'] == 10:
-                        panel['status'] = 'normal'
-                        panel['time'] = 0
+        reactor.protocol.send({'function': 'time', 'kwargs': {}})
         # Have the player and opponent run handle a unit of time.
-        self.player.time()
-        self.opponent.time()
+        self.character.time()
 
-    def update(self, field, blue):
-        for row in range(0, 3):
-            if blue != config['blue']:
-                field[row].reverse()
-            for col in range(0, 5):
-                for key, value in field[row][col].items():
-                    self.field[row][col][key] = value
-
-class GameProtocol(LineReceiver):
-    """Client for Twisted Server."""
-    def connectionMade(self):
-        reactor.protocol = self
-        reactor.game = Game()
-        reactor.game.draw()
-
-    def send(self, line):
-        """Messages are always to be sent as a JSON string."""
-        self.sendLine(json.dumps(line))
-
-    def lineReceived(self, line):
-        line = json.loads(line)
-        if 'client' in line and config['client'] == line['client']:
-            return
-        for key, value in line['kwargs'].items():
-            del line['kwargs'][key]
-            line['kwargs'][str(key)] = value
-        if (
-            line['function'] == 'move' and
-            config['blue'] != line['kwargs']['blue']
-        ):
-            line['kwargs']['cols'] = -line['kwargs']['cols']
-        if line['object'] == 'character':
-            if line['id'] == reactor.game.player.id:
-                callable = reactor.game.player
-            if line['id'] == reactor.game.opponent.id:
-                callable = reactor.game.opponent
-        if line['object'] == 'game':
-            callable = reactor.game
-        getattr(callable, line['function'])(**line['kwargs'])
-        reactor.game.draw()
+    def update(self, field, players = []):
+        """Update the game data."""
+        self.field = field
+        if self.flip:
+            for value in self.field:
+                value.reverse()
+        self.players = players
+        if len(players) < self.player:
+            self.player -= 1
 
 def keypress(event):
     """Handle a key press."""
     key = event.keysym
     if key == 'Escape':
-        # Prepare to exit.
         reactor.stop()
-    # If the game is not over
-    if reactor.game.player.health and reactor.game.opponent.health:
-        # If the player is prompted to select a chip
-        if reactor.game.select:
-            if key == 'Return':
-                # Finish the selection.
-                reactor.game.select = False
-                # Add the chips to the player.
-                for value in reactor.game.selected:
-                    reactor.game.player.chips.append(
-                        reactor.game.chips[reactor.game.picked[value]]
-                    )
-                # Make the first selected the first used.
-                reactor.game.player.chips.reverse()
-                # Remove the chips from the library.
-                reactor.game.selected.sort()
-                offset = 0
-                for value in reactor.game.selected:
-                    del reactor.game.chips[reactor.game.picked[value] - offset]
-                    offset += 1
-            if key == 'Right':
-                reactor.game.cursor(1)
-            if key == 'Left':
-                reactor.game.cursor(-1)
-            if key == 'a' and reactor.game.equipable(reactor.game.selection):
-                # Prepare to add the chip.
-                reactor.game.selected.append(reactor.game.selection)
-            if key == 's' and reactor.game.selected:
-                # Undo the selection.
-                reactor.game.selected.pop()
-        else:
+    # If the player is prompted to select a chip
+    if reactor.protocol.select:
+        if key == 'Return':
+            # Finish the selection.
+            reactor.protocol.select = False
+            # Add the chips to the player.
+            for value in reactor.protocol.selected:
+                reactor.protocol.character.chips.append(
+                    reactor.protocol.chips[reactor.protocol.picked[value]]
+                )
+            # Make the first selected the first used.
+            reactor.protocol.character.chips.reverse()
+            # Remove the chips from the library.
+            reactor.protocol.selected.sort()
+            offset = 0
+            for value in reactor.protocol.selected:
+                del reactor.protocol.chips[
+                    reactor.protocol.picked[value] - offset
+                ]
+                offset += 1
+        if key == 'Right':
+            reactor.protocol.cursor(1)
+        if key == 'Left':
+            reactor.protocol.cursor(-1)
+        if key == 'a' and reactor.protocol.equipable(
+            reactor.protocol.selection
+        ):
+            # Prepare to add the chip.
+            reactor.protocol.selected.append(reactor.protocol.selection)
+        if key == 's' and reactor.protocol.selected:
+            # Undo the selection.
+            reactor.protocol.selected.pop()
+    else:
+        # If the game is not over
+        winner = []
+        for value in reactor.protocol.players:
+            if value and value['health']:
+                winner.append(value['name'])
+        if len(winner) != 1:
+            row = reactor.protocol.character.row
+            col = reactor.protocol.character.col
             if key == 'Up':
-                reactor.game.player.move(rows=1)
+                reactor.protocol.move(row, col, rows=1)
             if key == 'Down':
-                reactor.game.player.move(rows=-1)
+                reactor.protocol.move(row, col, rows=-1)
             if key == 'Right':
-                reactor.game.player.move(cols=1)
+                reactor.protocol.move(row, col, cols=1)
             if key == 'Left':
-                reactor.game.player.move(cols=-1)
-            if key == 'a' and reactor.game.player.chips:
-                reactor.game.player.usechip()
+                reactor.protocol.move(row, col, cols=-1)
+            if key == 'a' and reactor.protocol.character.chips:
+                reactor.protocol.character.usechip()
             if key == 's':
-                reactor.game.player.buster()
+                reactor.protocol.character.buster()
             if key == 'd':
                 # Start the selection if the custom bar is full.
-                if reactor.game.custombar == 10:
-                    reactor.game.custom()
+                if reactor.protocol.custombar == 10:
+                    reactor.protocol.custom()
             if key == 'f':
-                reactor.game.time()
+                reactor.protocol.time()
             if key == 'c':
-                reactor.game.player.charge()
-    elif key == 'r':
-        reactor.game.__init__()
-    reactor.game.draw()
-    update(reactor.game, 'game')
-
-def properties(character):
-    """Draw a character's properties."""
-    print '\n%s' % (character.name)
-    print '-HP: %s' % (str(character.health))
-    print '-Status: %s' % (', '.join(character.status))
-    print '-Type: %s' % (character.type)
-    chips = []
-    # Display the usable chips.
-    for value in character.chips:
-        power = ''
-        if hasattr(value, 'power'):
-            power = ' %s' % (value.power)
-        chips.append('%s%s %s' % (value.name, power, types[value.type]))
-    print '-Chips: %s' % (', '.join(chips))
-    print '-Active Chip:'
-    # Display the active chips.
-    for key, type in character.activechips.items():
-        if type:
-            names = []
-            if isinstance(type, dict):
-                type = list(dict([(v, k) for (k, v) in type.iteritems()]))
-            for chip in type:
-                names.append(chip.name)
-            print '--%s: %s' % (key, ', '.join(names))
+                reactor.protocol.character.charge()
+        elif key == 'r':
+            reactor.protocol.send({'function': 'restart', 'kwargs': {}})
+    reactor.protocol.draw()
 
 factory = protocol.ClientFactory()
 factory.protocol = GameProtocol

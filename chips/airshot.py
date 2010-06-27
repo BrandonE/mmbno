@@ -18,7 +18,6 @@
 
 from chip import Chip as Parent
 from config import config
-from messages import hit, move
 
 __all__ = ['Chip']
 
@@ -35,15 +34,12 @@ class Chip(Parent):
 
     def use(self):
         """Use the chip."""
+        row = self.owner.row
         for col in range(self.owner.col + 1, 6):
-            panel = self.owner.owner.field[self.owner.row][col]
+            panel = self.owner.owner.field[row][col]
             # If this panel contains a character and is not yours
             if panel['character'] and (col > 2 ^ panel['stolen']):
-                hit(panel['character'], self.power)
+                self.owner.owner.hit(row, col, self.power)
                 # Move it back 1.
-                move(
-                    panel['character'],
-                    cols=-1,
-                    blue=(not config['blue'])
-                )
+                self.owner.owner.move(row, col, cols=1)
                 break

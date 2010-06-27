@@ -1,9 +1,5 @@
 {
-    "blue": true,
     "character": "mega",
     "chipfolder": "1",
-    "client": 1,
-    "ip": "localhost",
-    "oppid": 2,
-    "playid": 1
+    "ip": "localhost"
 }
