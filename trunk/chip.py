@@ -29,11 +29,7 @@ class Chip():
         self.stars = 1
         self.properties()
 
-    def death(self):
-        """Check if the character should die."""
-        self.owner.defaultdead()
-
-    def hit(self, power):
+    def damage(self, power):
         """Handle damage."""
         self.owner.defaulthit(self, power)
 

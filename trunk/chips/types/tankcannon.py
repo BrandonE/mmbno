@@ -25,10 +25,15 @@ class Chip(Parent):
     def use(self):
         """Use the chip."""
         row = self.owner.row
-        for col in range(self.owner.col + 1, 6):
+        rows = len(self.owner.owner.field)
+        cols = len(self.owner.owner.field[0])
+        for col in range(self.owner.col + 1, cols):
             panel = self.owner.owner.field[row][col]
             # If this panel contains a character and is not on this side
-            if panel['character'] and (col > 2 ^ panel['stolen']):
+            if (
+                panel['character'] and
+                ((col > ((cols / 2) - 1)) ^ panel['stolen'])
+            ):
                 self.owner.owner.hit(row, col, self.power, self.type)
                 return
         top = self.owner.row - 1
@@ -36,15 +41,15 @@ class Chip(Parent):
             # Offset the row to spread to the panel on the top and bottom.
             row = top + rowoffset
             # If the offsetted row is on the field.
-            if row > -1 and row < 3:
-                panel = self.owner.owner.field[row][5]
+            if row > -1 and row < rows:
+                panel = self.owner.owner.field[row][cols - 1]
                 # If this panel contains a character
                 if panel['character']:
-                    self.owner.owner.hit(row, 5, self.power, self.type)
+                    self.owner.owner.hit(row, cols - 1, self.power, self.type)
                 # If the panel is cracked, break it.
                 if panel['status'] == 'cracked':
                     panel['status'] = 'broken'
-                    self.owner.owner.panel(row, 5, status='broken')
+                    self.owner.owner.panel(row, cols - 1, status='broken')
                 else:
                     # Crack it.
-                    self.owner.owner.panel(row, 5, status='cracked')
+                    self.owner.owner.panel(row, cols - 1, status='cracked')

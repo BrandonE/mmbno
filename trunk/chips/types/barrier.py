@@ -22,11 +22,11 @@ __all__ = ['Chip']
 
 class Chip(Parent):
     """A version of the Chip class."""
-    def hit(self, power):
+    def damage(self, power):
         """Handle damage."""
         self.health -= power
         if self.health <= 0:
-            self.owner.deactivatechip(self, 'hit')
+            self.owner.deactivatechip(self, 'damage')
 
     def properties(self):
         """Overwrite the default properties."""
@@ -39,4 +39,4 @@ class Chip(Parent):
 
     def use(self):
         """Use the chip."""
-        self.owner.activatechip(self, 'hit')
+        self.owner.activatechip(self, 'damage')
