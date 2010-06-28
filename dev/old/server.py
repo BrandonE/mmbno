@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+#
 # This file is part of MMBN Online
 # MMBN Online is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -10,26 +11,19 @@
 # GNU General Public License for more details.
 # You should have received a copy of the GNU General Public License
 # along with MMBN Online.  If not, see <http://www.gnu.org/licenses/>.
-
-# Copyright (C) 2008-2010 Chris Santiago and Brandon Evans.
+#
+# Copyright (C) 2008-2009 Chris Santiago
 # http://mmbnonline.net/
 
-"""A version of the Chip class."""
+from twisted.internet import reactor
+from twisted.internet.error import CannotListenError
 
-from chips.types.banish import Chip as Parent
+from mmbno import config
+from mmbno.online import GameServer
 
-__all__ = ['Chip']
-
-class Chip(Parent):
-    """A version of the Chip class."""
-    def properties(self):
-        """Overwrite the default properties."""
-        self.codes = ('B', 'M', 'S')
-        self.damage = 20
-        self.description = '20 damage for every stolen square'
-        self.name = 'GrabBanish'
-        self.stars = 3
-
-    def use(self):
-        """Use the chip."""
-        self.banish()
+if __name__ == '__main__':
+    try:
+        reactor.listenTCP(config['server.port'], GameServer())
+        reactor.run()
+    except CannotListenError:
+        exit('Could not listen on port %s.' % (config['server.port'],))

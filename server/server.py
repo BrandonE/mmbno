@@ -288,6 +288,6 @@ factory.protocol = GameProtocol
 factory.players = []
 factory.queue = False
 application = service.Application('mmbnonline')
-server = internet.TCPServer(9634, factory)
+server = internet.TCPServer(config['port'], factory)
 server.setName('MMBN Online Server')
 server.setServiceParent(application)
