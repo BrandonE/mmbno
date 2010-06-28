@@ -20,8 +20,10 @@
 from twisted.internet.main import installReactor
 
 from mmbno.reactor import PygletReactor
-from mmbno.arena import field
-installReactor(PygletReactor())
+from mmbno.arena import Field
 
+installReactor(PygletReactor())
 from twisted.internet import reactor
+
+field = Field()
 reactor.run()
