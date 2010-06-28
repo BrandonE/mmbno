@@ -22,17 +22,16 @@ __all__ = ['Chip']
 
 class Chip(Parent):
     """A version of the Chip class."""
-    def use(self):
-        """Use the chip."""
+    def banish(self):
+        """Damage for every stolen square."""
         rows = len(self.owner.owner.field)
         cols = len(self.owner.owner.field[0])
         for row in range(0, rows):
             damage = 0
             for col in range(0, cols / 2):
                 panel = self.owner.owner.field[row][col]
-                # If this panel has been stolen, take it back and do damage.
+                # If this panel has been stolen, do damage.
                 if panel['stolen']:
-                    self.owner.owner.panel(row, col, stolen=False)
                     damage += self.damage
             for col in range(1, cols):
                 panel = self.owner.owner.field[row][col]
