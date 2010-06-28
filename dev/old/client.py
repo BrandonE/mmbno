@@ -16,12 +16,12 @@
 # http://mmbnonline.net/
 
 """MMBNOnline GUI, powered by wxPython and Twisted."""
+
 from wx import wx
 from twisted.internet import wxreactor; wxreactor.install()
 from twisted.internet import reactor
 
 from mmbno import config
-from mmbno.online import RegistryClient
 
 class MMBNOFrame(wx.MDIParentFrame):
     """All windows and their respective event mappings are handled
@@ -97,10 +97,10 @@ class MMBNOFrame(wx.MDIParentFrame):
         d = wx.FileDialog(None, message=u'Load a Folder', style=wx.OPEN)
         if d.ShowModal() == wx.ID_OK:
            print 'Selected:', d.GetPath()
+
     def _joinserver(self, event):
         """Grabs a list of servers that are connected to the registry."""
-        reactor.connectTCP(config['registry.host'], config['registry.port'],
-    RegistryClient())
+        pass
 
 
 class MMBNO(wx.App):

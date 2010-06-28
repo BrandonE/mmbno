@@ -22,7 +22,28 @@ from pyglet.graphics import Batch
 from pyglet.sprite import Sprite
 
 from mmbno import config
-from mmbno.helpers import get_absolute, get_relative
+
+RESOURCES_DIR = 'mmbno/res'
+
+def get_absolute(x2, y2):
+    """Calculate absolute x and y coordinates based on x and y."""
+    x, y = (0, 0)
+    if x2 in (0, 1, 2, 3, 4, 5):
+        x = 20 + (40 * x2)
+    if y2 in (0, 1, 2):
+        y = 87 + 12 + (24 * y2)
+    return (x, y)
+
+def get_relative(x, y):
+    """Performs a reverse operation in order to calculate the relative
+    coordinates from the absolute."""
+    x2, y2 = (0, 0)
+    if x in (0, 40, 80, 120, 160, 200):
+        x2 = abs((20 - x) / 40)
+    if y in (87, 111, 135):
+        y2 = abs((99 - y) / 24)
+    return (x2, y2)
+
 
 class Field(window.Window):
     def __init__(self, background = 'acdc'):
@@ -36,43 +57,33 @@ class Field(window.Window):
         poison)
         """
         super(Field, self).__init__(width=256, height=192,
-            caption='MMBNOnline')
+            caption='MMBNOnline'
+        )
         # Create a list that represents the total of number of panels in the
         # arena.
         self.grid = []
-        for x in range(0, 6):
+        x = 0
+        while x < 6:
             column = []
-            for y in range(0, 3):
+            y = 0
+            while y < 3:
                 column.append({'instance': 0, 'color': 0, 'status': 0})
+                y += 1
             self.grid.append(column)
-        # Load necessary resources.
-        resources_dir = 'mmbno/res/'
-        self.load_background(resources_dir, background)
-        self.load_panels(resources_dir)
-        self.load_music(resources_dir)
+            x += 1
+        self.load_background(background)
+        self.load_panels()
+        self.load_music()
+
+    def apply(self):
+        """Adjust the battle field in accordance with the changed variables."""
+        pass
 
     def on_draw(self):
         """First the screen is cleared, then the background and panels are
         drawn on the field."""
         self.clear()
-        #self.draw_background()
         self.draw_panels()
-
-    def draw_background(self):
-        """Draw a background that tiles vertically and horizontally on
-        the screen.
-        """
-        batch = Batch()
-        background = self.background
-        backgrounds = [Sprite(background, x=0, y=0, batch=batch),
-                    Sprite(background, x=0, y=64, batch=batch),
-                    Sprite(background, x=0, y=128, batch=batch),
-                    Sprite(background, x=0, y=192, batch=batch),
-                    Sprite(background, x=128, y=0, batch=batch),
-                    Sprite(background, x=128, y=64, batch=batch),
-                    Sprite(background, x=128, y=128, batch=batch),
-                    Sprite(background, x=128, y=192, batch=batch)]
-        batch.draw()
 
     def draw_panels(self):
         panels = Batch()
@@ -100,15 +111,15 @@ class Field(window.Window):
             panel.append(Sprite(color, x, y, batch=panels))
         panels.draw()
 
-    def load_background(self, path, background):
-        path = path + 'images/backgrounds'
+    def load_background(self, background):
+        path = '%s/images/backgrounds' % (RESOURCES_DIR)
         img = resource.image('%s/%s.png' % (path, background))
         grid = image.TextureGrid(image.ImageGrid(img, columns=1,
                 rows=7, item_width=128, item_height=64))
         self.background = grid.get_animation(2, loop=True)
 
-    def load_music(self, path):
-        path = path + 'music'
+    def load_music(self):
+        path = '%s/music' % (RESOURCES_DIR)
         filename = 'battle_%i.ogg' % (random.randint(1, 11))
         player = media.Player()
         player.eos_action = player.EOS_LOOP
@@ -116,16 +127,14 @@ class Field(window.Window):
         player.queue(source)
         player.play()
 
-    def load_panels(self, path):
+    def load_panels(self):
         """Loads all panel images."""
         self.panels = {}
-        path = path + 'images/panels'
+        path ='%s/images/panels' % (RESOURCES_DIR)
         for panel in os.listdir(path):
             key = panel.split('.')[0]
             self.panels[key] = resource.image('%s/%s' % (path, panel))
 
-
-field = Field()
 
 class Character(Sprite):
     """This class will act as the base for all instances, also being a
@@ -185,8 +194,10 @@ class Character(Sprite):
 
 
 class Navi(Character):
-    def __init__(obj, panels='red', x2=5, y2=2):
-        pass
+    def __init__(self, obj, panels='red'):
+        spritesheet = image.load('%s/%s' % (RESOURCES_DIR, obj['file']))
+        seq = image.ImageGrid(spritesheet, obj['rows'], obj['columns'])
+        self._texture = seq.get_texture_sequence().get_animation(1)
 
     def move(self, symbol):
         """Define the keys needed to move the navi, granted the
@@ -223,7 +234,9 @@ class Navi(Character):
 
 class Obstacle(Character):
     def __init__(self, obstacle, x, y):
-        self.image = image.load('res/images/obstacle/%s.png' % (obstacle,))
+        self.image = image.load(
+            '%s/images/obstacle/%s.png' % (RESOURCES_DIR, obstacle)
+        )
         self.health = 50
 
 
