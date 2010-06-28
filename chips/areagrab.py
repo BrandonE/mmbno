@@ -31,12 +31,13 @@ class Chip(Parent):
 
     def use(self):
         """Use the chip."""
+        cols = len(self.owner.owner.field[0])
         breakout = False
-        for col in range(1, 5):
-            for row in range(0, 3):
+        for col in range(1, cols - 1):
+            for row in range(0, len(self.owner.owner.field)):
                 panel = self.owner.owner.field[row][col]
-                # If this panel can be stolen
-                if (col > 2) ^ panel['stolen']:
+                # If this panel is not on this side
+                if (col > ((cols / 2) - 1)) ^ panel['stolen']:
                     # If this panel contains a character
                     if panel['character']:
                         self.owner.owner.hit(row, col, self.damage)

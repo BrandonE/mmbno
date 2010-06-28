@@ -24,11 +24,15 @@ class Chip(Parent):
     """A version of the Chip class."""
     def use(self):
         """Use the chip."""
-        for col in range(self.owner.col + 1, 6):
+        cols = len(self.owner.owner.field[0])
+        for col in range(self.owner.col + 1, cols):
             panel = self.owner.owner.field[self.owner.row][col]
-            # If this panel contains a character and is not on this side, use
-            # this column.
-            if panel['character'] and (col > 2 ^ panel['stolen']):
+            # If this panel contains a character and can be stolen, use this
+            # column.
+            if (
+                panel['character'] and
+                (col > ((cols / 2) - 1) ^ panel['stolen'])
+            ):
                 break
         top = self.owner.row - 1
         left = col - 1
@@ -38,9 +42,17 @@ class Chip(Parent):
                 row = top + rowoffset
                 col = left + coloffset
                 # If the offsetted coordinates are on the field
-                if row > -1 and row < 3 and col > -1 and col < 6:
+                if (
+                    row > -1 and
+                    row < len(self.owner.owner.field) and
+                    col > -1 and
+                    col < cols
+                ):
                     panel = self.owner.owner.field[row][col]
                     # If this panel contains a character and is not on this
                     # side
-                    if panel['character'] and ((col > 2) ^ panel['stolen']):
+                    if (
+                        panel['character'] and
+                        ((col > ((cols / 2) - 1)) ^ panel['stolen'])
+                    ):
                         self.owner.owner.hit(row, col, self.power, self.type)

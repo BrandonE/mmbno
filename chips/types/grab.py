@@ -39,11 +39,13 @@ class Chip(Parent):
         """Do something after moving."""
         # If the counter has expired
         if self.count == self.limit:
+            rows = len(self.owner.owner.field)
+            cols = len(self.owner.owner.field[0])
             deactivate = True
-            for col in range(5, 2, -1):
+            for col in range(cols - 1, (cols / 2) - 1, -1):
                 success = False
                 breakout = False
-                for row in range(0, 3):
+                for row in range(0, rows):
                     panel = self.owner.owner.field[row][col]
                     # If this panel has been stolen
                     if panel['stolen']:
@@ -58,10 +60,10 @@ class Chip(Parent):
                 if success:
                     # If none of the stolen panels contain a character,
                     # deactivate the chips
-                    if col != 3:
+                    if col != rows:
                         deactivate = False
                     # Restore the panels.
-                    for row in range(0, 3):
+                    for row in range(0, rows):
                         self.owner.owner.panel(row, col, stolen=False)
             if deactivate:
                 self.owner.deactivatechip(self, 'move')

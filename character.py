@@ -42,6 +42,12 @@ class Character():
         """Use a charge shot."""
         self.shoot(self.power * 10, self.type)
 
+    def damage(self, power):
+        """Handle damage."""
+        self.health -= power
+        if self.health <= 0:
+            self.health = 0
+
     def deactivatechip(self, chip, type):
         """Remove a chip to the active chips."""
         if (
@@ -52,40 +58,14 @@ class Character():
             return
         self.activechips[type].discard(chip)
 
-    def death(self):
-        """Check if the character should die."""
-        # If an active chip exists, override the original handling.
-        if self.activechips['death']:
-            self.priority('death').death()
-            return
-        self.defaultdeath()
-
-    def die(self):
-        """Handle death."""
-        self.health = 0
-
-    def defaultdeath(self):
-        """The default handling for checking if a character should die."""
-        if self.health <= 0:
-            self.die()
-
-    def defaulthit(self, power):
-        """The default handling for damage."""
-        self.health -= power
-        self.death()
-
     def heal(self, health):
         """Heal the character."""
         self.health += health
         if self.health > self.maxhealth:
             self.health = self.maxhealth
-        # Run all of the active chip modifiers.
-        converted = list(self.activechips['heal'])
-        for value in converted:
-            value.heal()
 
     def hit(self, power, type = 'none'):
-        """Handle damage."""
+        """Forward damage."""
         weaknesses = {
             'aqua': 'electric',
             'break': 'cursor',
@@ -111,17 +91,17 @@ class Character():
         if status == 'holy':
             power = int(ceil(power / 2))
         # If an active chip exists, override the original handling.
-        if self.activechips['hit']:
-            self.priority('hit').hit(power)
+        if self.activechips['damage']:
+            self.priority('damage').damage(power)
             return
-        self.defaulthit(power)
+        self.damage(power)
 
     def move(self, row, col, fire):
         """Handle movement."""
         self.row = row
         self.col = col
         if self.owner.flip:
-            self.col = range(5, -1, -1)[col]
+            self.col = range(len(self.owner.field[0]) - 1, -1, -1)[col]
         if fire:
             self.hit(10, 'fire')
         # Run all of the active chip modifiers.
@@ -138,9 +118,7 @@ class Character():
         """Set the character's properties."""
         # Chips that modify the character temporarily.
         self.activechips = {
-            'death': {},
-            'heal': set([]),
-            'hit': {},
+            'damage': {},
             'move': set([]),
             'time': set([])
         }
@@ -157,10 +135,11 @@ class Character():
         """Hit the first person across from the character."""
         if not 'paralyzed' in self.status:
             row = self.row
-            for col in range(self.col + 1, 6):
+            cols = len(self.owner.field[0])
+            for col in range(self.col + 1, cols):
                 panel = self.owner.field[row][col]
                 # If this panel contains a character and is not on this side
-                if panel['character'] and ((col > 2) ^ panel['stolen']):
+                if panel['character'] and ((col > ((cols / 2) - 1)) ^ panel['stolen']):
                     self.owner.hit(row, col, power, type)
                     # If the attack is a fire type and the panel has grass,
                     # burn it.

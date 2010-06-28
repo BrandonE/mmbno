@@ -26,12 +26,10 @@ except ImportError:
 import Tkinter as tk
 from twisted.internet import  protocol, reactor, tksupport
 from twisted.protocols.basic import LineReceiver
-from config import config
 
-__all__ = [
-    'factory', 'Game', 'game', 'GameProtocol', 'keypress', 'root', 'stats',
-    'types'
-]
+__all__ = ['config', 'factory', 'GameProtocol', 'keypress', 'root']
+
+config = json.loads(open('config.json').read())
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
@@ -150,10 +148,15 @@ class GameProtocol(LineReceiver):
             custom = ' Custom'
         print '%s%s' % (('*' * self.custombar), custom)
         grid = ''
+        cols = len(self.field[0])
+        top = []
+        for value in range(0, cols):
+            top.append('-----')
+        top = ' '.join(top)
         for row in self.field:
-            grid += '\n ----- ----- ----- ----- ----- -----'
+            grid += '\n %s' % (top)
             grid += '\n|'
-            for key, col in enumerate(row):
+            for key, panel in enumerate(row):
                 label = ' '
                 red = ' '
                 status = {
@@ -170,16 +173,19 @@ class GameProtocol(LineReceiver):
                     'water': 'W'
                 }
                 # Place all living characters.
-                if col['character']:# and col['character'].health:
-                    label = 'x'
-                    # If the player is this character, change the symbol.
-                    if col['character'] == self.player:
-                        label = 'o'
+                character = panel['character']
+                if character:
+                    player = self.players[character - 1]
+                    if player and player['health']:
+                        label = 'x'
+                        # If the player is this character, change the symbol.
+                        if character == self.player:
+                            label = 'o'
                 # Label a red panels.
-                if (key > 2) ^ col['stolen']:
+                if ((key > ((cols / 2) - 1))) ^ panel['stolen']:
                     red = 'R'
-                grid += ' %s%s%s |' % (status[col['status']], label, red)
-            grid += '\n ----- ----- ----- ----- ----- -----'
+                grid += ' %s%s%s |' % (status[panel['status']], label, red)
+            grid += '\n %s' % (top)
         print grid
         for value in self.players:
             if value:
@@ -341,7 +347,7 @@ class GameProtocol(LineReceiver):
         self.character.row = row
         self.character.col = col
         if self.flip:
-            self.character.col = range(5, -1, -1)[col]
+            self.character.col = range(len(self.field[0]) - 1, -1, -1)[col]
         self.custom()
         self.characters()
 

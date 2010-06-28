@@ -31,9 +31,11 @@ class Chip(Parent):
     def use(self):
         """Use the chip."""
         row = self.owner.row
-        for col, panel in enumerate(self.owner.owner.field[row]):
-            # If the panel is not in the last column and is not already yours
-            if col != 5 and ((col > 2) ^ panel['stolen']):
+        cols = len(self.owner.owner.field[0])
+        for col in range(1, cols - 1):
+            panel = self.owner.owner.field[row][col]
+            # If this panel is not on this side
+            if (col > ((cols / 2) - 1)) ^ panel['stolen']:
                 # If this panel contains a character
                 if panel['character']:
                     self.owner.owner.hit(row, col, self.damage)

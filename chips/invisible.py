@@ -36,10 +36,10 @@ class Chip(Parent):
         self.count += 1
         # Increment the counter if not expired.
         if self.count == self.limit:
-            self.owner.deactivatechip(self, 'hit')
+            self.owner.deactivatechip(self, 'damage')
             self.owner.deactivatechip(self, 'time')
 
     def use(self):
         """Use the chip."""
-        self.owner.activatechip(self, 'hit')
+        self.owner.activatechip(self, 'damage')
         self.owner.activatechip(self, 'time')

@@ -17,7 +17,6 @@
 """A version of the Chip class."""
 
 from chip import Chip as Parent
-from config import config
 
 __all__ = ['Chip']
 
@@ -35,10 +34,14 @@ class Chip(Parent):
     def use(self):
         """Use the chip."""
         row = self.owner.row
-        for col in range(self.owner.col + 1, 6):
+        cols = len(self.owner.owner.field[0])
+        for col in range(self.owner.col + 1, cols):
             panel = self.owner.owner.field[row][col]
-            # If this panel contains a character and is not yours
-            if panel['character'] and (col > 2 ^ panel['stolen']):
+            # If this panel contains a character and is not on this side
+            if (
+                panel['character'] and
+                (col > ((cols / 2) - 1) ^ panel['stolen'])
+            ):
                 self.owner.owner.hit(row, col, self.power)
                 # Move it back 1.
                 self.owner.owner.move(row, col, cols=1)

@@ -25,7 +25,9 @@ from twisted.protocols.basic import LineReceiver
 from twisted.application import internet, service
 from twisted.internet.protocol import ServerFactory
 
-__all__ = ['application', 'factory', 'GameProtocol', 'server']
+__all__ = ['application', 'config', 'factory', 'GameProtocol', 'server']
+
+config = json.loads(open('config.json').read())
 
 class GameProtocol(LineReceiver):
     def characters(self, player, health, name, status, type):
@@ -60,10 +62,12 @@ class GameProtocol(LineReceiver):
 
     def field(self):
         """Create an empty field."""
+        if config['rows'] < 1 or config['cols'] < 1 or config['cols'] % 2:
+            raise Exception('Field dimensions invalid')
         self.factory.field = []
-        for row in range(0, 3):
+        for row in range(0, config['rows']):
             cols = []
-            for col in range(0, 6):
+            for col in range(0, config['cols']):
                 panel = {
                     'character': None,
                     'stolen': False,
@@ -82,7 +86,7 @@ class GameProtocol(LineReceiver):
         self.update()
 
     def hit(self, row, col, flip, power, type):
-        """Handle damage."""
+        """Forward damage."""
         if flip:
             col = range(5, -1, -1)[col]
         player = self.factory.field[row][col]['character']
@@ -100,7 +104,7 @@ class GameProtocol(LineReceiver):
     def move(self, row, col, flip, info, rows, cols, force):
         """Move the character if possible."""
         if flip:
-            col = range(5, -1, -1)[col]
+            col = range(config['cols'] - 1, -1, -1)[col]
         player = self.factory.field[row][col]['character']
         if not player:
             return
@@ -114,7 +118,12 @@ class GameProtocol(LineReceiver):
         newcol = character.col + cols
         if not force:
             # If the new coordinates aren't on the field, fail.
-            if newrow < 0 or newrow > 2 or newcol < 0 or newcol > 5:
+            if (
+                newrow < 0 or
+                newrow > config['rows'] - 1 or
+                newcol < 0 or
+                newcol > config['cols'] - 1
+            ):
                 return
         # As the coordinates are valid, grab the new panel.
         newpanel = self.factory.field[newrow][newcol]
@@ -128,7 +137,9 @@ class GameProtocol(LineReceiver):
             # paralyzed, fail.
             if (
                 (
-                    ((newcol > 2) ^ newpanel['stolen']) ^ character.flip
+                    (newcol > ((config['cols'] / 2) - 1)) ^
+                    newpanel['stolen'] ^
+                    character.flip
                 ) or
                 newpanel['character'] or
                 (
@@ -179,7 +190,7 @@ class GameProtocol(LineReceiver):
     def panel(self, row, col, flip, status, stolen):
         """Change a panel."""
         if flip:
-            col = range(5, -1, -1)[col]
+            col = range(config['cols'] - 1, -1, -1)[col]
         panel = self.factory.field[row][col]
         if status != None:
             panel['status'] = status
@@ -189,14 +200,14 @@ class GameProtocol(LineReceiver):
     def place(self, player):
         """Place a character."""
         length = len(self.factory.players)
-        player.row = 1
-        player.col = 1
+        player.row = 0
+        player.col = 0
         player.flip = False
-        if not self.factory.field[1][1]['character']:
-            self.factory.field[1][1]['character'] = length
+        if not self.factory.field[0][0]['character']:
+            self.factory.field[0][0]['character'] = length
         else:
-            self.factory.field[1][4]['character'] = length
-            player.col = 4
+            self.factory.field[0][config['cols'] - 1]['character'] = length
+            player.col = config['cols'] - 1
             player.flip = True
 
     def sendone(self, line, player):

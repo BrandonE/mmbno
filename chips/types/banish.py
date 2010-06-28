@@ -24,16 +24,21 @@ class Chip(Parent):
     """A version of the Chip class."""
     def use(self):
         """Use the chip."""
-        for row in range(0, 3):
+        rows = len(self.owner.owner.field)
+        cols = len(self.owner.owner.field[0])
+        for row in range(0, rows):
             damage = 0
-            for col in range(0, 3):
+            for col in range(0, cols / 2):
                 panel = self.owner.owner.field[row][col]
                 # If this panel has been stolen, take it back and do damage.
                 if panel['stolen']:
                     self.owner.owner.panel(row, col, stolen=False)
                     damage += self.damage
-            for col in range(1, 6):
+            for col in range(1, cols):
                 panel = self.owner.owner.field[row][col]
                 # If this panel contains a character and is not on this side
-                if panel['character'] and (col > 2 ^ panel['stolen']):
+                if (
+                    panel['character'] and
+                    ((col > ((cols / 2) - 1)) ^ panel['stolen'])
+                ):
                     self.owner.owner.hit(row, col, damage)
