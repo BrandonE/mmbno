@@ -88,7 +88,7 @@ class GameProtocol(LineReceiver):
     def hit(self, row, col, flip, power, type):
         """Forward damage."""
         if flip:
-            col = range(5, -1, -1)[col]
+            col = range(config['cols'] - 1, -1, -1)[col]
         player = self.factory.field[row][col]['character']
         if not player:
             return

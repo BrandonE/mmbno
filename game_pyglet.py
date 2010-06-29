@@ -227,8 +227,8 @@ field = Field()
 
 @field.event
 def on_key(symbol, modifiers):
-   """Handle key presses for Pyglet."""
-    pass
+    """Handle key presses for Pyglet."""
+    return
 
 factory = protocol.ClientFactory()
 reactor.connectTCP(config['ip'], config['port'], factory)
