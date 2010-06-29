@@ -22,9 +22,24 @@ __all__ = ['Character']
 
 class Character():
     """A class to base the characters off of."""
-    def __init__(self, owner):
+    def __init__(self, owner = None):
         """A class to base the characters off of."""
-        self.owner = owner
+        if owner:
+            self.owner = owner
+        # Chips that modify the character temporarily.
+        self.activechips = {
+            'damage': {},
+            'move': set([]),
+            'time': set([])
+        }
+        self.chips = []
+        # Default to MegaMan.EXE's properties.
+        self.health = 500
+        self.maxhealth = self.health
+        self.name = 'MegaMan.EXE'
+        self.power = 1
+        self.status = set([])
+        self.type = 'none'
         self.properties()
 
     def activatechip(self, chip, type):
@@ -115,21 +130,8 @@ class Character():
         return self.activechips[type][sorted(chips).pop()]
 
     def properties(self):
-        """Set the character's properties."""
-        # Chips that modify the character temporarily.
-        self.activechips = {
-            'damage': {},
-            'move': set([]),
-            'time': set([])
-        }
-        self.chips = []
-        # Default to MegaMan.EXE's properties.
-        self.health = 500
-        self.maxhealth = self.health
-        self.name = 'MegaMan.EXE'
-        self.power = 1
-        self.status = set([])
-        self.type = 'none'
+        """Overwrite the default properties."""
+        return
 
     def shoot(self, power, type = 'none'):
         """Hit the first person across from the character."""

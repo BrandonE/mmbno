@@ -258,7 +258,7 @@ class GameProtocol(LineReceiver):
         for value in self.factory.players:
             self.place(value)
         self.sendall({
-            'function': 'properties',
+            'function': '__init__',
             'kwargs': {},
             'object': 'character'
         })
