@@ -31,7 +31,7 @@ class Chip():
 
     def damage(self, power):
         """Handle damage."""
-        self.owner.defaulthit(self, power)
+        self.owner.damage(self, power)
 
     def heal(self, health):
         """Heal the character."""

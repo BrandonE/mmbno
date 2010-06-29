@@ -17,25 +17,78 @@
 """Contains the game's data."""
 
 import os
+import shutil
 from random import randint, shuffle
+from ConfigParser import ConfigParser
 try:
     import simplejson as json
 except ImportError:
     import json
 
 import Tkinter as tk
-from twisted.internet import  protocol, reactor, tksupport
+from pyglet import image, media, resource
+from pyglet.window import Window as Parent
+from pyglet.graphics import Batch
+from pyglet.sprite import Sprite
+from reactor import reactor
+from twisted.internet import protocol, tksupport
 from twisted.protocols.basic import LineReceiver
 
-__all__ = ['config', 'factory', 'GameProtocol', 'keypress', 'root']
+__all__ = [
+    'config', 'factory', 'GameProtocol', 'get_absolute', 'get_relative',
+    'keypress', 'root', 'Window'
+]
 
 config = json.loads(open('config.json').read())
+
+class Window(Parent):
+    def __init__(self):
+        """Creates the Pyglet Window."""
+        # Load the images for every possible panel.
+        self.panels = {}
+        for panel in os.listdir('res/panels'):
+            name = panel.split('.')[0]
+            if name:
+                self.panels[name] = resource.image('res/panels/%s.png' % name)
+        # Crank up the music.
+        player = media.Player()
+        player.eos_action = player.EOS_LOOP
+        source = resource.media('res/music/battle_%i.ogg' % randint(1, 11))
+        player.queue(source)
+        player.play()
+        super(Window, self).__init__(
+            width=480,
+            height=150,
+            caption='MMBNOnline'
+        )
+
+    def draw_panels(self):
+        batch = Batch()
+        panels = []
+        cols = len(reactor.protocol.field[0])
+        for row in range(0, len(reactor.protocol.field)):
+            for col in range(0, cols):
+                panel = reactor.protocol.field[row][col]
+                image = self.panels['fixed_red']
+                if ((col > ((cols / 2) - 1))) ^ panel['stolen']:
+                    image = self.panels['fixed_blue']
+                x = 40 * col
+                y = 25 * row
+                x2, y2 = get_relative(x, y)
+                panels.append(Sprite(image, x, y, batch=batch))
+        batch.draw()
+
+    def on_draw(self):
+        """First the screen is cleared, then the background and panels are
+        drawn on the field."""
+        self.clear()
+        self.draw_panels()
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
     def characters(self):
         """Send this characters data."""
-        reactor.protocol.send({
+        self.send({
             'function': 'characters',
             'kwargs': {
                 'player': self.player,
@@ -153,12 +206,13 @@ class GameProtocol(LineReceiver):
         for value in range(0, cols):
             top.append('-----')
         top = ' '.join(top)
-        for row in self.field:
+        for row in range(0, len(self.field)):
             grid += '\n %s' % (top)
             grid += '\n|'
-            for key, panel in enumerate(row):
+            for col in range(0, cols):
+                panel = self.field[row][col]
                 label = ' '
-                red = ' '
+                blue = ' '
                 status = {
                     'broken': 'B',
                     'cracked': 'C',
@@ -181,10 +235,10 @@ class GameProtocol(LineReceiver):
                         # If the player is this character, change the symbol.
                         if character == self.player:
                             label = 'o'
-                # Label a red panels.
-                if ((key > ((cols / 2) - 1))) ^ panel['stolen']:
-                    red = 'R'
-                grid += ' %s%s%s |' % (status[panel['status']], label, red)
+                # Label a blue panels.
+                if ((col > ((cols / 2) - 1))) ^ panel['stolen']:
+                    blue = 'B'
+                grid += ' %s%s%s |' % (status[panel['status']], label, blue)
             grid += '\n %s' % (top)
         print grid
         for value in self.players:
@@ -224,7 +278,7 @@ class GameProtocol(LineReceiver):
         print 'S: Use Buster / Remove Chip'
         print 'D: Prompt Chip Selection'
         print 'C: Charge Shot'
-        print 'F: Go forward time'
+        print 'F: Go forward in time'
         print 'Enter: End Chip Selection'
         print 'Escape - End Game'
         player = self.players[self.player - 1]
@@ -270,7 +324,7 @@ class GameProtocol(LineReceiver):
 
     def hit(self, row, col, power, type = 'none'):
         """Handle damage."""
-        reactor.protocol.send({
+        self.send({
             'function': 'hit',
             'kwargs': {
                 'row': row,
@@ -294,7 +348,7 @@ class GameProtocol(LineReceiver):
 
     def move(self, row, col, rows = 0, cols = 0, force = False):
         """Move the player if possible."""
-        reactor.protocol.send({
+        self.send({
             'function': 'move',
             'kwargs': {
                 'row': row,
@@ -312,7 +366,7 @@ class GameProtocol(LineReceiver):
 
     def panel(self, row, col, status = None, stolen = None):
         """Change a panel."""
-        reactor.protocol.send({
+        self.send({
             'function': 'panel',
             'kwargs': {
                 'row': row,
@@ -350,6 +404,12 @@ class GameProtocol(LineReceiver):
             self.character.col = range(len(self.field[0]) - 1, -1, -1)[col]
         self.custom()
         self.characters()
+        self.window = Window()
+        @self.window.event
+
+        def on_key(symbol, modifiers):
+            """Handle key presses for Pyglet."""
+            return
 
     def time(self):
         """Handle a unit of time."""
@@ -440,11 +500,29 @@ def keypress(event):
             reactor.protocol.send({'function': 'restart', 'kwargs': {}})
     reactor.protocol.draw()
 
+def get_absolute(x2, y2):
+    """Calculate absolute x and y coordinates based on x and y."""
+    x, y = (0, 0)
+    if x2 in (0, 1, 2, 3, 4, 5):
+        x = 20 + (40 * x2)
+    if y2 in (0, 1, 2):
+        y = 87 + 12 + (24 * y2)
+    return (x, y)
+
+def get_relative(x, y):
+    """Performs a reverse operation in order to calculate the relative
+    coordinates from the absolute."""
+    x2, y2 = (0, 0)
+    if x in (0, 40, 80, 120, 160, 200):
+        x2 = abs((20 - x) / 40)
+    if y in (87, 111, 135):
+        y2 = abs((99 - y) / 24)
+    return (x2, y2)
+
 factory = protocol.ClientFactory()
 factory.protocol = GameProtocol
 root = tk.Tk()
 tksupport.install(root)
 root.bind_all('<Key>', keypress)
-root.withdraw()
 reactor.connectTCP(config['ip'], config['port'], factory)
 reactor.run()
