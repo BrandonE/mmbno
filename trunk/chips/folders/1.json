@@ -25,7 +25,7 @@
     {"chip": "recovery300", "code": "J"},
     {"chip": "panelgrab", "code": "*"},
     {"chip": "panelgrab", "code": "*"},
-    {"chip": "grabbanish", "code": "B"},
+    {"chip": "panelreturn", "code": "*"},
     {"chip": "grabrevenge", "code": "I"},
     {"chip": "areagrab", "code": "B"},
     {"chip": "areagrab", "code": "B"}

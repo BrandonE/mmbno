@@ -37,7 +37,7 @@ class Chip(Parent):
             for row in range(0, len(self.owner.owner.field)):
                 panel = self.owner.owner.field[row][col]
                 # If this panel is not on this side
-                if (col > ((cols / 2) - 1)) ^ panel['stolen']:
+                if (col > (cols / 2) - 1) ^ panel['stolen']:
                     # If this panel contains a character
                     if panel['character']:
                         self.owner.owner.hit(row, col, self.damage)

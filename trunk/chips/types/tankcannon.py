@@ -32,7 +32,7 @@ class Chip(Parent):
             # If this panel contains a character and is not on this side
             if (
                 panel['character'] and
-                ((col > ((cols / 2) - 1)) ^ panel['stolen'])
+                ((col > (cols / 2) - 1) ^ panel['stolen'])
             ):
                 self.owner.owner.hit(row, col, self.power, self.type)
                 return
