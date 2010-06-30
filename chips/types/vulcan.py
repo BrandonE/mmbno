@@ -24,6 +24,17 @@ class Chip(Parent):
     """A version of the Chip class."""
     def use(self):
         """Use the chip."""
+        hit = 0
         # Shoot all of the bullets.
         for bullet in range(0, self.bullets):
-            self.owner.shoot(self.power, self.type)
+            cols = len(self.owner.field[0])
+            for col in range(self.col + 1, cols):
+                if hit:
+                    if hit > 1:
+                        break
+                    hit += 1
+                panel = self.owner.field[row][col]
+                # If this panel contains a character and is not on this side
+                if panel['character'] and ((col > ((cols / 2) - 1)) ^ panel['stolen']):
+                    self.owner.hit(row, col, self.power, self.type, False)
+                    hit += 1

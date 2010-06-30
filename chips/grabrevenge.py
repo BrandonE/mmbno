@@ -29,8 +29,3 @@ class Chip(Parent):
         self.description = '40 damage for every stolen square'
         self.name = 'GrabRevenge'
         self.stars = 4
-
-    def use(self):
-        """Use the chip."""
-        self.banish()
-        #self.owner.owner.panel(row, col, stolen=False)

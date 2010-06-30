@@ -22,7 +22,7 @@ __all__ = ['Chip']
 
 class Chip(Parent):
     """A version of the Chip class."""
-    def banish(self):
+    def use(self):
         """Damage for every stolen square."""
         rows = len(self.owner.owner.field)
         cols = len(self.owner.owner.field[0])

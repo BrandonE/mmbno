@@ -79,7 +79,7 @@ class Character():
         if self.health > self.maxhealth:
             self.health = self.maxhealth
 
-    def hit(self, power, type = 'none'):
+    def hit(self, power, type = 'none', flinch = True):
         """Forward damage."""
         weaknesses = {
             'aqua': 'electric',
