@@ -55,4 +55,4 @@ class Chip(Parent):
                         panel['character'] and
                         ((col > ((cols / 2) - 1)) ^ panel['stolen'])
                     ):
-                        self.owner.owner.hit(row, col, self.power, self.type)
+                        self.owner.owner.hit(row, col, self.power, self.type, False)

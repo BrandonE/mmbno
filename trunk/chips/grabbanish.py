@@ -29,7 +29,3 @@ class Chip(Parent):
         self.description = '20 damage for every stolen square'
         self.name = 'GrabBanish'
         self.stars = 3
-
-    def use(self):
-        """Use the chip."""
-        self.banish()

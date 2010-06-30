@@ -85,7 +85,7 @@ class GameProtocol(LineReceiver):
         getattr(self, line['function'])(**line['kwargs'])
         self.update()
 
-    def hit(self, row, col, flip, power, type):
+    def hit(self, row, col, flip, power, type, flinch):
         """Forward damage."""
         if flip:
             col = range(config['cols'] - 1, -1, -1)[col]

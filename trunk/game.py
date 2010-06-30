@@ -45,15 +45,23 @@ class Window(Parent):
         """Creates the Pyglet Window."""
         self.owner = owner
         # Load the images for every possible panel.
-        self.panels = {}
-        for panel in os.listdir('res/panels'):
-            name = panel.split('.')[0]
-            if name:
-                self.panels[name] = resource.image('res/panels/%s.png' % name)
+        self.panels = loader(
+            os.path.join(
+                'res',
+                'panels'
+            )
+        )
+        exit(self.panels)
         # Crank up the music.
         player = media.Player()
         player.eos_action = player.EOS_LOOP
-        source = resource.media('res/music/battle_%i.ogg' % randint(1, 11))
+        source = resource.media(
+            os.path.join(
+                'res',
+                'music',
+                'battle_%i.ogg' % randint(1, 11)
+            )
+        )
         player.queue(source)
         player.play()
         super(Window, self).__init__(**kwargs)
@@ -61,13 +69,20 @@ class Window(Parent):
     def draw_panels(self):
         batch = Batch()
         panels = []
+        rows = len(self.owner.field)
         cols = len(self.owner.field[0])
-        for row in range(0, len(self.owner.field)):
+        for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.owner.field[row][col]
-                image = self.panels['fixed_red']
+                color = 'red'
                 if ((col > ((cols / 2) - 1))) ^ panel['stolen']:
-                    image = self.panels['fixed_blue']
+                    color = 'blue'
+                shading = 'middle'
+                if not row and rows > 1:
+                    shading = 'top'
+                if row == rows - 1 and rows > 2:
+                    shading = 'bottom'
+                image = self.panels[color]['normal'][shading]
                 x = 40 * col
                 y = 25 * row
                 x2, y2 = get_relative(x, y)
@@ -324,7 +339,7 @@ class GameProtocol(LineReceiver):
         self.selected.pop()
         return success
 
-    def hit(self, row, col, power, type = 'none'):
+    def hit(self, row, col, power, type = 'none', flinch = True):
         """Handle damage."""
         self.send({
             'function': 'hit',
@@ -333,7 +348,8 @@ class GameProtocol(LineReceiver):
                 'col': col,
                 'flip': self.flip,
                 'power': power,
-                'type': type
+                'type': type,
+                'flinch': flinch
             }
         })
 
@@ -517,6 +533,28 @@ def get_relative(x, y):
     if y in (87, 111, 135):
         y2 = abs((99 - y) / 24)
     return (x2, y2)
+
+def loader(path):
+    panels = {}
+    for panel in os.listdir(path):
+        panel = panel.split('.')
+        name = panel[0]
+        if name:
+            if len(panel) > 1:
+                panels[name] = resource.image(
+                    os.path.join(
+                        path,
+                        '%s.%s' % (name, panel[1])
+                    )
+                )
+            else:
+                panels[name] = loader(
+                    os.path.join(
+                        path,
+                        '%s' % (name)
+                    )
+                )
+    return panels
 
 factory = protocol.ClientFactory()
 factory.protocol = GameProtocol
