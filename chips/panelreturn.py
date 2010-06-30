@@ -16,36 +16,29 @@
 
 """A version of the Chip class."""
 
-from chips.types.grab import Chip as Parent
+from chip import Chip as Parent
 
 __all__ = ['Chip']
 
 class Chip(Parent):
     """A version of the Chip class."""
-    def properties2(self):
+    def properties(self):
         """Overwrite the default properties."""
         self.codes = ('*',)
-        self.description = 'Steals 1 enemy square'
-        self.name = 'PanelGrab'
+        self.description = 'Fix your area\'s panels'
+        self.name = 'PanelReturn'
+        self.stars = 2
 
     def use(self):
         """Use the chip."""
-        row = self.owner.row
         cols = len(self.owner.owner.field[0])
-        for col in range(1, cols - 1):
-            panel = self.owner.owner.field[row][col]
-            # If this panel is not on this side
-            if (col > (cols / 2) - 1) ^ panel['stolen']:
-                # If this panel contains a character
-                if panel['character']:
-                    self.owner.owner.hit(row, col, self.damage)
-                else:
-                    # Take it.
-                    self.owner.owner.panel(
-                        row,
-                        col,
-                        stolen=not panel['stolen']
-                    )
-                    if not panel['stolen']:
-                        self.activate()
-                break
+        for row in range(0, len(self.owner.owner.field)):
+            for col in range(0, cols - 1):
+                panel = self.owner.owner.field[row][col]
+                # If this panel is not normal and is on this side, return it to
+                # normal
+                if (
+                    panel['status'] != 'normal' and
+                    ((col > cols / 2) ^ (not panel['stolen']))
+                ):
+                    self.owner.owner.panel(row, col, status='normal')

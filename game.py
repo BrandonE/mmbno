@@ -51,7 +51,6 @@ class Window(Parent):
                 'panels'
             )
         )
-        exit(self.panels)
         # Crank up the music.
         player = media.Player()
         player.eos_action = player.EOS_LOOP
@@ -60,7 +59,7 @@ class Window(Parent):
                 'res',
                 'music',
                 'battle_%i.ogg' % randint(1, 11)
-            )
+            ).replace('\\', '/')
         )
         player.queue(source)
         player.play()
@@ -75,7 +74,7 @@ class Window(Parent):
             for col in range(0, cols):
                 panel = self.owner.field[row][col]
                 color = 'red'
-                if ((col > ((cols / 2) - 1))) ^ panel['stolen']:
+                if (col > (cols / 2) - 1) ^ panel['stolen']:
                     color = 'blue'
                 shading = 'middle'
                 if not row and rows > 1:
@@ -251,7 +250,7 @@ class GameProtocol(LineReceiver):
                         if character == self.player:
                             label = 'o'
                 # Label a blue panels.
-                if ((col > ((cols / 2) - 1))) ^ panel['stolen']:
+                if (col > (cols / 2) - 1) ^ panel['stolen']:
                     blue = 'B'
                 grid += ' %s%s%s |' % (status[panel['status']], label, blue)
             grid += '\n %s' % (top)
@@ -545,7 +544,7 @@ def loader(path):
                     os.path.join(
                         path,
                         '%s.%s' % (name, panel[1])
-                    )
+                    ).replace('\\', '/')
                 )
             else:
                 panels[name] = loader(
