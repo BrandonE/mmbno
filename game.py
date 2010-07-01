@@ -25,7 +25,7 @@ try:
 except ImportError:
     import json
 
-from pyglet import image, media, resource
+from pyglet import media, resource
 from pyglet.window import key, Window as Parent
 from pyglet.graphics import Batch
 from pyglet.sprite import Sprite
@@ -98,10 +98,11 @@ class Window(Parent):
                 panels.append(Sprite(image, x, y, batch=batch))
                 if panel['character']:
                     image = self.characters['mega']['normal']
-                    character = Sprite(image, x, y, batch=batch)
                     if (col > (cols / 2) - 1) ^ panel['stolen']:
-                        #character = character.get_transform(flip_x=True)
-                        pass
+                        image = image.get_transform()
+                        image.anchor_x = image.width
+                        image = image.get_transform(flip_x=True)
+                    character = Sprite(image, x, y, batch=batch)
                     panels.append(character)
         batch.draw()
 
