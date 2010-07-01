@@ -94,9 +94,14 @@ class Character():
         # Double the damage if the attack is the character's weakness.
         if self.type in weaknesses and weaknesses[self.type] == type:
             power *= 2
+        # Double the damage and revert if the character is frozen and the
+        # attack is break.
+        if 'frozen' in self.status and type == 'break':
+            power *= 2
+            self.status.discard('frozen')
         weaknesses = {
-            'grass': 'fire',
-            'ice': 'electric'
+            'frozen': 'electric',
+            'grass': 'fire'
         }
         status = self.owner.field[self.row][self.col]['status']
         # Double the damage if the attack is the panel's weakness.
@@ -110,6 +115,9 @@ class Character():
             self.priority('damage').damage(power)
             return
         self.damage(power)
+        # Freeze if the the panel is frozen and attack is aqua.
+        if status == 'frozen' and type == 'aqua':
+            self.status.add('frozen')
 
     def move(self, row, col, fire):
         """Handle movement."""

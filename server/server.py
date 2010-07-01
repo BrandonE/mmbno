@@ -77,14 +77,6 @@ class GameProtocol(LineReceiver):
                 cols.append(panel)
             self.factory.field.append(cols)
 
-    def lineReceived(self, line):
-        line = json.loads(line)
-        for key, value in line['kwargs'].items():
-            del line['kwargs'][key]
-            line['kwargs'][str(key)] = value
-        getattr(self, line['function'])(**line['kwargs'])
-        self.update()
-
     def hit(self, row, col, flip, power, type, flinch):
         """Forward damage."""
         if flip:
@@ -92,6 +84,21 @@ class GameProtocol(LineReceiver):
         player = self.factory.field[row][col]['character']
         if not player:
             return
+        weaknesses = {
+            'crater': 'aqua',
+            'grass': 'fire'
+        }
+        panel = self.owner.field[row][col]
+        # Revert the panel if the attack is the panel's weakness.
+        if (
+            panel['status'] in weaknesses and
+            weaknesses[panel['status']] == type
+        ):
+            panel['status'] = 'normal'
+        # Crack the panel if the attack is a break type
+        if type == 'break':
+            panel['status'] = 'cracked'
+        self.update()
         self.sendone(
             {
                 'function': 'hit',
@@ -101,7 +108,15 @@ class GameProtocol(LineReceiver):
             player
         )
 
-    def move(self, row, col, flip, info, rows, cols, force):
+    def lineReceived(self, line):
+        line = json.loads(line)
+        for key, value in line['kwargs'].items():
+            del line['kwargs'][key]
+            line['kwargs'][str(key)] = value
+        getattr(self, line['function'])(**line['kwargs'])
+        self.update()
+
+    def move(self, row, col, flip, info, rows = 0, cols = 0, force = False):
         """Move the character if possible."""
         if flip:
             col = range(config['cols'] - 1, -1, -1)[col]
@@ -114,7 +129,7 @@ class GameProtocol(LineReceiver):
         if flip:
             cols = -cols
         # Define the new coordinates.
-        newrow = character.row - rows
+        newrow = character.row + rows
         newcol = character.col + cols
         if not force:
             # If the new coordinates aren't on the field, fail.
@@ -133,8 +148,8 @@ class GameProtocol(LineReceiver):
             if panel['character'] != player:
                 raise Exception('Field desync')
             # If the new panel is out of bounds, contains a character, is
-            # broken without the character having airshoes, or the character is
-            # paralyzed, fail.
+            # blank or broken without the character having airshoes, or the
+            # character is paralyzed, fail.
             if (
                 (
                     (newcol > ((config['cols'] / 2) - 1)) ^
@@ -143,7 +158,10 @@ class GameProtocol(LineReceiver):
                 ) or
                 newpanel['character'] or
                 (
-                    newpanel['status'] == 'broken' and
+                    (
+                        newpanel['status'] == 'blank' or
+                        newpanel['status'] == 'broken'
+                    ) and
                     not 'airshoes' in info['status']
                 ) or
                 'paralyzed' in info['status']
@@ -167,15 +185,18 @@ class GameProtocol(LineReceiver):
                 # Revert the panel.
                 newpanel['status'] = 'normal'
         # Adjust to the new coordinates.
-        character.row = newrow
-        character.col = newcol
+        row = newrow
+        col = newcol
+        panel = newpanel
+        character.row = row
+        character.col = col
         self.update()
         self.sendone(
             {
                 'function': 'move',
                 'kwargs': {
-                    'row': character.row,
-                    'col': character.col,
+                    'row': row,
+                    'col': col,
                     'fire': fire
                 },
                 'object': 'character'
@@ -183,9 +204,18 @@ class GameProtocol(LineReceiver):
             player
         )
         if not 'floatshoes' in info['status'] and not force:
-            # Slide if on ice.
-            if newpanel['status'] == 'ice':
-                self.move(row, col, flip, info, rows, cols, force)
+            # Slide if the panel is frozen and the character is not aqua.
+            if panel['status'] == 'frozen' and character.type != 'aqua':
+                self.move(row, col, flip, info, rows, cols)
+            # Handle road panels.
+            if panel['status'] == 'up':
+                self.move(row, col, flip, info, rows=1)
+            if panel['status'] == 'down':
+                self.move(row, col, flip, info, rows=-1)
+            if panel['status'] == 'coming':
+                self.move(row, col, flip, info, cols=1)
+            if panel['status'] == 'going':
+                self.move(row, col, flip, info, cols=-1)
 
     def panel(self, row, col, flip, status, stolen):
         """Change a panel."""

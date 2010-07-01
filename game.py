@@ -44,14 +44,21 @@ class Window(Parent):
     def __init__(self, owner, **kwargs):
         """Creates the Pyglet Window."""
         self.owner = owner
-        # Load the images for every possible panel.
+        self.characters = {}
+        self.panels = {}
+        super(Window, self).__init__(**kwargs)
+        self.characters = loader(
+            os.path.join(
+                'res',
+                'characters'
+            )
+        )
         self.panels = loader(
             os.path.join(
                 'res',
                 'panels'
             )
         )
-        # Crank up the music.
         player = media.Player()
         player.eos_action = player.EOS_LOOP
         source = resource.media(
@@ -63,9 +70,12 @@ class Window(Parent):
         )
         player.queue(source)
         player.play()
-        super(Window, self).__init__(**kwargs)
 
-    def draw_panels(self):
+    def on_draw(self):
+        """Draw the screen."""
+        self.clear()
+        if not self.panels:
+            return
         batch = Batch()
         panels = []
         rows = len(self.owner.field)
@@ -73,26 +83,27 @@ class Window(Parent):
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.owner.field[row][col]
+                x = 40 * col
+                y = 25 * row + 5
                 color = 'red'
                 if (col > (cols / 2) - 1) ^ panel['stolen']:
                     color = 'blue'
                 shading = 'middle'
-                if not row and rows > 1:
-                    shading = 'top'
                 if row == rows - 1 and rows > 2:
+                    shading = 'top'
+                if not row and rows > 1:
                     shading = 'bottom'
-                image = self.panels[color]['normal'][shading]
-                x = 40 * col
-                y = 25 * row
-                x2, y2 = get_relative(x, y)
+                    y -= 5
+                image = self.panels[color][panel['status']][shading]
                 panels.append(Sprite(image, x, y, batch=batch))
+                if panel['character']:
+                    image = self.characters['mega']['normal']
+                    character = Sprite(image, x, y, batch=batch)
+                    if (col > (cols / 2) - 1) ^ panel['stolen']:
+                        #character = character.get_transform(flip_x=True)
+                        pass
+                    panels.append(character)
         batch.draw()
-
-    def on_draw(self):
-        """First the screen is cleared, then the background and panels are
-        drawn on the field."""
-        self.clear()
-        self.draw_panels()
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
@@ -220,25 +231,31 @@ class GameProtocol(LineReceiver):
         for value in range(0, cols):
             top.append('-----')
         top = ' '.join(top)
-        for row in range(0, len(self.field)):
+        for row in range(len(self.field) - 1, -1, -1):
             grid += '\n %s' % (top)
             grid += '\n|'
             for col in range(0, cols):
                 panel = self.field[row][col]
                 label = ' '
                 blue = ' '
+                coming = '>'
+                going = '<'
+                if self.flip:
+                    coming = '<'
+                    going = '>'
                 status = {
+                    'blank': 'X',
                     'broken': 'B',
+                    'coming': coming,
                     'cracked': 'C',
+                    'down': 'V',
+                    'frozen': 'F',
+                    'going': going,
                     'grass': 'G',
                     'holy': 'H',
-                    'ice': 'I',
-                    'lava': 'L',
                     'normal': ' ',
-                    'metal': 'M',
                     'poison': 'P',
-                    'sand': 'S',
-                    'water': 'W'
+                    'up': '^'
                 }
                 # Place all living characters.
                 character = panel['character']
@@ -421,11 +438,15 @@ class GameProtocol(LineReceiver):
             self.character.col = range(len(self.field[0]) - 1, -1, -1)[col]
         self.custom()
         self.characters()
-        self.window = Window(self,
+        length = len(self.field)
+        height = length * 25
+        if length > 1:
+            height += 5
+        self.window = Window(
+            self,
             width=len(self.field[0]) * 40,
-            height=len(self.field) * 25,
-            caption='MMBNOnline',
-            vsync=False
+            height=height,
+            caption='MMBNOnline'
         )
         @self.window.event
         def on_key_press(symbol, modifiers):
@@ -513,25 +534,6 @@ class GameProtocol(LineReceiver):
         self.players = players
         if len(players) < self.player:
             self.player -= 1
-
-def get_absolute(x2, y2):
-    """Calculate absolute x and y coordinates based on x and y."""
-    x, y = (0, 0)
-    if x2 in (0, 1, 2, 3, 4, 5):
-        x = 20 + (40 * x2)
-    if y2 in (0, 1, 2):
-        y = 87 + 12 + (24 * y2)
-    return (x, y)
-
-def get_relative(x, y):
-    """Performs a reverse operation in order to calculate the relative
-    coordinates from the absolute."""
-    x2, y2 = (0, 0)
-    if x in (0, 40, 80, 120, 160, 200):
-        x2 = abs((20 - x) / 40)
-    if y in (87, 111, 135):
-        y2 = abs((99 - y) / 24)
-    return (x2, y2)
 
 def loader(path):
     panels = {}
