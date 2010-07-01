@@ -40,6 +40,7 @@ __all__ = [
 
 config = json.loads(open('config.json').read())
 
+
 class Window(Parent):
     def __init__(self, owner, **kwargs):
         """Creates the Pyglet Window."""
@@ -47,18 +48,10 @@ class Window(Parent):
         self.characters = {}
         self.panels = {}
         super(Window, self).__init__(**kwargs)
-        self.characters = loader(
-            os.path.join(
-                'res',
-                'characters'
-            )
-        )
-        self.panels = loader(
-            os.path.join(
-                'res',
-                'panels'
-            )
-        )
+        self.batch = Batch()
+        self.characters = loader(os.path.join('res', 'characters'))
+        self.panels = loader(os.path.join('res', 'panels'))
+        self.sprites = self.make_panels()
         player = media.Player()
         player.eos_action = player.EOS_LOOP
         source = resource.media(
@@ -71,15 +64,12 @@ class Window(Parent):
         player.queue(source)
         player.play()
 
-    def on_draw(self):
-        """Draw the screen."""
-        self.clear()
-        if not self.panels:
-            return
-        batch = Batch()
-        panels = []
+    def make_panels(self):
+        sprites = []
         rows = len(self.owner.field)
         cols = len(self.owner.field[0])
+        if not self.panels:
+            return
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.owner.field[row][col]
@@ -95,16 +85,30 @@ class Window(Parent):
                     shading = 'bottom'
                     y -= 5
                 image = self.panels[color][panel['status']][shading]
-                panels.append(Sprite(image, x, y, batch=batch))
+                sprites.append(Sprite(image, x, y, batch=self.batch))
+        for row in range(rows - 1, -1, -1):
+            for col in range(0, cols):
+                panel = self.owner.field[row][col]
+                x = 40 * col
+                y = 25 * row + 5
                 if panel['character']:
                     image = self.characters['mega']['normal']['0']
+                    xoffset = 24
                     if (col > (cols / 2) - 1) ^ panel['stolen']:
                         image = image.get_transform()
                         image.anchor_x = image.width
                         image = image.get_transform(flip_x=True)
-                    character = Sprite(image, x - 24, y - 18, batch=batch)
-                    panels.append(character)
-        batch.draw()
+                        xoffset = 36
+                    character = Sprite(image, x - xoffset, y - 23,
+                        batch=self.batch
+                    )
+                    sprites.append(character)
+        return sprites
+
+    def on_draw(self):
+        """Draw the screen."""
+        self.clear()
+        self.batch.draw()
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
