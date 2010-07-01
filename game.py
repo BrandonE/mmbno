@@ -45,13 +45,13 @@ class Window(Parent):
     def __init__(self, owner, **kwargs):
         """Creates the Pyglet Window."""
         self.owner = owner
+        self.batch = Batch()
         self.characters = {}
         self.panels = {}
+        self.sprites = []
         super(Window, self).__init__(**kwargs)
-        self.batch = Batch()
         self.characters = loader(os.path.join('res', 'characters'))
         self.panels = loader(os.path.join('res', 'panels'))
-        self.sprites = self.make_panels()
         player = media.Player()
         player.eos_action = player.EOS_LOOP
         source = resource.media(
@@ -63,47 +63,6 @@ class Window(Parent):
         )
         player.queue(source)
         player.play()
-
-    def make_panels(self):
-        sprites = []
-        rows = len(self.owner.field)
-        cols = len(self.owner.field[0])
-        if not self.panels:
-            return
-        for row in range(0, rows):
-            for col in range(0, cols):
-                panel = self.owner.field[row][col]
-                x = 40 * col
-                y = 25 * row + 5
-                color = 'red'
-                if (col > (cols / 2) - 1) ^ panel['stolen']:
-                    color = 'blue'
-                shading = 'middle'
-                if row == rows - 1 and rows > 2:
-                    shading = 'top'
-                if not row and rows > 1:
-                    shading = 'bottom'
-                    y -= 5
-                image = self.panels[color][panel['status']][shading]
-                sprites.append(Sprite(image, x, y, batch=self.batch))
-        for row in range(rows - 1, -1, -1):
-            for col in range(0, cols):
-                panel = self.owner.field[row][col]
-                x = 40 * col
-                y = 25 * row + 5
-                if panel['character']:
-                    image = self.characters['mega']['normal']['0']
-                    xoffset = 24
-                    if (col > (cols / 2) - 1) ^ panel['stolen']:
-                        image = image.get_transform()
-                        image.anchor_x = image.width
-                        image = image.get_transform(flip_x=True)
-                        xoffset = 36
-                    character = Sprite(image, x - xoffset, y - 23,
-                        batch=self.batch
-                    )
-                    sprites.append(character)
-        return sprites
 
     def on_draw(self):
         """Draw the screen."""
@@ -330,6 +289,49 @@ class GameProtocol(LineReceiver):
             )
         ):
             self.characters()
+        if not self.window.panels:
+            return
+        self.window.batch = Batch()
+        rows = len(self.field)
+        cols = len(self.field[0])
+        for row in range(0, rows):
+            for col in range(0, cols):
+                panel = self.field[row][col]
+                x = 40 * col
+                y = 25 * row + 5
+                color = 'red'
+                if (col > (cols / 2) - 1) ^ panel['stolen']:
+                    color = 'blue'
+                shading = 'middle'
+                if row == rows - 1 and rows > 2:
+                    shading = 'top'
+                if not row and rows > 1:
+                    shading = 'bottom'
+                    y -= 5
+                image = self.window.panels[color][panel['status']][shading]
+                self.window.sprites.append(
+                    Sprite(image, x, y, batch=self.window.batch)
+                )
+        for row in range(rows - 1, -1, -1):
+            for col in range(0, cols):
+                panel = self.field[row][col]
+                x = 40 * col
+                y = 25 * row + 5
+                if panel['character']:
+                    image = self.window.characters['mega']['normal']['0']
+                    xoffset = 24
+                    if (col > (cols / 2) - 1) ^ panel['stolen']:
+                        image = image.get_transform()
+                        image.anchor_x = image.width
+                        image = image.get_transform(flip_x=True)
+                        xoffset = 36
+                    character = Sprite(
+                        image,
+                        x - xoffset,
+                        y - 23,
+                        batch=self.window.batch
+                    )
+                    self.window.sprites.append(character)
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
