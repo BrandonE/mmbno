@@ -97,12 +97,12 @@ class Window(Parent):
                 image = self.panels[color][panel['status']][shading]
                 panels.append(Sprite(image, x, y, batch=batch))
                 if panel['character']:
-                    image = self.characters['mega']['normal']
+                    image = self.characters['mega']['normal']['0']
                     if (col > (cols / 2) - 1) ^ panel['stolen']:
                         image = image.get_transform()
                         image.anchor_x = image.width
                         image = image.get_transform(flip_x=True)
-                    character = Sprite(image, x, y, batch=batch)
+                    character = Sprite(image, x - 24, y - 18, batch=batch)
                     panels.append(character)
         batch.draw()
 
