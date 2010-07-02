@@ -88,7 +88,7 @@ class GameProtocol(LineReceiver):
             'crater': 'aqua',
             'grass': 'fire'
         }
-        panel = self.owner.field[row][col]
+        panel = self.factory.field[row][col]
         # Revert the panel if the attack is the panel's weakness.
         if (
             panel['status'] in weaknesses and
@@ -108,12 +108,20 @@ class GameProtocol(LineReceiver):
             player
         )
 
+    def images(self, player, images):
+        """Forward the images."""
+        self.factory.players[player - 1].images = images
+        print images
+
     def lineReceived(self, line):
-        line = json.loads(line)
-        for key, value in line['kwargs'].items():
-            del line['kwargs'][key]
-            line['kwargs'][str(key)] = value
-        getattr(self, line['function'])(**line['kwargs'])
+        loaded = json.loads(line)
+        if loaded['function'] == 'images':
+            loaded = json.loads(line, encoding='ISO-8859-1')
+            exit(loaded)
+        for key, value in loaded['kwargs'].items():
+            del loaded['kwargs'][key]
+            loaded['kwargs'][str(key)] = value
+        getattr(self, loaded['function'])(**loaded['kwargs'])
         self.update()
 
     def move(self, row, col, flip, info, rows = 0, cols = 0, force = False):
@@ -255,6 +263,7 @@ class GameProtocol(LineReceiver):
     def start(self):
         length = len(self.factory.players)
         player = self.factory.players[length - 1]
+        player.images = {}
         self.sendone(
             {
                 'function': 'start',
@@ -300,6 +309,7 @@ class GameProtocol(LineReceiver):
         for value in self.factory.players:
             players.append({
                 'health': value.health,
+                'images': value.images,
                 'name': value.name,
                 'status': value.status,
                 'type': value.type
