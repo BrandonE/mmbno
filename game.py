@@ -27,7 +27,7 @@ except ImportError:
 
 from pyglet import media, resource
 from pyglet.window import key, Window as Parent
-from pyglet.graphics import Batch
+from pyglet.graphics import Batch, OrderedGroup
 from pyglet.sprite import Sprite
 from reactor import reactor
 from twisted.internet import protocol
@@ -46,8 +46,11 @@ class Window(Parent):
         """Creates the Pyglet Window."""
         self.owner = owner
         self.batch = Batch()
+        self.panels_group = OrderedGroup(0)
+        self.characters_group = OrderedGroup(1)
         self.characters = {}
         self.panels = {}
+        self.redraw = True
         self.sprites = []
         super(Window, self).__init__(**kwargs)
         self.characters = loader(os.path.join('res', 'characters'))
@@ -64,10 +67,17 @@ class Window(Parent):
         player.queue(source)
         player.play()
 
+    def on_close(self):
+        """Return true to ensure that no other handlers on the stack receive
+        the on_close event"""
+        reactor.callFromThread(reactor.stop)
+        return True
+
     def on_draw(self):
         """Draw the screen."""
-        self.clear()
-        self.batch.draw()
+        if self.redraw:
+            self.clear()
+            self.batch.draw()
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
@@ -94,6 +104,10 @@ class GameProtocol(LineReceiver):
                 )
             ).read()
         )
+        if len(self.chips) > 30:
+            raise Exception('Your folder cannot have more than 30 chips.')
+        if len(self.chips) < 30:
+            raise Exception('Your folder must have 30 chips.')
         module = __import__(
             'characters.%s' % (config['character']),
             globals(),
@@ -115,10 +129,6 @@ class GameProtocol(LineReceiver):
             if not chip['code'] in self.chips[index].codes:
                 raise Exception('Improper chip code')
             self.chips[index].code = chip['code']
-        if len(self.chips) > 30:
-            raise Exception('Your folder cannot have more than 30 chips.')
-        if len(self.chips) < 30:
-            raise Exception('Your folder must have 30 chips.')
 
     def cursor(self, cols):
         """Move the cursor for chip selection."""
@@ -292,6 +302,7 @@ class GameProtocol(LineReceiver):
         if not self.window.panels:
             return
         self.window.batch = Batch()
+        self.window.panels_group = OrderedGroup(0)
         rows = len(self.field)
         cols = len(self.field[0])
         for row in range(0, rows):
@@ -310,28 +321,33 @@ class GameProtocol(LineReceiver):
                     y -= 5
                 image = self.window.panels[color][panel['status']][shading]
                 self.window.sprites.append(
-                    Sprite(image, x, y, batch=self.window.batch)
-                )
-        for row in range(rows - 1, -1, -1):
-            for col in range(0, cols):
-                panel = self.field[row][col]
-                x = 40 * col
-                y = 25 * row + 5
-                if panel['character']:
-                    image = self.window.characters['mega']['normal']['0']
-                    xoffset = 24
-                    if (col > (cols / 2) - 1) ^ panel['stolen']:
-                        image = image.get_transform()
-                        image.anchor_x = image.width
-                        image = image.get_transform(flip_x=True)
-                        xoffset = 36
-                    character = Sprite(
+                    Sprite(
                         image,
-                        x - xoffset,
-                        y - 23,
-                        batch=self.window.batch
+                        x,
+                        y,
+                        batch=self.window.batch,
+                        group=self.window.panels_group
                     )
-                    self.window.sprites.append(character)
+                )
+                character = panel['character']
+                if character:
+                    player = self.players[character - 1]
+                    if player and player['health']:
+                        image = self.window.characters['mega']['normal']['0']
+                        xoffset = 24
+                        if (col > (cols / 2) - 1) ^ panel['stolen']:
+                            image = image.get_transform()
+                            image.anchor_x = image.width
+                            image = image.get_transform(flip_x=True)
+                            xoffset = 36
+                        character = Sprite(
+                            image,
+                            x - xoffset,
+                            y - 23,
+                            batch=self.window.batch,
+                            group=OrderedGroup(range(rows - 1, -1, -1)[row] + 1)
+                        )
+                        self.window.sprites.append(character)
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
@@ -375,6 +391,29 @@ class GameProtocol(LineReceiver):
                 'flinch': flinch
             }
         })
+
+    def images(self, iterable):
+        for value in iterable:
+            if isinstance(iterable[value], dict):
+                self.images(iterable[value])
+            else:
+                data = iterable[value].get_image_data()
+                self.send(
+                    {
+                        'function': 'images',
+                        'kwargs': {
+                            'player': self.player,
+                            'images': {
+                                'data': data.get_data(data.format, data.pitch),
+                                'format': data.format,
+                                'height': data.height,
+                                'pitch': data.pitch,
+                                'width': data.width
+                            }
+                        }
+                    },
+                    encoding='ISO-8859-1'
+                )
 
     def lineReceived(self, line):
         line = json.loads(line)
@@ -427,9 +466,9 @@ class GameProtocol(LineReceiver):
         self.picked = list(picked)
         shuffle(self.picked)
 
-    def send(self, line):
+    def send(self, line, **kwargs):
         """Messages are always to be sent as a JSON string."""
-        self.sendLine(json.dumps(line))
+        self.sendLine(json.dumps(line, **kwargs))
 
     def start(self, field, row, col, flip, player):
         """Set up the data for the beginning of the game."""
@@ -453,8 +492,9 @@ class GameProtocol(LineReceiver):
             self,
             width=len(self.field[0]) * 40,
             height=height,
-            caption='MMBNOnline'
+            caption='MMBN Online'
         )
+        #self.images(self.window.characters)
         @self.window.event
         def on_key_press(symbol, modifiers):
             """Handle key presses for Pyglet."""
@@ -532,7 +572,7 @@ class GameProtocol(LineReceiver):
         # Have the player and opponent run handle a unit of time.
         self.character.time()
 
-    def update(self, field, players = []):
+    def update(self, field, players):
         """Update the game data."""
         self.field = field
         if self.flip:
@@ -543,26 +583,26 @@ class GameProtocol(LineReceiver):
             self.player -= 1
 
 def loader(path):
-    panels = {}
+    images = {}
     for panel in os.listdir(path):
         panel = panel.split('.')
         name = panel[0]
         if name:
             if len(panel) > 1:
-                panels[name] = resource.image(
+                images[name] = resource.image(
                     os.path.join(
                         path,
                         '%s.%s' % (name, panel[1])
                     ).replace('\\', '/')
                 )
             else:
-                panels[name] = loader(
+                images[name] = loader(
                     os.path.join(
                         path,
                         '%s' % (name)
                     )
                 )
-    return panels
+    return images
 
 factory = protocol.ClientFactory()
 factory.protocol = GameProtocol
