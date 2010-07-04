@@ -95,40 +95,86 @@ class GameProtocol(LineReceiver):
         })
 
     def connectionMade(self):
-        self.chips = json.loads(
-            open(
-                os.path.join(
-                    'chips',
-                    'folders',
-                    '%s.json' % (config['chipfolder'])
-                )
-            ).read()
+        self.field = []
+        self.players = []
+        self.window = Window(
+            self,
+            caption='MMBN Online',
+            resizable=True
         )
-        if len(self.chips) > 30:
-            raise Exception('Your folder cannot have more than 30 chips.')
-        if len(self.chips) < 30:
-            raise Exception('Your folder must have 30 chips.')
-        module = __import__(
-            'characters.%s' % (config['character']),
-            globals(),
-            locals(),
-            ('Character',),
-            -1
-        )
-        self.character = module.Character(self)
-        # Convert the list of chip names and codes to a list of chip instances.
-        for index, chip in enumerate(self.chips):
-            module = __import__(
-                'chips.%s' % (chip['chip']),
-                globals(),
-                locals(),
-                ('Chip',),
-                -1
-            )
-            self.chips[index] = module.Chip(self.character, chip)
-            if not chip['code'] in self.chips[index].codes:
-                raise Exception('Improper chip code')
-            self.chips[index].code = chip['code']
+        self.window.maximize()
+        #self.images(self.window.characters)
+        @self.window.event
+        def on_key_press(symbol, modifiers):
+            """Handle key presses for Pyglet."""
+            # If the player is prompted to select a chip
+            if self.select:
+                if symbol == key.RETURN:
+                    # Finish the selection.
+                    self.select = False
+                    # Add the chips to the player.
+                    for value in self.selected:
+                        self.character.chips.append(
+                            self.chips[self.picked[value]]
+                        )
+                    # Make the first selected the first used.
+                    self.character.chips.reverse()
+                    # Remove the chips from the library.
+                    self.selected.sort()
+                    offset = 0
+                    for value in self.selected:
+                        del self.chips[
+                            self.picked[value] - offset
+                        ]
+                        offset += 1
+                if symbol == key.RIGHT:
+                    self.cursor(1)
+                if symbol == key.LEFT:
+                    self.cursor(-1)
+                if symbol == key.A and self.equipable(
+                    self.selection
+                ):
+                    # Prepare to add the chip.
+                    self.selected.append(self.selection)
+                if symbol == key.S and self.selected:
+                    # Undo the selection.
+                    self.selected.pop()
+            else:
+                # If the game is not over
+                winner = []
+                for value in self.players:
+                    if value and value['health']:
+                        winner.append(value['name'])
+                if len(winner) != 1:
+                    row = self.character.row
+                    col = self.character.col
+                    if symbol == key.UP:
+                        self.move(row, col, rows=1)
+                    if symbol == key.DOWN:
+                        self.move(row, col, rows=-1)
+                    if symbol == key.RIGHT:
+                        self.move(row, col, cols=1)
+                    if symbol == key.LEFT:
+                        self.move(row, col, cols=-1)
+                    if symbol == key.A and self.character.chips:
+                        self.character.usechip()
+                    if symbol == key.S:
+                        self.character.buster()
+                    if symbol == key.D:
+                        # Start the selection if the custom bar is full.
+                        if self.custombar == 10:
+                            self.custom()
+                    if symbol == key.F:
+                        self.time()
+                    if symbol == key.C:
+                        self.character.charge()
+                elif symbol == key.R:
+                    self.send({'function': 'restart', 'kwargs': {}})
+            self.draw()
+
+        @self.window.event
+        def on_resize(width, height):
+            self.draw()
 
     def cursor(self, cols):
         """Move the cursor for chip selection."""
@@ -302,14 +348,13 @@ class GameProtocol(LineReceiver):
         if not self.window.panels:
             return
         self.window.batch = Batch()
-        self.window.panels_group = OrderedGroup(0)
         rows = len(self.field)
         cols = len(self.field[0])
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.field[row][col]
-                x = 40 * col
-                y = 25 * row + 5
+                x = 40 * col + (self.window.width / 2) - 120
+                y = 25 * row + (self.window.height / 2) - 35
                 color = 'red'
                 if (col > (cols / 2) - 1) ^ panel['stolen']:
                     color = 'blue'
@@ -320,15 +365,13 @@ class GameProtocol(LineReceiver):
                     shading = 'bottom'
                     y -= 5
                 image = self.window.panels[color][panel['status']][shading]
-                self.window.sprites.append(
-                    Sprite(
-                        image,
-                        x,
-                        y,
-                        batch=self.window.batch,
-                        group=self.window.panels_group
-                    )
-                )
+                if not 'sprite' in panel:
+                    panel['sprite'] = Sprite(image, x, y, group=OrderedGroup(0))
+                panel['sprite'].x = x
+                panel['sprite'].y = y
+                panel['sprite'].image = image
+                panel['sprite'].batch = self.window.batch
+                self.window.sprites.append(panel['sprite'])
                 character = panel['character']
                 if character:
                     player = self.players[character - 1]
@@ -340,14 +383,18 @@ class GameProtocol(LineReceiver):
                             image.anchor_x = image.width
                             image = image.get_transform(flip_x=True)
                             xoffset = 36
-                        character = Sprite(
-                            image,
-                            x - xoffset,
-                            y - 23,
-                            batch=self.window.batch,
-                            group=OrderedGroup(range(rows - 1, -1, -1)[row] + 1)
+                        newx = x - xoffset
+                        newy = y - 23
+                        if not 'sprite' in player:
+                            player['sprite'] = Sprite(image, newx, newy)
+                        player['sprite'].image = image
+                        player['sprite'].x = newx
+                        player['sprite'].y = newy
+                        player['sprite'].group = OrderedGroup(
+                            range(rows - 1, -1, -1)[row] + 1
                         )
-                        self.window.sprites.append(character)
+                        player['sprite'].batch = self.window.batch
+                        self.window.sprites.append(player['sprite'])
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
@@ -476,8 +523,42 @@ class GameProtocol(LineReceiver):
         self.player = player
         players = []
         for value in range(0, player):
-            players.append(None)
+            players.append({})
         self.update(field, players)
+        self.chips = json.loads(
+            open(
+                os.path.join(
+                    'chips',
+                    'folders',
+                    '%s.json' % (config['chipfolder'])
+                )
+            ).read()
+        )
+        if len(self.chips) > 30:
+            raise Exception('Your folder cannot have more than 30 chips.')
+        if len(self.chips) < 30:
+            raise Exception('Your folder must have 30 chips.')
+        module = __import__(
+            'characters.%s' % (config['character']),
+            globals(),
+            locals(),
+            ('Character',),
+            -1
+        )
+        self.character = module.Character(self)
+        # Convert the list of chip names and codes to a list of chip instances.
+        for index, chip in enumerate(self.chips):
+            module = __import__(
+                'chips.%s' % (chip['chip']),
+                globals(),
+                locals(),
+                ('Chip',),
+                -1
+            )
+            self.chips[index] = module.Chip(self.character, chip)
+            if not chip['code'] in self.chips[index].codes:
+                raise Exception('Improper chip code')
+            self.chips[index].code = chip['code']
         self.character.row = row
         self.character.col = col
         if self.flip:
@@ -488,80 +569,6 @@ class GameProtocol(LineReceiver):
         height = length * 25
         if length > 1:
             height += 5
-        self.window = Window(
-            self,
-            width=len(self.field[0]) * 40,
-            height=height,
-            caption='MMBN Online'
-        )
-        #self.images(self.window.characters)
-        @self.window.event
-        def on_key_press(symbol, modifiers):
-            """Handle key presses for Pyglet."""
-            # If the player is prompted to select a chip
-            if self.select:
-                if symbol == key.RETURN:
-                    # Finish the selection.
-                    self.select = False
-                    # Add the chips to the player.
-                    for value in self.selected:
-                        self.character.chips.append(
-                            self.chips[self.picked[value]]
-                        )
-                    # Make the first selected the first used.
-                    self.character.chips.reverse()
-                    # Remove the chips from the library.
-                    self.selected.sort()
-                    offset = 0
-                    for value in self.selected:
-                        del self.chips[
-                            self.picked[value] - offset
-                        ]
-                        offset += 1
-                if symbol == key.RIGHT:
-                    self.cursor(1)
-                if symbol == key.LEFT:
-                    self.cursor(-1)
-                if symbol == key.A and self.equipable(
-                    self.selection
-                ):
-                    # Prepare to add the chip.
-                    self.selected.append(self.selection)
-                if symbol == key.S and self.selected:
-                    # Undo the selection.
-                    self.selected.pop()
-            else:
-                # If the game is not over
-                winner = []
-                for value in self.players:
-                    if value and value['health']:
-                        winner.append(value['name'])
-                if len(winner) != 1:
-                    row = self.character.row
-                    col = self.character.col
-                    if symbol == key.UP:
-                        self.move(row, col, rows=1)
-                    if symbol == key.DOWN:
-                        self.move(row, col, rows=-1)
-                    if symbol == key.RIGHT:
-                        self.move(row, col, cols=1)
-                    if symbol == key.LEFT:
-                        self.move(row, col, cols=-1)
-                    if symbol == key.A and self.character.chips:
-                        self.character.usechip()
-                    if symbol == key.S:
-                        self.character.buster()
-                    if symbol == key.D:
-                        # Start the selection if the custom bar is full.
-                        if self.custombar == 10:
-                            self.custom()
-                    if symbol == key.F:
-                        self.time()
-                    if symbol == key.C:
-                        self.character.charge()
-                elif symbol == key.R:
-                    self.send({'function': 'restart', 'kwargs': {}})
-            self.draw()
 
     def time(self):
         """Handle a unit of time."""
@@ -574,13 +581,26 @@ class GameProtocol(LineReceiver):
 
     def update(self, field, players):
         """Update the game data."""
-        self.field = field
         if self.flip:
-            for value in self.field:
+            for value in field:
                 value.reverse()
-        self.players = players
-        if len(players) < self.player:
-            self.player -= 1
+        if self.field:
+            for row in range(0, len(field)):
+                for col in range(0, len(field[0])):
+                    for index, value in field[row][col].items():
+                        self.field[row][col][index] = value
+        else:
+            self.field = field
+        for player in range(0, len(players)):
+            if len(self.players) > player:
+                for index, value in players[player].items():
+                    self.players[player][index] = value
+            else:
+                self.players.append(players[player])
+        while len(self.players) > len(players):
+            self.players.pop()
+            if len(self.players) < self.player:
+                self.player -= 1
 
 def loader(path):
     images = {}
