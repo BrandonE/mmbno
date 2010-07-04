@@ -41,23 +41,26 @@ class GameProtocol(LineReceiver):
     def connectionMade(self):
         print 'Client Connected.'
         self.factory.players.append(self)
-        if len(self.factory.players) == 1:
+        self.player = len(self.factory.players)
+        if self.player == 1:
             self.field()
-        self.place(self.factory.players[len(self.factory.players) - 1])
+        self.place(self.player)
         self.start()
 
     def connectionLost(self, reason):
         print 'Client Disconnected.'
         deleted = False
-        for value in self.factory.players:
-            if deleted and self.factory.field[
-                value.row
-            ][value.col]['character']:
-                self.factory.field[value.row][value.col]['character'] -= 1
-            if value == self:
+        for index, value in enumerate(self.factory.players):
+            row = value.row
+            col = value.col
+            if deleted:
+                value.player -= 1
+                if self.factory.field[row][col]['character']:
+                    self.factory.field[row][col]['character'] -= 1
+            if self.player == index + 1:
                 deleted = True
+                self.factory.field[row][col]['character'] = None
         self.factory.players.remove(self)
-        self.factory.field[self.row][self.col]['character'] = None
         self.update()
 
     def field(self):
@@ -237,16 +240,18 @@ class GameProtocol(LineReceiver):
 
     def place(self, player):
         """Place a character."""
-        length = len(self.factory.players)
-        player.row = 0
-        player.col = 0
-        player.flip = False
+        character = self.factory.players[player - 1]
+        character.row = 0
+        character.col = 0
+        character.flip = False
         if not self.factory.field[0][0]['character']:
-            self.factory.field[0][0]['character'] = length
+            self.factory.field[0][0]['character'] = player
         else:
-            self.factory.field[0][config['cols'] - 1]['character'] = length
-            player.col = config['cols'] - 1
-            player.flip = True
+            print self.factory.field[0][0]['character']
+            last = config['cols'] - 1
+            self.factory.field[0][last]['character'] = player
+            character.col = last
+            character.flip = True
 
     def sendone(self, line, player):
         """Send a message to one player."""
@@ -293,15 +298,11 @@ class GameProtocol(LineReceiver):
                         panel['time'] = 0
 
     def restart(self):
+        self.sendall({'function': 'custom', 'kwargs': {}, 'object': 'game'})
         self.field()
         for value in self.factory.players:
-            self.place(value)
-        self.sendall({
-            'function': '__init__',
-            'kwargs': {},
-            'object': 'character'
-        })
-        self.sendall({'function': 'custom', 'kwargs': {}, 'object': 'game'})
+            self.place(value.player)
+        self.start()
 
     def update(self):
         """Update the game data."""
