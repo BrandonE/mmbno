@@ -29,7 +29,7 @@ class Chip(Parent):
         self.name = 'Airshot'
         self.power = 20
         self.stars = 2
-        self.type = 'air'
+        self.type = 'wind'
 
     def use(self):
         """Use the chip."""

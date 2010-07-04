@@ -8,7 +8,7 @@
     {"chip": "supervulcan", "code": "V"},
     {"chip": "spreader1", "code": "L"},
     {"chip": "tankcannon1", "code": "A"},
-    {"chip": "barrier", "code": "A"},
+    {"chip": "barrier10", "code": "A"},
     {"chip": "barrier100", "code": "A"},
     {"chip": "barrier200", "code": "A"},
     {"chip": "attack10", "code": "*"},

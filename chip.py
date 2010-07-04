@@ -20,10 +20,10 @@ __all__ = ['Chip']
 
 class Chip():
     """A class to base the chips off of."""
-    def __init__(self, owner, settings):
+    def __init__(self, owner):
         """A class to base the chips off of."""
         self.owner = owner
-        self.settings = settings
+        self.classification = 'standard'
         self.priority = 0
         self.type = 'none'
         self.stars = 1
