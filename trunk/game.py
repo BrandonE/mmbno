@@ -46,26 +46,21 @@ class Window(Parent):
         """Creates the Pyglet Window."""
         self.owner = owner
         self.batch = Batch()
-        self.panels_group = OrderedGroup(0)
-        self.characters_group = OrderedGroup(1)
-        self.characters = {}
-        self.panels = {}
-        self.redraw = True
-        self.sprites = []
         super(Window, self).__init__(**kwargs)
-        self.characters = loader(os.path.join('res', 'characters'))
-        self.panels = loader(os.path.join('res', 'panels'))
+        self.images = loader(os.path.join('res', 'images'))
+        self.sprites = {}
         player = media.Player()
         player.eos_action = player.EOS_LOOP
         source = resource.media(
             os.path.join(
                 'res',
+                'sound',
                 'music',
                 'battle_%i.ogg' % randint(1, 11)
             ).replace('\\', '/')
         )
         player.queue(source)
-        player.play()
+        #player.play()
 
     def on_close(self):
         """Return true to ensure that no other handlers on the stack receive
@@ -75,9 +70,8 @@ class Window(Parent):
 
     def on_draw(self):
         """Draw the screen."""
-        if self.redraw:
-            self.clear()
-            self.batch.draw()
+        self.clear()
+        self.batch.draw()
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
@@ -103,7 +97,7 @@ class GameProtocol(LineReceiver):
             resizable=True
         )
         self.window.maximize()
-        #self.images(self.window.characters)
+        #self.images(self.window.images['characters'])
         @self.window.event
         def on_key_press(symbol, modifiers):
             """Handle key presses for Pyglet."""
@@ -197,7 +191,7 @@ class GameProtocol(LineReceiver):
         os.system('cls')
         # Graphically display a character or chip's type.
         types = {
-            'air': 'A',
+            'wind': 'A',
             'none': 'N',
             'plus': 'P'
         }
@@ -345,16 +339,77 @@ class GameProtocol(LineReceiver):
             )
         ):
             self.characters()
-        if not self.window.panels:
+        if not self.window.images:
             return
         self.window.batch = Batch()
+        sprites = []
         rows = len(self.field)
         cols = len(self.field[0])
+        xcenter = (self.window.width / 2) - (40 * (cols / 2))
+        ycenter = (self.window.height / 2) - (25 * (rows / 2))
+        if rows > 1:
+            ycenter -= 5
+        if self.select:
+            if not 'menu' in self.window.sprites:
+                self.window.sprites['menu'] = Sprite(
+                    self.window.images['battle']['select']['menu'],
+                    0,
+                    0
+                )
+            self.window.sprites['menu'].x = xcenter
+            self.window.sprites['menu'].y = ycenter
+            self.window.sprites['menu'].group = OrderedGroup(rows + 1)
+            self.window.sprites['menu'].batch = self.window.batch
+            sprites.append(self.window.sprites['menu'])
+            image = self.window.images['battle']['select'][
+                self.chips[self.picked[self.selection]].classification
+            ]
+            if not 'classification' in self.window.sprites:
+                self.window.sprites['classification'] = Sprite(
+                    image,
+                    0,
+                    0
+                )
+            self.window.sprites['classification'].image = image
+            self.window.sprites['classification'].x = xcenter
+            self.window.sprites['classification'].y = ycenter + 54
+            self.window.sprites['classification'].group = OrderedGroup(rows)
+            self.window.sprites['classification'].batch = self.window.batch
+            image = self.window.images['chips'][
+                self.chips[self.picked[self.selection]].chip
+            ]
+            if not 'chip' in self.window.sprites:
+                self.window.sprites['chip'] = Sprite(
+                    image,
+                    0,
+                    0
+                )
+            self.window.sprites['chip'].image = image
+            self.window.sprites['chip'].x = xcenter + 15
+            self.window.sprites['chip'].y = ycenter + 87
+            self.window.sprites['chip'].group = OrderedGroup(rows + 1)
+            self.window.sprites['chip'].batch = self.window.batch
+            sprites.append(self.window.sprites['chip'])
+            image = self.window.images['chips']['types'][
+                self.chips[self.picked[self.selection]].type
+            ]
+            if not 'type' in self.window.sprites:
+                self.window.sprites['type'] = Sprite(
+                    image,
+                    0,
+                    0
+                )
+            self.window.sprites['type'].image = image
+            self.window.sprites['type'].x = xcenter + 25
+            self.window.sprites['type'].y = ycenter + 72
+            self.window.sprites['type'].group = OrderedGroup(rows + 1)
+            self.window.sprites['type'].batch = self.window.batch
+            sprites.append(self.window.sprites['type'])
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.field[row][col]
-                x = 40 * col + (self.window.width / 2) - 120
-                y = 25 * row + (self.window.height / 2) - 35
+                x = 40 * col + xcenter
+                y = 25 * row + ycenter
                 color = 'red'
                 if (col > (cols / 2) - 1) ^ panel['stolen']:
                     color = 'blue'
@@ -363,38 +418,46 @@ class GameProtocol(LineReceiver):
                     shading = 'top'
                 if not row and rows > 1:
                     shading = 'bottom'
-                    y -= 5
-                image = self.window.panels[color][panel['status']][shading]
+                image = self.window.images[
+                    'panels'
+                ][color][panel['status']][shading]
                 if not 'sprite' in panel:
-                    panel['sprite'] = Sprite(image, x, y, group=OrderedGroup(0))
+                    panel['sprite'] = Sprite(
+                        image,
+                        0,
+                        0,
+                        group=OrderedGroup(0)
+                    )
+                panel['sprite'].image = image
                 panel['sprite'].x = x
                 panel['sprite'].y = y
-                panel['sprite'].image = image
                 panel['sprite'].batch = self.window.batch
-                self.window.sprites.append(panel['sprite'])
+                sprites.append(panel['sprite'])
                 character = panel['character']
                 if character:
                     player = self.players[character - 1]
                     if player and player['health']:
-                        image = self.window.characters['mega']['normal']['0']
+                        image = self.window.images[
+                            'characters'
+                        ]['mega']['normal']['0']
                         xoffset = 24
                         if (col > (cols / 2) - 1) ^ panel['stolen']:
                             image = image.get_transform()
                             image.anchor_x = image.width
                             image = image.get_transform(flip_x=True)
                             xoffset = 36
-                        newx = x - xoffset
-                        newy = y - 23
+                        x = x - xoffset
+                        y = y - 23
                         if not 'sprite' in player:
-                            player['sprite'] = Sprite(image, newx, newy)
+                            player['sprite'] = Sprite(image, x, y)
                         player['sprite'].image = image
-                        player['sprite'].x = newx
-                        player['sprite'].y = newy
+                        player['sprite'].x = x
+                        player['sprite'].y = y
                         player['sprite'].group = OrderedGroup(
                             range(rows - 1, -1, -1)[row] + 1
                         )
                         player['sprite'].batch = self.window.batch
-                        self.window.sprites.append(player['sprite'])
+                        sprites.append(player['sprite'])
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
@@ -507,8 +570,8 @@ class GameProtocol(LineReceiver):
     def pickchips(self):
         """Pick a certain amount of random chips for selection."""
         picked = set([])
-        # While there are chips to pick and the list is under 10, pick.
-        while len(self.chips) != len(picked) and len(picked) < 10:
+        # While there are chips to pick and the list is under 8, pick.
+        while len(self.chips) != len(picked) and len(picked) < 8:
             picked.add(randint(0, len(self.chips) - 1))
         self.picked = list(picked)
         shuffle(self.picked)
@@ -555,9 +618,10 @@ class GameProtocol(LineReceiver):
                 ('Chip',),
                 -1
             )
-            self.chips[index] = module.Chip(self.character, chip)
+            self.chips[index] = module.Chip(self.character)
             if not chip['code'] in self.chips[index].codes:
                 raise Exception('Improper chip code')
+            self.chips[index].chip = chip['chip']
             self.chips[index].code = chip['code']
         self.character.row = row
         self.character.col = col
