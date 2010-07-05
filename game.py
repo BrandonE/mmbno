@@ -376,6 +376,8 @@ class GameProtocol(LineReceiver):
             self.window.sprites['classification'].group = OrderedGroup(rows)
             self.window.sprites['classification'].batch = self.window.batch
             image = self.window.images['chips'][
+                self.chips[self.picked[self.selection]].classification
+            ][
                 self.chips[self.picked[self.selection]].chip
             ]
             if not 'chip' in self.window.sprites:
