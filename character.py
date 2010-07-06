@@ -35,6 +35,7 @@ class Character():
         self.chips = []
         # Default to MegaMan.EXE's properties.
         self.health = 500
+        self.image = 'normal'
         self.maxhealth = self.health
         self.name = 'MegaMan.EXE'
         self.power = 1
@@ -118,6 +119,7 @@ class Character():
         # Freeze if the the panel is frozen and attack is aqua.
         if status == 'frozen' and type == 'aqua':
             self.status.add('frozen')
+        self.owner.characters()
 
     def move(self, row, col, fire):
         """Handle movement."""
@@ -143,6 +145,8 @@ class Character():
 
     def shoot(self, power, type = 'none'):
         """Hit the first person across from the character."""
+        self.image = 'shoot'
+        self.owner.characters()
         if not 'paralyzed' in self.status:
             row = self.row
             cols = len(self.owner.field[0])
@@ -174,7 +178,7 @@ class Character():
 
     def usechip(self):
         """Use the next chip or set of chips."""
-        if not 'paralyzed' in self.status:
+        if not 'paralyzed' in self.status and not 'frozen' in self.status:
             chip = self.chips.pop()
             result = True
             # Handle the next chip if it should be used in a chain.

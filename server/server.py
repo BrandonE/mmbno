@@ -30,10 +30,12 @@ __all__ = ['application', 'config', 'factory', 'GameProtocol', 'server']
 config = json.loads(open('config.json').read())
 
 class GameProtocol(LineReceiver):
-    def characters(self, player, health, name, status, type):
+    def characters(self, player, health, image, maxhealth, name, status, type):
         """Send this characters data."""
         player = self.factory.players[player - 1]
         player.health = health
+        player.image = image
+        player.maxhealth = maxhealth
         player.name = name
         player.status = status
         player.type = type
@@ -160,7 +162,7 @@ class GameProtocol(LineReceiver):
                 raise Exception('Field desync')
             # If the new panel is out of bounds, contains a character, is
             # blank or broken without the character having airshoes, or the
-            # character is paralyzed, fail.
+            # character is paralyzed or frozen, fail.
             if (
                 (
                     (newcol > ((config['cols'] / 2) - 1)) ^
@@ -175,7 +177,8 @@ class GameProtocol(LineReceiver):
                     ) and
                     not 'airshoes' in info['status']
                 ) or
-                'paralyzed' in info['status']
+                'paralyzed' in info['status'] or
+                'frozen' in self.status
             ):
                 return
         # Empty the old panel.
@@ -310,6 +313,8 @@ class GameProtocol(LineReceiver):
         for value in self.factory.players:
             players.append({
                 'health': value.health,
+                'image': value.image,
+                'maxhealth': value.maxhealth,
                 'images': value.images,
                 'name': value.name,
                 'status': value.status,

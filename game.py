@@ -82,6 +82,8 @@ class GameProtocol(LineReceiver):
             'kwargs': {
                 'player': self.player,
                 'health': self.character.health,
+                'image': self.character.image,
+                'maxhealth': self.character.maxhealth,
                 'name': self.character.name,
                 'status': list(self.character.status),
                 'type': self.character.type
@@ -329,16 +331,6 @@ class GameProtocol(LineReceiver):
         print 'Enter: End Chip Selection'
         print 'Escape - End Game'
         player = self.players[self.player - 1]
-        if (
-            player and
-            (
-                self.character.health != player['health'] or
-                self.character.name != player['name'] or
-                list(self.character.status) != player['status'] or
-                self.character.type != player['type']
-            )
-        ):
-            self.characters()
         if not self.window.images:
             return
         self.window.batch = Batch()
@@ -420,6 +412,7 @@ class GameProtocol(LineReceiver):
                     shading = 'top'
                 if not row and rows > 1:
                     shading = 'bottom'
+                    y -= 5
                 image = self.window.images[
                     'panels'
                 ][color][panel['status']][shading]
@@ -441,7 +434,7 @@ class GameProtocol(LineReceiver):
                     if player and player['health']:
                         image = self.window.images[
                             'characters'
-                        ]['mega']['normal']['0']
+                        ]['mega'][player['image']]['0']
                         xoffset = 24
                         if (col > (cols / 2) - 1) ^ panel['stolen']:
                             image = image.get_transform()
