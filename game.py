@@ -48,7 +48,9 @@ class Window(Parent):
         self.batch = Batch()
         super(Window, self).__init__(**kwargs)
         self.images = loader(os.path.join('res', 'images'))
-        self.sprites = {}
+        self.sprites = {
+            'icons': []
+        }
         player = media.Player()
         player.eos_action = player.EOS_LOOP
         source = resource.media(
@@ -334,7 +336,6 @@ class GameProtocol(LineReceiver):
         if not self.window.images:
             return
         self.window.batch = Batch()
-        sprites = []
         rows = len(self.field)
         cols = len(self.field[0])
         xcenter = (self.window.width / 2) - (40 * (cols / 2))
@@ -352,7 +353,6 @@ class GameProtocol(LineReceiver):
             self.window.sprites['menu'].y = ycenter
             self.window.sprites['menu'].group = OrderedGroup(rows + 1)
             self.window.sprites['menu'].batch = self.window.batch
-            sprites.append(self.window.sprites['menu'])
             image = self.window.images['battle']['select'][
                 self.chips[self.picked[self.selection]].classification
             ]
@@ -367,11 +367,13 @@ class GameProtocol(LineReceiver):
             self.window.sprites['classification'].y = ycenter + 54
             self.window.sprites['classification'].group = OrderedGroup(rows)
             self.window.sprites['classification'].batch = self.window.batch
-            image = self.window.images['chips'][
+            image = self.window.images['chips']['big']
+            classification = self.window.images['chips'][
                 self.chips[self.picked[self.selection]].classification
-            ][
-                self.chips[self.picked[self.selection]].chip
             ]
+            chip = self.chips[self.picked[self.selection]].chip
+            if chip in classification:
+                image = classification[chip]
             if not 'chip' in self.window.sprites:
                 self.window.sprites['chip'] = Sprite(
                     image,
@@ -383,7 +385,45 @@ class GameProtocol(LineReceiver):
             self.window.sprites['chip'].y = ycenter + 87
             self.window.sprites['chip'].group = OrderedGroup(rows + 1)
             self.window.sprites['chip'].batch = self.window.batch
-            sprites.append(self.window.sprites['chip'])
+            image = self.window.images[
+                'battle'
+            ]['select']['cursors']['chip']['0']
+            if not 'cursor' in self.window.sprites:
+                self.window.sprites['cursor'] = Sprite(
+                    image,
+                    0,
+                    0
+                )
+            self.window.sprites['cursor'].image = image
+            self.window.sprites['cursor'].x = xcenter + 4 + (
+                16 * self.selection
+            )
+            self.window.sprites['cursor'].y = ycenter + 39
+            self.window.sprites['cursor'].group = OrderedGroup(rows + 1)
+            self.window.sprites['cursor'].batch = self.window.batch
+            for key, value in enumerate(self.picked):
+                if key:
+                    break
+                image = self.window.images['chips']['icon']
+                classification = self.window.images['chips'][
+                    self.chips[value].classification
+                ]['icons']
+                chip = self.chips[value].chip
+                if chip in classification:
+                    image = classification[chip]
+                if len(self.window.sprites['icons']) < key + 1:
+                    self.window.sprites['icons'].append(Sprite(
+                        image,
+                        0,
+                        0
+                    ))
+                self.window.sprites['icons'][key].image = image
+                self.window.sprites['icons'][key].x = xcenter + 8
+                self.window.sprites['icons'][key].y = ycenter + 39
+                self.window.sprites['icons'][key].group = OrderedGroup(
+                    rows + 1
+                )
+                self.window.sprites['icons'][key].batch = self.window.batch
             image = self.window.images['chips']['types'][
                 self.chips[self.picked[self.selection]].type
             ]
@@ -398,7 +438,6 @@ class GameProtocol(LineReceiver):
             self.window.sprites['type'].y = ycenter + 72
             self.window.sprites['type'].group = OrderedGroup(rows + 1)
             self.window.sprites['type'].batch = self.window.batch
-            sprites.append(self.window.sprites['type'])
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.field[row][col]
@@ -427,7 +466,6 @@ class GameProtocol(LineReceiver):
                 panel['sprite'].x = x
                 panel['sprite'].y = y
                 panel['sprite'].batch = self.window.batch
-                sprites.append(panel['sprite'])
                 character = panel['character']
                 if character:
                     player = self.players[character - 1]
@@ -452,7 +490,6 @@ class GameProtocol(LineReceiver):
                             range(rows - 1, -1, -1)[row] + 1
                         )
                         player['sprite'].batch = self.window.batch
-                        sprites.append(player['sprite'])
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
