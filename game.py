@@ -49,7 +49,9 @@ class Window(Parent):
         super(Window, self).__init__(**kwargs)
         self.images = loader(os.path.join('res', 'images'))
         self.sprites = {
-            'icons': []
+            'icons': [],
+            'selected': [],
+            'stack': []
         }
         player = media.Player()
         player.eos_action = player.EOS_LOOP
@@ -77,6 +79,26 @@ class Window(Parent):
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
+    def battle(self):
+        """Start the battle"""
+        # Finish the selection.
+        self.select = False
+        # Add the chips to the player.
+        for chip in self.selected:
+            self.character.chips.append(
+                self.chips[self.picked[chip]]
+            )
+        # Make the first selected the first used.
+        self.character.chips.reverse()
+        # Remove the chips from the library.
+        self.selected.sort()
+        offset = 0
+        for chip in self.selected:
+            del self.chips[
+                self.picked[chip] - offset
+            ]
+            offset += 1
+
     def characters(self):
         """Send this characters data."""
         self.send({
@@ -108,41 +130,34 @@ class GameProtocol(LineReceiver):
             # If the player is prompted to select a chip
             if self.select:
                 if symbol == key.RETURN:
-                    # Finish the selection.
-                    self.select = False
-                    # Add the chips to the player.
-                    for value in self.selected:
-                        self.character.chips.append(
-                            self.chips[self.picked[value]]
-                        )
-                    # Make the first selected the first used.
-                    self.character.chips.reverse()
-                    # Remove the chips from the library.
-                    self.selected.sort()
-                    offset = 0
-                    for value in self.selected:
-                        del self.chips[
-                            self.picked[value] - offset
-                        ]
-                        offset += 1
+                    if self.selection == 5:
+                        self.battle()
+                    self.selection = 5
+                if symbol == key.UP:
+                    self.cursor(-6)
+                if symbol == key.DOWN:
+                    self.cursor(6)
                 if symbol == key.RIGHT:
                     self.cursor(1)
                 if symbol == key.LEFT:
                     self.cursor(-1)
-                if symbol == key.A and self.equipable(
-                    self.selection
-                ):
-                    # Prepare to add the chip.
-                    self.selected.append(self.selection)
+                if symbol == key.A:
+                    if self.selection == 5:
+                        self.battle()
+                    elif self.selection == 9:
+                        pass
+                    elif self.equipable(self.selection):
+                        # Prepare to add the chip.
+                        self.selected.append(self.selection)
                 if symbol == key.S and self.selected:
                     # Undo the selection.
                     self.selected.pop()
             else:
                 # If the game is not over
                 winner = []
-                for value in self.players:
-                    if value and value['health']:
-                        winner.append(value['name'])
+                for player in self.players:
+                    if player and player['health']:
+                        winner.append(player['name'])
                 if len(winner) != 1:
                     row = self.character.row
                     col = self.character.col
@@ -176,17 +191,75 @@ class GameProtocol(LineReceiver):
 
     def cursor(self, cols):
         """Move the cursor for chip selection."""
-        newcol = self.selection + cols
-        if newcol >= 0 and newcol < len(self.picked):
-            self.selection = newcol
+        if abs(cols) == 6 and self.selection == 9 and self.right:
+            self.selection = 4
+            self.right = False
+            return
+        self.right = False
+        if cols == 1:
+            if self.selection == 5:
+                self.selection = 0
+                if self.picked[0] == None and config['shuffle']:
+                    self.selection = 9
+                return
+            if self.selection == 9:
+                self.selection = 5
+                return
+            if not config['shuffle'] and self.selection == 8:
+                self.selection = 5
+                return
+            if self.picked[self.selection + 1] == None and config['shuffle']:
+                self.selection = 9
+        if cols == -1:
+            if (
+                self.selection == 5 and
+                self.picked[0] == None and
+                config['shuffle']
+            ):
+                self.selection = 9
+                return
+            if self.selection == 0:
+                self.selection = 5
+                return
+            if self.selection == 9 and self.picked[6] == None:
+                self.selection = 2
+                while self.picked[self.selection] == None and self.selection:
+                    self.selection -= 1
+                if (
+                    self.picked[self.selection] == None and
+                    not self.selection
+                ):
+                    self.selection = 5
+                return
+        if abs(cols) == 6 and self.selection == 4 and config['shuffle']:
+            self.selection = 9
+            self.right = True
+            return
+        for newcol in (self.selection + cols, self.selection - cols):
+            if newcol >= 0 and newcol < len(self.picked):
+                if abs(cols) == 1 or self.picked[newcol] != None:
+                    self.selection = newcol
+                    while self.picked[self.selection] == None and self.selection:
+                        self.selection += cols
+                    if (
+                        self.picked[self.selection] == None and
+                        not self.selection
+                    ):
+                        self.selection = 5
+                    break
 
     def custom(self):
         """Redefine all the necessary values when prompting the custom bar."""
         self.custombar = 0
         self.character.chips = []
         self.pickchips()
+        self.right = False
         self.select = True
         self.selection = 0
+        if self.picked[0] == None:
+            self.selection = 5
+            if config['shuffle']:
+                self.selection = 9
         self.selected = []
 
     def draw(self):
@@ -204,35 +277,36 @@ class GameProtocol(LineReceiver):
             # Display the chip selection.
             menu = 'Custom: '
             for index, chip in enumerate(self.picked):
-                menu += '|'
-                cursor = '  '
-                if index == self.selection:
-                    cursor = '+ '
-                menu += cursor
-                power = ''
-                if hasattr(self.chips[chip], 'power'):
-                    power = ' %s' % (self.chips[chip].power)
-                equipable = self.equipable(index)
-                if equipable:
-                    equipable = ' '
-                else:
-                    equipable = 'X'
-                if not index in self.selected:
-                    menu += '%s%s %s %s %s' % (
-                        self.chips[chip].name,
-                        power,
-                        types[self.chips[chip].type],
-                        self.chips[chip].code,
-                        equipable
-                    )
-                else:
-                    menu += '%s%s %s %s %s' % (
-                        ' ' * len(self.chips[chip].name),
-                        ' ' * len(str(power)),
-                        ' ' * len(types[self.chips[chip].type]),
-                        ' ' * len(self.chips[chip].code),
-                        ' ' * len(equipable)
-                    )
+                if isinstance(chip, int):
+                    menu += '|'
+                    cursor = '  '
+                    if index == self.selection:
+                        cursor = '+ '
+                    menu += cursor
+                    power = ''
+                    if hasattr(self.chips[chip], 'power'):
+                        power = ' %s' % (self.chips[chip].power)
+                    equipable = self.equipable(index)
+                    if equipable:
+                        equipable = ' '
+                    else:
+                        equipable = 'X'
+                    if not index in self.selected:
+                        menu += '%s%s %s %s %s' % (
+                            self.chips[chip].name,
+                            power,
+                            types[self.chips[chip].type],
+                            self.chips[chip].code,
+                            equipable
+                        )
+                    else:
+                        menu += '%s%s %s %s %s' % (
+                            ' ' * len(self.chips[chip].name),
+                            ' ' * len(str(power)),
+                            ' ' * len(types[self.chips[chip].type]),
+                            ' ' * len(self.chips[chip].code),
+                            ' ' * len(equipable)
+                        )
             if self.picked:
                 menu += '|'
             print menu
@@ -246,7 +320,7 @@ class GameProtocol(LineReceiver):
         grid = ''
         cols = len(self.field[0])
         top = []
-        for value in range(0, cols):
+        for col in range(0, cols):
             top.append('-----')
         top = ' '.join(top)
         for row in range(len(self.field) - 1, -1, -1):
@@ -290,19 +364,19 @@ class GameProtocol(LineReceiver):
                 grid += ' %s%s%s |' % (status[panel['status']], label, blue)
             grid += '\n %s' % (top)
         print grid
-        for value in self.players:
-            if value:
-                print '\n%s' % (value['name'])
-                print '-HP: %s' % (value['health'])
-                print '-Status: %s' % (', '.join(value['status']))
-                print '-Type: %s' % (value['type'])
+        for player in self.players:
+            if player:
+                print '\n%s' % (player['name'])
+                print '-HP: %s' % (player['health'])
+                print '-Status: %s' % (', '.join(player['status']))
+                print '-Type: %s' % (player['type'])
         chips = []
         # Display the usable chips.
-        for value in self.character.chips:
+        for chip in self.character.chips:
             power = ''
-            if hasattr(value, 'power'):
-                power = ' %s' % (value.power)
-            chips.append('%s%s %s' % (value.name, power, types[value.type]))
+            if hasattr(chip, 'power'):
+                power = ' %s' % (chip.power)
+            chips.append('%s%s %s' % (chip.name, power, types[chip.type]))
         print '-Chips: %s' % (', '.join(chips))
         print '-Active Chip:'
         # Display the active chips.
@@ -318,9 +392,9 @@ class GameProtocol(LineReceiver):
                 print '--%s: %s' % (type, ', '.join(names))
         # If the game is over, display the winner prompt restarting.
         winner = []
-        for value in self.players:
-            if value and value['health']:
-                winner.append(value['name'])
+        for player in self.players:
+            if player and player['health']:
+                winner.append(player['name'])
         if not self.select and len(winner) == 1:
             print '\n%s wins! Press "r" to restart.' % (winner[0])
         print '\nControls:'
@@ -353,9 +427,12 @@ class GameProtocol(LineReceiver):
             self.window.sprites['menu'].y = ycenter
             self.window.sprites['menu'].group = OrderedGroup(rows + 1)
             self.window.sprites['menu'].batch = self.window.batch
-            image = self.window.images['battle']['select'][
-                self.chips[self.picked[self.selection]].classification
-            ]
+            selection = self.picked[self.selection]
+            image = self.window.images['battle']['select']['standard']
+            if isinstance(selection, int):
+                image = self.window.images['battle']['select'][
+                    self.chips[selection].classification
+                ]
             if not 'classification' in self.window.sprites:
                 self.window.sprites['classification'] = Sprite(
                     image,
@@ -365,15 +442,25 @@ class GameProtocol(LineReceiver):
             self.window.sprites['classification'].image = image
             self.window.sprites['classification'].x = xcenter
             self.window.sprites['classification'].y = ycenter + 54
-            self.window.sprites['classification'].group = OrderedGroup(rows)
+            self.window.sprites['classification'].group = OrderedGroup(rows + 1)
             self.window.sprites['classification'].batch = self.window.batch
-            image = self.window.images['chips']['big']
-            classification = self.window.images['chips'][
-                self.chips[self.picked[self.selection]].classification
-            ]
-            chip = self.chips[self.picked[self.selection]].chip
-            if chip in classification:
-                image = classification[chip]
+            if isinstance(selection, int):
+                image = self.window.images['chips']['big']
+                classification = self.window.images['chips'][
+                    self.chips[selection].classification
+                ]
+                chip = self.chips[selection].chip
+                if chip in classification:
+                    image = classification[chip]
+            else:
+                info = 'nodata'
+                if self.selected:
+                    info = 'sendchip'
+                if self.selection == 9:
+                    info = 'shuffle'
+                image = self.window.images[
+                    'battle'
+                ]['select']['info'][info]
             if not 'chip' in self.window.sprites:
                 self.window.sprites['chip'] = Sprite(
                     image,
@@ -383,8 +470,23 @@ class GameProtocol(LineReceiver):
             self.window.sprites['chip'].image = image
             self.window.sprites['chip'].x = xcenter + 15
             self.window.sprites['chip'].y = ycenter + 87
-            self.window.sprites['chip'].group = OrderedGroup(rows + 1)
+            self.window.sprites['chip'].group = OrderedGroup(rows + 2)
             self.window.sprites['chip'].batch = self.window.batch
+            if isinstance(selection, int):
+                image = self.window.images['chips']['types'][
+                    self.chips[selection].type
+                ]
+                if not 'type' in self.window.sprites:
+                    self.window.sprites['type'] = Sprite(
+                        image,
+                        0,
+                        0
+                    )
+                self.window.sprites['type'].image = image
+                self.window.sprites['type'].x = xcenter + 25
+                self.window.sprites['type'].y = ycenter + 72
+                self.window.sprites['type'].group = OrderedGroup(rows + 2)
+                self.window.sprites['type'].batch = self.window.batch
             image = self.window.images[
                 'battle'
             ]['select']['cursors']['chip']['0']
@@ -394,50 +496,99 @@ class GameProtocol(LineReceiver):
                     0,
                     0
                 )
-            self.window.sprites['cursor'].image = image
+            xoffset = self.selection
+            yoffset = 0
+            if xoffset > 5:
+                xoffset = xoffset - 6
+                yoffset = -24
             self.window.sprites['cursor'].x = xcenter + 4 + (
-                16 * self.selection
+                16 * xoffset
             )
-            self.window.sprites['cursor'].y = ycenter + 39
-            self.window.sprites['cursor'].group = OrderedGroup(rows + 1)
+            self.window.sprites['cursor'].y = ycenter + 39 + yoffset
+            if self.selection == 5:
+                image = self.window.images[
+                    'battle'
+                ]['select']['cursors']['ok']['0']
+                self.window.sprites['cursor'].x = xcenter + 89
+                self.window.sprites['cursor'].y = ycenter + 26
+            if self.selection == 9:
+                image = self.window.images[
+                    'battle'
+                ]['select']['cursors']['shuffle']['0']
+                self.window.sprites['cursor'].x = xcenter + 57
+                self.window.sprites['cursor'].y = ycenter + 11
+            self.window.sprites['cursor'].image = image
+            self.window.sprites['cursor'].group = OrderedGroup(rows + 3)
             self.window.sprites['cursor'].batch = self.window.batch
-            for key, value in enumerate(self.picked):
-                if key:
-                    break
+            if config['shuffle']:
+                image = self.window.images['battle']['select']['shuffle']['on']
+                if not 'shuffle' in self.window.sprites:
+                    self.window.sprites['shuffle'] = Sprite(
+                        image,
+                        0,
+                        0
+                    )
+                self.window.sprites['shuffle'].image = image
+                self.window.sprites['shuffle'].x = xcenter + 58
+                self.window.sprites['shuffle'].y = ycenter + 10
+                self.window.sprites['shuffle'].group = OrderedGroup(rows + 2)
+                self.window.sprites['shuffle'].batch = self.window.batch
+            for index, chip in enumerate(self.picked):
+                if isinstance(chip, int) and not index in self.selected:
+                    image = self.window.images['chips']['icon']
+                    classification = self.window.images['chips'][
+                        self.chips[chip].classification
+                    ]['icons']
+                    chip = self.chips[chip].chip
+                    if chip in classification:
+                        image = classification[chip]
+                    while len(self.window.sprites['icons']) < index:
+                        self.window.sprites['icons'].append(None)
+                    if len(self.window.sprites['icons']) < index + 1:
+                        self.window.sprites['icons'].append(Sprite(
+                            image,
+                            0,
+                            0
+                        ))
+                    xoffset = index
+                    yoffset = 0
+                    if xoffset > 5:
+                        xoffset -= 6
+                        yoffset = -24
+                    self.window.sprites['icons'][index].image = image
+                    self.window.sprites['icons'][index].x = xcenter + 9 + (
+                        16 * xoffset
+                    )
+                    self.window.sprites['icons'][index].y = ycenter + 41 + (
+                        yoffset
+                    )
+                    self.window.sprites['icons'][index].group = OrderedGroup(
+                        rows + 1
+                    )
+                    self.window.sprites['icons'][index].batch = self.window.batch
+            for index, chip in enumerate(self.selected):
                 image = self.window.images['chips']['icon']
                 classification = self.window.images['chips'][
-                    self.chips[value].classification
+                    self.chips[self.picked[chip]].classification
                 ]['icons']
-                chip = self.chips[value].chip
+                chip = self.chips[self.picked[chip]].chip
                 if chip in classification:
                     image = classification[chip]
-                if len(self.window.sprites['icons']) < key + 1:
-                    self.window.sprites['icons'].append(Sprite(
+                if len(self.window.sprites['selected']) < index + 1:
+                    self.window.sprites['selected'].append(Sprite(
                         image,
                         0,
                         0
                     ))
-                self.window.sprites['icons'][key].image = image
-                self.window.sprites['icons'][key].x = xcenter + 8
-                self.window.sprites['icons'][key].y = ycenter + 39
-                self.window.sprites['icons'][key].group = OrderedGroup(
+                self.window.sprites['selected'][index].image = image
+                self.window.sprites['selected'][index].x = xcenter + 97
+                self.window.sprites['selected'][index].y = ycenter + 121 - (
+                    16 * index
+                )
+                self.window.sprites['selected'][index].group = OrderedGroup(
                     rows + 1
                 )
-                self.window.sprites['icons'][key].batch = self.window.batch
-            image = self.window.images['chips']['types'][
-                self.chips[self.picked[self.selection]].type
-            ]
-            if not 'type' in self.window.sprites:
-                self.window.sprites['type'] = Sprite(
-                    image,
-                    0,
-                    0
-                )
-            self.window.sprites['type'].image = image
-            self.window.sprites['type'].x = xcenter + 25
-            self.window.sprites['type'].y = ycenter + 72
-            self.window.sprites['type'].group = OrderedGroup(rows + 1)
-            self.window.sprites['type'].batch = self.window.batch
+                self.window.sprites['selected'][index].batch = self.window.batch
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.field[row][col]
@@ -490,6 +641,79 @@ class GameProtocol(LineReceiver):
                             range(rows - 1, -1, -1)[row] + 1
                         )
                         player['sprite'].batch = self.window.batch
+                if not self.select and len(winner) != 1:
+                    chips = self.character.chips[:]
+                    chips.reverse()
+                    for index, chip in enumerate(chips):
+                        x = xcenter + (40 * self.character.col) - (2 * index)
+                        y = ycenter + (30 * self.character.row) + (2 * index)
+                        border = self.window.images['battle']['extra'][
+                            'iconborder'
+                        ]
+                        icon = self.window.images['chips']['icon']
+                        classification = self.window.images['chips'][
+                            chip.classification
+                        ]['icons']
+                        chip = chip.chip
+                        if chip in classification:
+                            icon = classification[chip]
+                        if len(
+                            self.window.sprites['stack']
+                        ) < index + 1:
+                            self.window.sprites['stack'].append({
+                                'border': Sprite(
+                                    border,
+                                    0,
+                                    0
+                                ),
+                                'icon': Sprite(
+                                    icon,
+                                    0,
+                                    0
+                                )
+                            })
+                        self.window.sprites['stack'][
+                            index
+                        ]['border'].image = border
+                        self.window.sprites['stack'][
+                            index
+                        ]['border'].x = x + 19
+                        self.window.sprites['stack'][
+                            index
+                        ]['border'].y = y + 48
+                        self.window.sprites['stack'][
+                            index
+                        ]['border'].group = OrderedGroup(
+                            rows + range(
+                                len(self.character.chips) - 1,
+                                -1,
+                                -1
+                            )[index]
+                        )
+                        self.window.sprites['stack'][
+                            index
+                        ]['border'].batch = self.window.batch
+                        self.window.sprites['stack'][
+                            index
+                        ]['icon'].image = icon
+                        self.window.sprites['stack'][
+                            index
+                        ]['icon'].x = x + 20
+                        self.window.sprites['stack'][
+                            index
+                        ]['icon'].y = y + 49
+                        self.window.sprites['stack'][
+                            index
+                        ]['icon'].group = OrderedGroup(
+                            rows + range(
+                                len(self.character.chips) - 1,
+                                -1,
+                                -1
+                            )[index]
+                        )
+                        self.window.sprites['stack'][
+                            index
+                        ]['icon'].batch = self.window.batch
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
@@ -498,7 +722,7 @@ class GameProtocol(LineReceiver):
         if (
             chip in self.selected or
             len(self.selected) > 4 or
-            chip > len(self.chips) - 1
+            self.picked[chip] > len(self.chips) - 1
         ):
             return
         # Add the chip in question to see if the new set fits the conditions.
@@ -507,8 +731,8 @@ class GameProtocol(LineReceiver):
         codes = set([])
         names = set([])
         success = True
-        for value in self.selected:
-            thischip = self.chips[self.picked[value]]
+        for chip in self.selected:
+            thischip = self.chips[self.picked[chip]]
             if thischip.code != '*':
                 codes.add(thischip.code)
             names.add(thischip.name)
@@ -602,11 +826,19 @@ class GameProtocol(LineReceiver):
     def pickchips(self):
         """Pick a certain amount of random chips for selection."""
         picked = set([])
-        # While there are chips to pick and the list is under 8, pick.
-        while len(self.chips) != len(picked) and len(picked) < 8:
+        limit = 5
+        if config['extra']:
+            limit = 8
+        # While there are chips to pick and the list is under the limit, pick.
+        while len(self.chips) != len(picked) and len(picked) < limit:
             picked.add(randint(0, len(self.chips) - 1))
         self.picked = list(picked)
         shuffle(self.picked)
+        while len(self.picked) != 8:
+            self.picked.append(None)
+        self.picked = self.picked[0:5] + ['select'] + self.picked[5:8]
+        if config['shuffle']:
+            self.picked.append('shuffle')
 
     def send(self, line, **kwargs):
         """Messages are always to be sent as a JSON string."""
@@ -617,7 +849,7 @@ class GameProtocol(LineReceiver):
         self.flip = flip
         self.player = player
         players = []
-        for value in range(0, player):
+        for index in range(0, player):
             players.append({})
         self.update(field, players)
         self.chips = json.loads(
@@ -678,8 +910,8 @@ class GameProtocol(LineReceiver):
     def update(self, field, players):
         """Update the game data."""
         if self.flip:
-            for value in field:
-                value.reverse()
+            for row in field:
+                row.reverse()
         if self.field:
             for row in range(0, len(field)):
                 for col in range(0, len(field[0])):
