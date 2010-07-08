@@ -145,7 +145,8 @@ class GameProtocol(LineReceiver):
                     if self.selection == 5:
                         self.battle()
                     elif self.selection == 9:
-                        pass
+                        self.pickchips()
+                        self.shuffled = True
                     elif self.equipable(self.selection):
                         # Prepare to add the chip.
                         self.selected.append(self.selection)
@@ -252,20 +253,22 @@ class GameProtocol(LineReceiver):
         """Redefine all the necessary values when prompting the custom bar."""
         self.custombar = 0
         self.character.chips = []
-        self.pickchips()
+        self.picked = []
         self.right = False
-        self.select = True
         self.selection = 0
+        self.selected = []
+        self.shuffled = False
+        self.pickchips()
         if self.picked[0] == None:
             self.selection = 5
             if config['shuffle']:
                 self.selection = 9
-        self.selected = []
+        self.select = True
 
     def draw(self):
         """Draw the screen"""
         # Start by clearing the screen.
-        os.system('cls')
+        #os.system('cls')
         # Graphically display a character or chip's type.
         types = {
             'wind': 'A',
@@ -521,7 +524,13 @@ class GameProtocol(LineReceiver):
             self.window.sprites['cursor'].group = OrderedGroup(rows + 3)
             self.window.sprites['cursor'].batch = self.window.batch
             if config['shuffle']:
-                image = self.window.images['battle']['select']['shuffle']['on']
+                image = self.window.images['battle']['select']['shuffle'][
+                    'on'
+                ]
+                if self.shuffled:
+                    image = self.window.images['battle']['select']['shuffle'][
+                        'off'
+                    ]
                 if not 'shuffle' in self.window.sprites:
                     self.window.sprites['shuffle'] = Sprite(
                         image,
@@ -567,28 +576,65 @@ class GameProtocol(LineReceiver):
                     )
                     self.window.sprites['icons'][index].batch = self.window.batch
             for index, chip in enumerate(self.selected):
-                image = self.window.images['chips']['icon']
+                icon = self.window.images['chips']['icon']
+                selected = self.window.images['battle']['select']['selected']
                 classification = self.window.images['chips'][
                     self.chips[self.picked[chip]].classification
                 ]['icons']
                 chip = self.chips[self.picked[chip]].chip
                 if chip in classification:
-                    image = classification[chip]
+                    icon = classification[chip]
                 if len(self.window.sprites['selected']) < index + 1:
-                    self.window.sprites['selected'].append(Sprite(
-                        image,
-                        0,
-                        0
-                    ))
-                self.window.sprites['selected'][index].image = image
-                self.window.sprites['selected'][index].x = xcenter + 97
-                self.window.sprites['selected'][index].y = ycenter + 121 - (
+                    self.window.sprites['selected'].append({
+                        'icon': Sprite(
+                            icon,
+                            0,
+                            0
+                        ),
+                        'selected': Sprite(
+                            selected,
+                            0,
+                            0
+                        ),
+                    })
+                self.window.sprites['selected'][
+                    index
+                ]['icon'].image = icon
+                self.window.sprites['selected'][
+                    index
+                ]['icon'].x = xcenter + 97
+                self.window.sprites['selected'][
+                    index
+                ]['icon'].y = ycenter + 121 - (
                     16 * index
                 )
-                self.window.sprites['selected'][index].group = OrderedGroup(
+                self.window.sprites['selected'][
+                    index
+                ]['icon'].group = OrderedGroup(
+                    rows + 2
+                )
+                self.window.sprites['selected'][
+                    index
+                ]['icon'].batch = self.window.batch
+                self.window.sprites['selected'][
+                    index
+                ]['selected'].image = selected
+                self.window.sprites['selected'][
+                    index
+                ]['selected'].x = xcenter + 93
+                self.window.sprites['selected'][
+                    index
+                ]['selected'].y = ycenter + 120 - (
+                    16 * index
+                )
+                self.window.sprites['selected'][
+                    index
+                ]['selected'].group = OrderedGroup(
                     rows + 1
                 )
-                self.window.sprites['selected'][index].batch = self.window.batch
+                self.window.sprites['selected'][
+                    index
+                ]['selected'].batch = self.window.batch
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.field[row][col]
@@ -829,16 +875,41 @@ class GameProtocol(LineReceiver):
         limit = 5
         if config['extra']:
             limit = 8
+        chips = self.chips[:]
+        limit -= len(self.selected)
+        deleted = []
+        for value in self.selected:
+            chip = self.picked[value]
+            offset = 0
+            for value2 in deleted:
+                if value2 < chip:
+                    offset -= 1
+            del chips[chip + offset]
+            deleted.append(chip)
         # While there are chips to pick and the list is under the limit, pick.
-        while len(self.chips) != len(picked) and len(picked) < limit:
-            picked.add(randint(0, len(self.chips) - 1))
-        self.picked = list(picked)
-        shuffle(self.picked)
-        while len(self.picked) != 8:
-            self.picked.append(None)
-        self.picked = self.picked[0:5] + ['select'] + self.picked[5:8]
+        while len(chips) != len(picked) and len(picked) < limit:
+            picked.add(randint(0, len(chips) - 1))
+        picked = list(picked)
+        shuffle(picked)
+        while len(picked) != 8:
+            picked.append(None)
+        selected = self.selected[:]
+        selected.sort()
+        for index in selected:
+            chip = self.picked[index]
+            if index > 5:
+                index -= 1
+            picked = picked[0:index] + [chip] + picked[
+                index:
+                len(picked)
+            ]
+        print picked
+        while len(picked) != 8:
+            picked.pop()
+        picked = picked[0:5] + ['select'] + picked[5:9]
         if config['shuffle']:
-            self.picked.append('shuffle')
+            picked.append('shuffle')
+        self.picked = picked
 
     def send(self, line, **kwargs):
         """Messages are always to be sent as a JSON string."""
