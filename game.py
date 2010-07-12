@@ -816,9 +816,8 @@ class GameProtocol(LineReceiver):
                 )
             ).read()
         )
-        self.chips = self.chips[0:8]
-        #if len(self.chips) != 30:
-            #raise Exception('Your chip folder must have exactly 30 chips.')
+        if len(self.chips) != 30:
+            raise Exception('Your chip folder must have exactly 30 chips.')
         module = __import__(
             'characters.%s' % (config['character']),
             globals(),
@@ -988,12 +987,7 @@ def loader(path, function):
     return images
 
 def loadmedia(path):
-    player = media.Player()
-    player.queue(resource.media(path))
-    @player.event
-    def on_eos():
-        player.pause()
-    return player
+    return media.load(path, streaming=False)
 
 factory = protocol.ClientFactory()
 factory.protocol = GameProtocol
