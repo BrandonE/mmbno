@@ -101,18 +101,6 @@ class GameProtocol(LineReceiver):
             del self.chips[self.picked[chip] - offset]
             offset += 1
 
-    def button_shuffle(self):
-        image = self.window.images['battle']['select']['shuffle']['on']
-        if self.shuffled:
-            image = self.window.images['battle']['select']['shuffle']['off']
-        if not 'shuffle' in self.window.sprites:
-            self.window.sprites['shuffle'] = Sprite(image, 0, 0)
-        self.window.sprites['shuffle'].image = image
-        self.window.sprites['shuffle'].x = xcenter + 58
-        self.window.sprites['shuffle'].y = ycenter + 10
-        self.window.sprites['shuffle'].group = OrderedGroup(rows + 2)
-        self.window.sprites['shuffle'].batch = self.window.batch
-
     def characters(self):
         """Send this characters data."""
         self.send({
@@ -250,7 +238,8 @@ class GameProtocol(LineReceiver):
             if newcol >= 0 and newcol < len(self.picked):
                 if abs(cols) == 1 or self.picked[newcol] != None:
                     self.selection = newcol
-                    while (self.picked[self.selection] == None and
+                    while (
+                        self.picked[self.selection] == None and
                         self.selection
                     ):
                         self.selection += cols
@@ -512,8 +501,20 @@ class GameProtocol(LineReceiver):
             self.window.sprites['cursor'].group = OrderedGroup(rows + 3)
             self.window.sprites['cursor'].batch = self.window.batch
             if config['shuffle']:
-                self.button_shuffle()
-
+                image = self.window.images[
+                    'battle'
+                ]['select']['shuffle']['on']
+                if self.shuffled:
+                    image = self.window.images[
+                        'battle'
+                    ]['select']['shuffle']['off']
+                if not 'shuffle' in self.window.sprites:
+                    self.window.sprites['shuffle'] = Sprite(image, 0, 0)
+                self.window.sprites['shuffle'].image = image
+                self.window.sprites['shuffle'].x = xcenter + 58
+                self.window.sprites['shuffle'].y = ycenter + 10
+                self.window.sprites['shuffle'].group = OrderedGroup(rows + 2)
+                self.window.sprites['shuffle'].batch = self.window.batch
             for index, chip in enumerate(self.picked):
                 if isinstance(chip, int) and not index in self.selected:
                     image = self.window.images['chips']['icon']
