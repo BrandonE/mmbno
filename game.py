@@ -136,6 +136,8 @@ class GameProtocol(LineReceiver):
                         self.selection['col'] == 5
                     ):
                         self.battle()
+                        return
+                    self.fx('cursor')
                     self.selection['row'] = 0
                     self.selection['col'] = 5
                 if symbol == key.UP or symbol == key.DOWN:
@@ -203,8 +205,8 @@ class GameProtocol(LineReceiver):
 
     def cursor(self, rows = 0, cols = 0):
         """Move the cursor for chip selection."""
-        self.fx('cursor')
         selection = self.selection
+        old = selection.copy()
         if rows == 1:
             if selection['row']:
                 selection['row'] = 0
@@ -213,11 +215,11 @@ class GameProtocol(LineReceiver):
                 if self.highlighted() > len(self.chips) - 1:
                     selection['row'] = 1
                     selection['col'] = 3
-                    return
             elif (
                 (
-                    selection['col'] + 5 < len(self.chips)
-                    and config['extra']
+                    selection['col'] != 5 and
+                    selection['col'] + 5 < len(self.chips) and
+                    config['extra']
                 ) or
                 (
                     selection['col'] in (3, 4) and
@@ -228,7 +230,6 @@ class GameProtocol(LineReceiver):
                 if selection['col'] == 4 and config['shuffle']:
                     selection['col'] = 3
                     self.right = True
-                    return
         elif cols == 1:
             if selection['col'] == 5 and self.chips:
                 selection['col'] = 0
@@ -252,7 +253,6 @@ class GameProtocol(LineReceiver):
                             self.right = True
                         selection['row'] = 1
                         selection['col'] = 3
-                        return
                     else:
                         selection['row'] = 0
                         selection['col'] = 5
@@ -265,7 +265,6 @@ class GameProtocol(LineReceiver):
                 selection['row'] = 1
                 selection['col'] = 3
                 self.right = True
-                return
             elif selection['col'] == 0:
                 selection['row'] = 0
                 selection['col'] = 5
@@ -286,7 +285,10 @@ class GameProtocol(LineReceiver):
             if not self.chips:
                 selection['row'] = 0
                 selection['col'] = 5
-        self.right = False
+        if selection['row'] != 1 or selection['col'] != 3:
+            self.right = False
+        if selection != old:
+            self.fx('cursor')
 
     def custom(self):
         """Redefine all the necessary values when prompting the custom bar."""
