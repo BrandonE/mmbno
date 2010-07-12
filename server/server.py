@@ -116,7 +116,6 @@ class GameProtocol(LineReceiver):
     def images(self, player, images):
         """Forward the images."""
         self.factory.players[player - 1].images = images
-        print images
 
     def lineReceived(self, line):
         loaded = json.loads(line)
@@ -250,7 +249,6 @@ class GameProtocol(LineReceiver):
         if not self.factory.field[0][0]['character']:
             self.factory.field[0][0]['character'] = player
         else:
-            print self.factory.field[0][0]['character']
             last = config['cols'] - 1
             self.factory.field[0][last]['character'] = player
             character.col = last
