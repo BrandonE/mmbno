@@ -1,7 +1,7 @@
 {
     "character": "mega",
     "chipfolder": "1",
-    "extra": false,
+    "extra": true,
     "fx": true,
     "ip": "localhost",
     "music": null,
