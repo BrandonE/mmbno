@@ -22,7 +22,7 @@ __all__ = ['Chip']
 
 class Chip(Parent):
     """A version of the Chip class."""
-    def damage(self, power):
+    def damage(self, power, type, flinch):
         """Handle damage."""
         self.health -= power
         if self.health <= 0:
