@@ -29,7 +29,8 @@ class Character():
         # Chips that modify the character temporarily.
         self.activechips = {
             'damage': {},
-            'move': set([]),
+            'move': {},
+            'moved': set([]),
             'time': set([])
         }
         self.chips = []
@@ -58,11 +59,15 @@ class Character():
         """Use a charge shot."""
         self.shoot(self.power * 10, self.type)
 
-    def damage(self, power):
+    def damage(self, power, type, flinch):
         """Handle damage."""
         self.health -= power
         if self.health <= 0:
             self.health = 0
+        status = self.owner.field[self.row][self.col]['status']
+        # Freeze if the the panel is frozen and attack is aqua.
+        if status == 'frozen' and type == 'aqua':
+            self.status.add('frozen')
 
     def deactivatechip(self, chip, type):
         """Remove a chip to the active chips."""
@@ -113,15 +118,18 @@ class Character():
             power = int(ceil(power / 2))
         # If an active chip exists, override the original handling.
         if self.activechips['damage']:
-            self.priority('damage').damage(power)
-            return
-        self.damage(power)
-        # Freeze if the the panel is frozen and attack is aqua.
-        if status == 'frozen' and type == 'aqua':
-            self.status.add('frozen')
+            self.priority('damage').damage(power, type, flinch)
+        else:
+            self.damage(power, type, flinch)
         self.owner.characters()
 
-    def move(self, row, col, fire):
+    def move(self, row, col, rows = 0, cols = 0, force = False):
+        if self.activechips['move']:
+            self.priority('move').damage(row, col, rows, cols, force)
+            return
+        self.movement(row, col, rows, cols, force)
+
+    def moved(self, row, col, fire):
         """Handle movement."""
         self.row = row
         self.col = col
@@ -130,9 +138,12 @@ class Character():
         if fire:
             self.hit(10, 'fire')
         # Run all of the active chip modifiers.
-        converted = list(self.activechips['move'])
+        converted = list(self.activechips['moved'])
         for value in converted:
-            value.move()
+            value.moved()
+
+    def movement(self, row, col, rows = 0, cols = 0, force = False):
+        self.owner.move(row, col, rows, cols, force)
 
     def priority(self, type):
         """Grab the active chip with the highest priority."""

@@ -206,7 +206,7 @@ class GameProtocol(LineReceiver):
         self.update()
         self.sendone(
             {
-                'function': 'move',
+                'function': 'moved',
                 'kwargs': {
                     'row': row,
                     'col': col,

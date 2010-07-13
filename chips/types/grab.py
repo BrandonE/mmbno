@@ -25,17 +25,17 @@ class Chip(Parent):
     def activate(self):
         """Add the chip to the active chips."""
         # Remove the old Grab active chips.
-        for type in ['move', 'time']:
+        for type in ['moved', 'time']:
             discard = []
             for chip in self.owner.activechips[type]:
                 if chip.name in ['AreaGrab', 'PanelGrab']:
                     discard.append(chip)
             for value in discard:
                 self.owner.activechips[type].discard(chip)
-        self.owner.activatechip(self, 'move')
+        self.owner.activatechip(self, 'moved')
         self.owner.activatechip(self, 'time')
 
-    def move(self):
+    def moved(self):
         """Do something after moving."""
         # If the counter has expired
         if self.count == self.limit:
@@ -66,7 +66,7 @@ class Chip(Parent):
                     for row in range(0, rows):
                         self.owner.owner.panel(row, col, stolen=False)
             if deactivate:
-                self.owner.deactivatechip(self, 'move')
+                self.owner.deactivatechip(self, 'moved')
                 self.owner.deactivatechip(self, 'time')
 
     def properties(self):
@@ -85,4 +85,4 @@ class Chip(Parent):
         # Increment the counter if not expired.
         if self.count != self.limit:
             self.count += 1
-        self.move()
+        self.moved()

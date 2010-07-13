@@ -23,7 +23,7 @@ try:
 except ImportError:
     import json
 
-from pyglet import media, resource
+from pyglet import clock, media, resource
 from pyglet.window import key, Window as Parent
 from pyglet.graphics import Batch, OrderedGroup
 from pyglet.sprite import Sprite
@@ -90,6 +90,7 @@ class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
     def battle(self):
         """Start the battle"""
+        clock.unschedule(animate)
         self.fx('send')
         # Finish the selection.
         self.select = False
@@ -119,6 +120,7 @@ class GameProtocol(LineReceiver):
         })
 
     def connectionMade(self):
+        reactor.protocol = self
         self.ready = False
         self.field = []
         self.players = []
@@ -136,10 +138,10 @@ class GameProtocol(LineReceiver):
                         self.selection['col'] == 5
                     ):
                         self.battle()
-                        return
-                    self.fx('cursor')
-                    self.selection['row'] = 0
-                    self.selection['col'] = 5
+                    else:
+                        self.fx('cursor')
+                        self.selection['row'] = 0
+                        self.selection['col'] = 5
                 if symbol == key.UP or symbol == key.DOWN:
                     self.cursor(rows=1)
                 if symbol == key.RIGHT:
@@ -176,13 +178,13 @@ class GameProtocol(LineReceiver):
                     row = self.character.row
                     col = self.character.col
                     if symbol == key.UP:
-                        self.move(row, col, rows=1)
+                        self.character.move(row, col, rows=1)
                     if symbol == key.DOWN:
-                        self.move(row, col, rows=-1)
+                        self.character.move(row, col, rows=-1)
                     if symbol == key.RIGHT:
-                        self.move(row, col, cols=1)
+                        self.character.move(row, col, cols=1)
                     if symbol == key.LEFT:
-                        self.move(row, col, cols=-1)
+                        self.character.move(row, col, cols=-1)
                     if symbol == key.A and self.character.chips:
                         self.character.usechip()
                     if symbol == key.S:
@@ -292,6 +294,7 @@ class GameProtocol(LineReceiver):
 
     def custom(self):
         """Redefine all the necessary values when prompting the custom bar."""
+        clock.unschedule(animate)
         self.fx('menu')
         self.custombar = 0
         self.character.chips = []
@@ -517,9 +520,20 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['type'].y = ycenter + 72
                 self.window.sprites['type'].group = self.group(rows + 2)
                 self.window.sprites['type'].batch = self.window.batch
-            image = self.window.images[
-                'battle'
-            ]['select']['cursors']['chip']['0']
+            cursor = 'chip'
+            if not self.selection['row'] and self.selection['col'] == 5:
+                cursor = 'ok'
+            if self.selection['row'] and self.selection['col'] == 3:
+                cursor = 'shuffle'
+            image = self.window.images['battle']['select']['cursors'][cursor]
+            if not 'frames' in image:
+                frames = []
+                for frame in image.items():
+                    frames.append(frame[1])
+                image['frames'] = frames
+                image['index'] = 0
+                clock.schedule_interval(animate, .13, image=image)
+            image = image['frames'][image['index']]
             if not 'cursor' in self.window.sprites:
                 self.window.sprites['cursor'] = Sprite(image, 0, 0)
             xoffset = self.selection['col']
@@ -529,15 +543,9 @@ class GameProtocol(LineReceiver):
             self.window.sprites['cursor'].x = xcenter + 4 + (16 * xoffset)
             self.window.sprites['cursor'].y = ycenter + 39 + yoffset
             if not self.selection['row'] and self.selection['col'] == 5:
-                image = self.window.images[
-                    'battle'
-                ]['select']['cursors']['ok']['0']
                 self.window.sprites['cursor'].x = xcenter + 89
                 self.window.sprites['cursor'].y = ycenter + 26
             if self.selection['row'] and self.selection['col'] == 3:
-                image = self.window.images[
-                    'battle'
-                ]['select']['cursors']['shuffle']['0']
                 self.window.sprites['cursor'].x = xcenter + 57
                 self.window.sprites['cursor'].y = ycenter + 11
             self.window.sprites['cursor'].image = image
@@ -685,8 +693,17 @@ class GameProtocol(LineReceiver):
                 if character:
                     player = self.players[character - 1]
                     if player and player['health']:
-                        image = self.window.images['characters'
-                        ]['mega'][player['image']]['0']
+                        image = self.window.images['characters']['mega'][
+                            player['image']
+                        ]
+                        if not 'frames' in image:
+                            frames = []
+                            for frame in image.items():
+                                frames.append(frame[1])
+                            image['frames'] = frames
+                            image['index'] = 0
+                            clock.schedule_interval(animate, .13, image=image)
+                        image = image['frames'][image['index']]
                         xoffset = 24
                         if (col > (cols / 2) - 1) ^ panel['stolen']:
                             image = image.get_transform()
@@ -849,7 +866,7 @@ class GameProtocol(LineReceiver):
         if self.flip:
             self.character.col = range(len(self.field[0]) - 1, -1, -1)[col]
 
-    def move(self, row, col, rows=0, cols=0, force=False):
+    def move(self, row, col, rows, cols, force):
         """Move the player if possible."""
         self.send({
             'function': 'move',
@@ -966,6 +983,12 @@ class GameProtocol(LineReceiver):
             self.players.pop()
             if len(self.players) < self.player:
                 self.player -= 1
+
+def animate(dt, image):
+    if image['index'] == len(image['frames']) - 1:
+        image['index'] = -1
+    image['index'] += 1
+    reactor.protocol.draw()
 
 def loader(path, function):
     """Load resources from a directory recursively."""
