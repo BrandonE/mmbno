@@ -42,7 +42,7 @@ class Chip(Parent):
                 panel['character'] and
                 ((col > (cols / 2) - 1) ^ panel['stolen'])
             ):
-                self.owner.owner.hit(row, col, self.power, False)
+                self.owner.owner.hit(row, col, self.power, self.type)
                 # Move it back 1.
                 self.owner.owner.move(row, col, cols=1)
                 break
