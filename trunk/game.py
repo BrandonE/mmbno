@@ -23,17 +23,17 @@ try:
 except ImportError:
     import json
 
-from pyglet import clock, media, resource
+from pyglet import image, media, resource
 from pyglet.window import key, Window as Parent
 from pyglet.graphics import Batch, OrderedGroup
 from pyglet.sprite import Sprite
-from reactor import reactor
+
 from twisted.internet import protocol
 from twisted.protocols.basic import LineReceiver
 
 __all__ = [
-    'config', 'factory', 'GameProtocol', 'get_absolute', 'get_relative',
-    'Window'
+    'ChipFolderError', 'config', 'factory', 'GameProtocol',
+    'InvalidChipcodeError', 'loader', 'loadmedia', 'Window'
 ]
 
 config = json.loads(open('config.json').read())
@@ -56,11 +56,21 @@ class Window(Parent):
         self.owner = owner
         self.batch = Batch()
         super(Window, self).__init__(**kwargs)
+        
         self.fx = loader(os.path.join('res', 'sound', 'fx'), loadmedia)
         self.groups = {}
         self.images = loader(os.path.join('res', 'images'), resource.image)
         self.sprites = {'icons': [], 'selected': [], 'stack': []}
-
+        self.set_icon(
+            image.load(
+                os.path.join(
+                    'res',
+                    'images',
+                    'icons',
+                    '32x32.png'
+                ).replace('\\', '/')
+            )
+        )
         player = media.Player()
         player.eos_action = player.EOS_LOOP
         if config['music']:
@@ -90,7 +100,6 @@ class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
     def battle(self):
         """Start the battle"""
-        clock.unschedule(animate)
         self.fx('send')
         # Finish the selection.
         self.select = False
@@ -120,7 +129,6 @@ class GameProtocol(LineReceiver):
         })
 
     def connectionMade(self):
-        reactor.protocol = self
         self.ready = False
         self.field = []
         self.players = []
@@ -132,16 +140,15 @@ class GameProtocol(LineReceiver):
             """Handle key presses for Pyglet."""
             # If the player is prompted to select a chip
             if self.select:
+                row = self.selection['row']
+                col = self.selection['col']
                 if symbol == key.RETURN:
-                    if (
-                        not self.selection['row'] and
-                        self.selection['col'] == 5
-                    ):
+                    if not row and col == 5:
                         self.battle()
-                    else:
-                        self.fx('cursor')
-                        self.selection['row'] = 0
-                        self.selection['col'] = 5
+                        return
+                    self.fx('cursor')
+                    row = 0
+                    col = 5
                 if symbol == key.UP or symbol == key.DOWN:
                     self.cursor(rows=1)
                 if symbol == key.RIGHT:
@@ -150,12 +157,9 @@ class GameProtocol(LineReceiver):
                     self.cursor(cols=-1)
                 if symbol == key.A:
                     chip = self.highlighted()
-                    if (
-                        not self.selection['row'] and
-                        self.selection['col'] == 5
-                    ):
+                    if not row and col == 5:
                         self.battle()
-                    elif self.selection['row'] and self.selection['col'] == 3:
+                    elif row and col == 3:
                         self.fx('shuffle')
                         self.shuffle()
                         self.shuffled = True
@@ -178,13 +182,13 @@ class GameProtocol(LineReceiver):
                     row = self.character.row
                     col = self.character.col
                     if symbol == key.UP:
-                        self.character.move(row, col, rows=1)
+                        self.move(row, col, rows=1)
                     if symbol == key.DOWN:
-                        self.character.move(row, col, rows=-1)
+                        self.move(row, col, rows=-1)
                     if symbol == key.RIGHT:
-                        self.character.move(row, col, cols=1)
+                        self.move(row, col, cols=1)
                     if symbol == key.LEFT:
-                        self.character.move(row, col, cols=-1)
+                        self.move(row, col, cols=-1)
                     if symbol == key.A and self.character.chips:
                         self.character.usechip()
                     if symbol == key.S:
@@ -205,106 +209,84 @@ class GameProtocol(LineReceiver):
         def on_resize(width, height):
             self.draw()
 
-    def cursor(self, rows = 0, cols = 0):
+    def cursor(self, rows=0, cols=0):
         """Move the cursor for chip selection."""
-        selection = self.selection
-        old = selection.copy()
+        row = self.selection['row']
+        col = self.selection['col']
+        old = self.selection.copy()
+        chips = len(self.chips)
         if rows == 1:
-            if selection['row']:
-                selection['row'] = 0
-                if selection['col'] == 3 and self.right:
-                    selection['col'] = 4
-                if self.highlighted() > len(self.chips) - 1:
-                    selection['row'] = 1
-                    selection['col'] = 3
+            if row:
+                row = 0
+                if col == 3 and self.right:
+                    col = 4
+                if self.highlighted() > chips - 1:
+                    row = 1
+                    col = 3
             elif (
                 (
-                    selection['col'] != 5 and
-                    selection['col'] + 5 < len(self.chips) and
+                    col != 5 and
+                    col + 5 < chips and
                     config['extra']
                 ) or
                 (
-                    selection['col'] in (3, 4) and
+                    col in (3, 4) and
                     config['shuffle']
                 )
             ):
-                selection['row'] = 1
-                if selection['col'] == 4 and config['shuffle']:
-                    selection['col'] = 3
+                row = 1
+                if col == 4 and config['shuffle']:
+                    col = 3
                     self.right = True
         elif cols == 1:
-            if selection['col'] == 5 and self.chips:
-                selection['col'] = 0
-            elif (
-                selection['row'] and
-                (
-                    selection['col'] == 3 or
-                    (
-                        selection['col'] == 2 and
-                        not config['shuffle']
-                    )
-                )
-            ):
-                selection['row'] = 0
-                selection['col'] = 5
+            if col == 5 and self.chips:
+                col = 0
+            elif row and (col == 3 or (col == 2 and not config['shuffle'])):
+                row = 0
+                col = 5
             else:
-                selection['col'] += 1
-                if self.highlighted() > len(self.chips) - 1:
+                col += 1
+                if self.highlighted() > chips - 1:
                     if config['shuffle']:
-                        if not selection['row']:
+                        if not row:
                             self.right = True
-                        selection['row'] = 1
-                        selection['col'] = 3
+                        row = 1
+                        col = 3
                     else:
-                        selection['row'] = 0
-                        selection['col'] = 5
+                        row = 0
+                        col = 5
         elif cols == -1:
-            if (
-                selection['col'] == 5 and
-                len(self.chips) < 5 and
-                config['shuffle']
-            ):
-                selection['row'] = 1
-                selection['col'] = 3
+            if col == 5 and chips < 5 and config['shuffle']:
+                row = 1
+                col = 3
                 self.right = True
-            elif selection['col'] == 0:
-                selection['row'] = 0
-                selection['col'] = 5
-            elif (
-                selection['row'] and
-                selection['col'] == 3 and
-                len(self.chips) < 6
-            ):
-                selection['row'] = 0
-                selection['col'] = 2
-            elif not selection['row'] or config['extra']:
-                selection['col'] -= 1
-            while (
-                self.highlighted() > len(self.chips) - 1 and
-                selection['col']
-            ):
-                selection['col'] -= 1
+            elif col == 0:
+                row = 0
+                col = 5
+            elif row and col == 3 and chips < 6:
+                row = 0
+                col = 2
+            elif not row or config['extra']:
+                col -= 1
+            while self.highlighted() > chips - 1 and col:
+                col -= 1
             if not self.chips:
-                selection['row'] = 0
-                selection['col'] = 5
-        if selection['row'] != 1 or selection['col'] != 3:
+                row = 0
+                col = 5
+        if row != 1 or col != 3:
             self.right = False
-        if selection != old:
+        if self.selection != old:
             self.fx('cursor')
 
     def custom(self):
         """Redefine all the necessary values when prompting the custom bar."""
-        clock.unschedule(animate)
         self.fx('menu')
         self.custombar = 0
         self.character.chips = []
         self.right = False
         self.select = True
         self.selected = []
-        self.selection = {
-            'row': 0,
-            'col': 0
-        }
+        self.selection = {'row': 0, 'col': 0}
         if not self.chips:
             self.selection['col'] = 5
             if config['shuffle']:
@@ -520,20 +502,9 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['type'].y = ycenter + 73
                 self.window.sprites['type'].group = self.group(rows + 2)
                 self.window.sprites['type'].batch = self.window.batch
-            cursor = 'chip'
-            if not self.selection['row'] and self.selection['col'] == 5:
-                cursor = 'ok'
-            if self.selection['row'] and self.selection['col'] == 3:
-                cursor = 'shuffle'
-            image = self.window.images['battle']['select']['cursors'][cursor]
-            if not 'frames' in image:
-                frames = []
-                for frame in image.items():
-                    frames.append(frame[1])
-                image['frames'] = frames
-                image['index'] = 0
-                clock.schedule_interval(animate, .13, image=image)
-            image = image['frames'][image['index']]
+            image = self.window.images[
+                'battle'
+            ]['select']['cursors']['chip']['0']
             if not 'cursor' in self.window.sprites:
                 self.window.sprites['cursor'] = Sprite(image, 0, 0)
             xoffset = self.selection['col']
@@ -543,9 +514,15 @@ class GameProtocol(LineReceiver):
             self.window.sprites['cursor'].x = xcenter + 5 + (16 * xoffset)
             self.window.sprites['cursor'].y = ycenter + 37 + yoffset
             if not self.selection['row'] and self.selection['col'] == 5:
+                image = self.window.images[
+                    'battle'
+                ]['select']['cursors']['ok']['0']
                 self.window.sprites['cursor'].x = xcenter + 89
                 self.window.sprites['cursor'].y = ycenter + 25
             if self.selection['row'] and self.selection['col'] == 3:
+                image = self.window.images[
+                    'battle'
+                ]['select']['cursors']['shuffle']['0']
                 self.window.sprites['cursor'].x = xcenter + 55
                 self.window.sprites['cursor'].y = ycenter + 7
             self.window.sprites['cursor'].image = image
@@ -638,7 +615,7 @@ class GameProtocol(LineReceiver):
                         'icon': Sprite(icon, 0, 0)
                     })
                 stack = self.window.sprites['stack'][index]
-                thegrop = rows + (
+                group = rows + (
                     range(
                         len(self.character.chips) - 1,
                         -1,
@@ -648,13 +625,7 @@ class GameProtocol(LineReceiver):
                 stack['border'].image = border
                 stack['border'].x = x + 19
                 stack['border'].y = y + 48
-                stack['border'].group = self.group(
-                    rows + range(
-                        len(self.character.chips) - 1,
-                        -1,
-                        -1
-                    )[index]
-                )
+                stack['border'].group = self.group(group)
                 stack['border'].batch = self.window.batch
                 stack['icon'].image = icon
                 stack['icon'].x = x + 20
@@ -679,12 +650,7 @@ class GameProtocol(LineReceiver):
                     'panels'
                 ][color][panel['status']][shading]
                 if not 'sprite' in panel:
-                    panel['sprite'] = Sprite(
-                        image,
-                        0,
-                        0,
-                        group=self.group(0)
-                    )
+                    panel['sprite'] = Sprite(image, 0, 0, group=self.group(0))
                 panel['sprite'].image = image
                 panel['sprite'].x = x
                 panel['sprite'].y = y
@@ -693,17 +659,8 @@ class GameProtocol(LineReceiver):
                 if character:
                     player = self.players[character - 1]
                     if player and player['health']:
-                        image = self.window.images['characters']['mega'][
-                            player['image']
-                        ]
-                        if not 'frames' in image:
-                            frames = []
-                            for frame in image.items():
-                                frames.append(frame[1])
-                            image['frames'] = frames
-                            image['index'] = 0
-                            clock.schedule_interval(animate, .13, image=image)
-                        image = image['frames'][image['index']]
+                        image = self.window.images['characters'
+                        ]['mega'][player['image']]['0']
                         xoffset = 24
                         if (col > (cols / 2) - 1) ^ panel['stolen']:
                             image = image.get_transform()
@@ -712,24 +669,22 @@ class GameProtocol(LineReceiver):
                             xoffset = 36
                         x = x - xoffset
                         y = y - 23
+                        group = range(rows - 1, -1, -1)[row] + 1
                         if not 'sprite' in player:
                             player['sprite'] = Sprite(image, x, y)
                         player['sprite'].image = image
                         player['sprite'].x = x
                         player['sprite'].y = y
-                        player['sprite'].group = self.group(
-                            range(rows - 1, -1, -1)[row] + 1
-                        )
+                        player['sprite'].group = self.group(group)
                         player['sprite'].batch = self.window.batch
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
         # If the chip has already been selected, you have already selected
         # five, or the chip is out of range, then it is not equipable.
-        if (chip in self.selected or
-            len(self.selected) > 4 or
-            chip > len(self.chips) - 1
-        ):
+        selected = self.selected
+        chips = len(self.chips)
+        if chip in selected or len(selected) > 4 or chip > chips - 1:
             return
         # Add the chip in question to see if the new set fits the conditions.
         self.selected.append(chip)
@@ -760,21 +715,16 @@ class GameProtocol(LineReceiver):
         return self.window.groups[group]
 
     def highlighted(self):
-        """Get the highlighted chip from the position on the selection screen."""
-        if (
-            self.selection['col'] == 5 or
-            (
-                self.selection['row'] and
-                self.selection['col'] == 3
-            )
-        ):
-            return
+        """Get the highlighted chip from the position on the selection screen.
+        """
         selection = self.selection['col']
+        if (selection == 5 or (self.selection['row'] and selection == 3)):
+            return
         if self.selection['row']:
             selection += 5
         return selection
 
-    def hit(self, row, col, power, type = 'none', flinch = True):
+    def hit(self, row, col, power, type='none', flinch=True):
         """Handle damage."""
         self.send({
             'function': 'hit',
@@ -837,23 +787,13 @@ class GameProtocol(LineReceiver):
         )
         if len(self.chips) != 30:
             raise Exception('Your chip folder must have exactly 30 chips.')
-        module = __import__(
-            'characters.%s' % (config['character']),
-            globals(),
-            locals(),
-            ('Character',),
-            -1
-        )
+        name = 'characters.%s' % (config['character'],)
+        module = __import__(name, globals(), locals(), ('Character',), -1)
         self.character = module.Character(self)
         # Convert the list of chip names and codes to a list of chip instances.
         for index, chip in enumerate(self.chips):
-            module = __import__(
-                'chips.%s' % (chip['chip']),
-                globals(),
-                locals(),
-                ('Chip',),
-                -1
-            )
+            name = 'chips.%s' % (chip['chip'])
+            module = __import__(name, globals(), locals(), ('Chip',), -1)
             self.chips[index] = module.Chip(self.character)
             if not chip['code'] in self.chips[index].codes:
                 raise InvalidChipcodeError(
@@ -866,7 +806,7 @@ class GameProtocol(LineReceiver):
         if self.flip:
             self.character.col = range(len(self.field[0]) - 1, -1, -1)[col]
 
-    def move(self, row, col, rows, cols, force):
+    def move(self, row, col, rows=0, cols=0, force=False):
         """Move the player if possible."""
         self.send({
             'function': 'move',
@@ -922,21 +862,15 @@ class GameProtocol(LineReceiver):
             del self.chips[index - offset]
         shuffle(self.chips)
         for chip in chips:
-            self.chips = self.chips[
-                0:
-                chip[0]
-            ] + [chip[1]] + self.chips[
-                chip[0]:
-                len(self.chips)
-            ]
+            self.chips = self.chips[0:chip[0]] + [chip[1]] + (
+                self.chips[chip[0]:len(self.chips)]
+            )
 
     def start(self, field, row, col, flip, player):
         """Set up the data for the beginning of the game."""
         self.flip = flip
         self.player = player
-        players = []
-        for index in range(0, player):
-            players.append({})
+        players = [{} for index in range(0, player)]
         self.update(field, players)
         self.loadcharacter(row, col)
         self.custom()
@@ -966,7 +900,7 @@ class GameProtocol(LineReceiver):
             for row in range(0, len(field)):
                 for col in range(0, len(field[0])):
                     for index, value in field[row][col].items():
-                        # Update our field to reflect the current field.
+                        # Update the value for this row's columns.
                         self.field[row][col][index] = value
         else:
             self.field = field
@@ -984,37 +918,29 @@ class GameProtocol(LineReceiver):
             if len(self.players) < self.player:
                 self.player -= 1
 
-def animate(dt, image):
-    if image['index'] == len(image['frames']) - 1:
-        image['index'] = -1
-    image['index'] += 1
-    reactor.protocol.draw()
-
 def loader(path, function):
     """Load resources from a directory recursively."""
-    images = {}
+    items = {}
     for item in os.listdir(path):
-        item = item.split('.')
-        name = item[0]
+        name, ext = os.path.splitext(item)
         if name:
-            if len(item) > 1:
-                images[name] = function(
+            if ext:
+                items[name] = function(
                     os.path.join(
                         path,
-                        '%s.%s' % (name, item[1])
+                        '%s%s' % (name, ext)
                     ).replace('\\', '/')
                 )
             else:
-                images[name] = loader(
-                    os.path.join(path, '%s' % (name)),
-                    function
-                )
-    return images
+                items[name] = loader(os.path.join(path, name), function)
+    return items
 
 def loadmedia(path):
     return media.load(path, streaming=False)
 
 factory = protocol.ClientFactory()
 factory.protocol = GameProtocol
-reactor.connectTCP(config['ip'], config['port'], factory)
-reactor.run()
+if __name__ == '__main__':
+    from reactor import reactor
+    reactor.connectTCP(config['ip'], config['port'], factory)
+    reactor.run()

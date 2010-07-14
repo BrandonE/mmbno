@@ -35,6 +35,8 @@ class Chip(Parent):
                 ((col > (cols / 2) - 1) ^ panel['stolen'])
             ):
                 self.owner.owner.hit(row, col, self.power, self.type)
+                # Move it back 1.
+                self.owner.owner.move(row, col, cols=1)
                 return
         top = self.owner.row - 1
         for rowoffset in range(0, 3):
