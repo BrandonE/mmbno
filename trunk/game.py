@@ -484,7 +484,7 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['classification'] = Sprite(image, 0, 0)
             self.window.sprites['classification'].image = image
             self.window.sprites['classification'].x = xcenter
-            self.window.sprites['classification'].y = ycenter + 54
+            self.window.sprites['classification'].y = ycenter + 55
             self.window.sprites['classification'].group = self.group(rows + 1)
             self.window.sprites['classification'].batch = self.window.batch
             if isinstance(selection, int):
@@ -506,7 +506,7 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['chip'] = Sprite(image, 0, 0)
             self.window.sprites['chip'].image = image
             self.window.sprites['chip'].x = xcenter + 15
-            self.window.sprites['chip'].y = ycenter + 87
+            self.window.sprites['chip'].y = ycenter + 88
             self.window.sprites['chip'].group = self.group(rows + 2)
             self.window.sprites['chip'].batch = self.window.batch
             if isinstance(selection, int):
@@ -517,7 +517,7 @@ class GameProtocol(LineReceiver):
                     self.window.sprites['type'] = Sprite(image, 0, 0)
                 self.window.sprites['type'].image = image
                 self.window.sprites['type'].x = xcenter + 25
-                self.window.sprites['type'].y = ycenter + 72
+                self.window.sprites['type'].y = ycenter + 73
                 self.window.sprites['type'].group = self.group(rows + 2)
                 self.window.sprites['type'].batch = self.window.batch
             cursor = 'chip'
@@ -540,14 +540,14 @@ class GameProtocol(LineReceiver):
             yoffset = 0
             if self.selection['row']:
                 yoffset = -24
-            self.window.sprites['cursor'].x = xcenter + 4 + (16 * xoffset)
-            self.window.sprites['cursor'].y = ycenter + 39 + yoffset
+            self.window.sprites['cursor'].x = xcenter + 5 + (16 * xoffset)
+            self.window.sprites['cursor'].y = ycenter + 37 + yoffset
             if not self.selection['row'] and self.selection['col'] == 5:
                 self.window.sprites['cursor'].x = xcenter + 89
-                self.window.sprites['cursor'].y = ycenter + 26
+                self.window.sprites['cursor'].y = ycenter + 25
             if self.selection['row'] and self.selection['col'] == 3:
-                self.window.sprites['cursor'].x = xcenter + 57
-                self.window.sprites['cursor'].y = ycenter + 11
+                self.window.sprites['cursor'].x = xcenter + 55
+                self.window.sprites['cursor'].y = ycenter + 7
             self.window.sprites['cursor'].image = image
             self.window.sprites['cursor'].group = self.group(rows + 3)
             self.window.sprites['cursor'].batch = self.window.batch
