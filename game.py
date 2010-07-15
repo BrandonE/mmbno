@@ -140,15 +140,14 @@ class GameProtocol(LineReceiver):
             """Handle key presses for Pyglet."""
             # If the player is prompted to select a chip
             if self.select:
-                row = self.selection['row']
-                col = self.selection['col']
+                selection = self.selection
                 if symbol == key.RETURN:
-                    if not row and col == 5:
+                    if not selection['row'] and selection['col'] == 5:
                         self.battle()
-                        return
-                    self.fx('cursor')
-                    row = 0
-                    col = 5
+                    else:
+                        self.fx('cursor')
+                        selection['row'] = 0
+                        selection['col'] = 5
                 if symbol == key.UP or symbol == key.DOWN:
                     self.cursor(rows=1)
                 if symbol == key.RIGHT:
@@ -157,9 +156,9 @@ class GameProtocol(LineReceiver):
                     self.cursor(cols=-1)
                 if symbol == key.A:
                     chip = self.highlighted()
-                    if not row and col == 5:
+                    if not selection['row'] and selection['col'] == 5:
                         self.battle()
-                    elif row and col == 3:
+                    elif selection['row'] and selection['col'] == 3:
                         self.fx('shuffle')
                         self.shuffle()
                         self.shuffled = True
@@ -211,69 +210,76 @@ class GameProtocol(LineReceiver):
 
     def cursor(self, rows=0, cols=0):
         """Move the cursor for chip selection."""
-        row = self.selection['row']
-        col = self.selection['col']
-        old = self.selection.copy()
+        selection = self.selection
+        old = selection.copy()
         chips = len(self.chips)
         if rows == 1:
-            if row:
-                row = 0
-                if col == 3 and self.right:
-                    col = 4
+            if selection['row']:
+                selection['row'] = 0
+                if selection['col'] == 3 and self.right:
+                    selection['col'] = 4
                 if self.highlighted() > chips - 1:
-                    row = 1
-                    col = 3
+                    selection['row'] = 1
+                    selection['col'] = 3
             elif (
                 (
-                    col != 5 and
-                    col + 5 < chips and
+                    selection['col'] != 5 and
+                    selection['col'] + 5 < chips and
                     config['extra']
                 ) or
                 (
-                    col in (3, 4) and
+                    selection['col'] in (3, 4) and
                     config['shuffle']
                 )
             ):
-                row = 1
-                if col == 4 and config['shuffle']:
-                    col = 3
+                selection['row'] = 1
+                if selection['col'] == 4 and config['shuffle']:
+                    selection['col'] = 3
                     self.right = True
         elif cols == 1:
-            if col == 5 and self.chips:
-                col = 0
-            elif row and (col == 3 or (col == 2 and not config['shuffle'])):
-                row = 0
-                col = 5
+            if selection['col'] == 5 and self.chips:
+                selection['col'] = 0
+            elif (
+                selection['row'] and (
+                    selection['col'] == 3 or
+                    (
+                        selection['col'] == 2 and
+                        not config['shuffle']
+                    )
+                )
+            ):
+                selection['row'] = 0
+                selection['col'] = 5
             else:
-                col += 1
+                selection['col'] += 1
                 if self.highlighted() > chips - 1:
                     if config['shuffle']:
-                        if not row:
+                        if not selection['row']:
                             self.right = True
-                        row = 1
-                        col = 3
+                        selection['row'] = 1
+                        selection['col'] = 3
                     else:
-                        row = 0
-                        col = 5
+                        selection['row'] = 0
+                        selection['col'] = 5
         elif cols == -1:
-            if col == 5 and chips < 5 and config['shuffle']:
-                row = 1
-                col = 3
+            if selection['col'] == 5 and chips < 5 and config['shuffle']:
+                selection['row'] = 1
+                selection['col'] = 3
                 self.right = True
-            elif col == 0:
-                row = 0
-                col = 5
-            elif row and col == 3 and chips < 6:
-                row = 0
-                col = 2
-            elif not row or config['extra']:
-                col -= 1
-            while self.highlighted() > chips - 1 and col:
-                col -= 1
+            elif selection['col'] == 0:
+                selection['row'] = 0
+                selection['col'] = 5
+            elif selection['row'] and selection['col'] == 3 and chips < 6:
+                selection['row'] = 0
+                selection['col'] = 2
+            elif not selection['row'] or config['extra']:
+                selection['col'] -= 1
+            while self.highlighted() > chips - 1 and selection['col']:
+                selection['col'] -= 1
             if not self.chips:
-                row = 0
-                col = 5
-        if row != 1 or col != 3:
+                selection['row'] = 0
+                selection['col'] = 5
+        if selection['row'] != 1 or selection['col'] != 3:
             self.right = False
         if self.selection != old:
             self.fx('cursor')
