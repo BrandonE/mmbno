@@ -26,9 +26,9 @@ class Chip(Parent):
         """Overwrite the default properties."""
         self.codes = ('*',)
         self.description = 'Power goes up by 1'
+        self.element = 'plus'
         self.name = 'BusterUp'
         self.plus = 1
-        self.type = 'plus'
         self.stars = 2
 
     def use(self):

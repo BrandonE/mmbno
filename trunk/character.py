@@ -35,13 +35,13 @@ class Character():
         }
         self.chips = []
         # Default to MegaMan.EXE's properties.
+        self.element = 'none'
         self.health = 500
         self.image = 'normal'
         self.maxhealth = self.health
         self.name = 'MegaMan.EXE'
         self.power = 1
         self.status = set([])
-        self.type = 'none'
         self.properties()
 
     def activatechip(self, chip, type):
@@ -57,16 +57,16 @@ class Character():
 
     def charge(self):
         """Use a charge shot."""
-        self.shoot(self.power * 10, self.type)
+        self.shoot(self.power * 10, self.element)
 
-    def damage(self, power, type, flinch):
+    def damage(self, power, element, flinch):
         """Handle damage."""
         self.health -= power
         if self.health <= 0:
             self.health = 0
         status = self.owner.field[self.row][self.col]['status']
-        # Freeze if the the panel is frozen and attack is aqua.
-        if status == 'frozen' and type == 'aqua':
+        # Freeze if the the panel is frozen and attack has the element aqua.
+        if status == 'frozen' and element == 'aqua':
             self.status.add('frozen')
 
     def deactivatechip(self, chip, type):
@@ -85,7 +85,7 @@ class Character():
         if self.health > self.maxhealth:
             self.health = self.maxhealth
 
-    def hit(self, power, type = 'none', flinch = True):
+    def hit(self, power, element = 'none', flinch = True):
         """Forward damage."""
         weaknesses = {
             'aqua': 'electric',
@@ -98,29 +98,26 @@ class Character():
             'wood': 'fire'
         }
         # Double the damage if the attack is the character's weakness.
-        if self.type in weaknesses and weaknesses[self.type] == type:
+        if self.element in weaknesses and weaknesses[self.element] == element:
             power *= 2
         # Double the damage and revert if the character is frozen and the
         # attack is break.
-        if 'frozen' in self.status and type == 'break':
+        if 'frozen' in self.status and element == 'break':
             power *= 2
             self.status.discard('frozen')
-        weaknesses = {
-            'frozen': 'electric',
-            'grass': 'fire'
-        }
         status = self.owner.field[self.row][self.col]['status']
-        # Double the damage if the attack is the panel's weakness.
-        if status in weaknesses and weaknesses[status] == type:
+        # Double the damage if the panel is grass and the attack has the fire
+        # element.
+        if status == 'grass' and element == 'fire':
             power *= 2
         # Half the damage if on a holy panel.
         if status == 'holy':
             power = int(ceil(power / 2))
         # If an active chip exists, override the original handling.
         if self.activechips['damage']:
-            self.priority('damage').damage(power, type, flinch)
+            self.priority('damage').damage(power, element, flinch)
         else:
-            self.damage(power, type, flinch)
+            self.damage(power, element, flinch)
         self.owner.characters()
 
     def move(self, row, col, rows = 0, cols = 0, force = False):
@@ -154,7 +151,7 @@ class Character():
         """Overwrite the default properties."""
         return
 
-    def shoot(self, power, type = 'none'):
+    def shoot(self, power, element = 'none'):
         """Hit the first person across from the character."""
         self.image = 'shoot'
         self.owner.characters()
@@ -164,19 +161,24 @@ class Character():
             for col in range(self.col + 1, cols):
                 panel = self.owner.field[row][col]
                 # If this panel contains a character and is not on this side
-                if panel['character'] and ((col > ((cols / 2) - 1)) ^ panel['stolen']):
-                    self.owner.hit(row, col, power, type)
-                    # If the attack is a fire type and the panel has grass,
-                    # burn it.
-                    if panel['status'] == 'grass' and type == 'fire':
+                if (
+                    panel['character'] and
+                    (
+                        (col > ((cols / 2) - 1)) ^ panel['stolen']
+                    )
+                ):
+                    self.owner.hit(row, col, power, element)
+                    # If the attack has the fire element and the panel has
+                    # grass, burn it.
+                    if panel['status'] == 'grass' and element == 'fire':
                         self.owner.panel(row, col, status='normal')
                     break
 
     def time(self):
         """Handle a unit of time."""
         panel = self.owner.field[self.row][self.col]
-        # If the character is on a grass panel and is a wood type
-        if panel['status'] == 'grass' and self.type == 'wood':
+        # If the character is on a grass panel and has the element wood
+        if panel['status'] == 'grass' and self.element == 'wood':
             self.heal(1)
         # If the character is on a poison panel and does not have floatshoes
         # activated
