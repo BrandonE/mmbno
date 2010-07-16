@@ -449,8 +449,8 @@ class GameProtocol(LineReceiver):
         self.window.batch = Batch()
         rows = len(self.field)
         cols = len(self.field[0])
-        xcenter = (self.window.width / 2) - (40 * (cols / 2))
-        ycenter = (self.window.height / 2) - (25 * (rows / 2)) - 5
+        xcenter = (self.window.width / 2) - ((40 * cols) / 2)
+        ycenter = (self.window.height / 2) - (((25 * rows) + 80) / 2)
         if self.select:
             if not 'menu' in self.window.sprites:
                 self.window.sprites['menu'] = Sprite(
@@ -458,8 +458,9 @@ class GameProtocol(LineReceiver):
                     0,
                     0
                 )
+            menu = ((rows - 3) * 25)
             self.window.sprites['menu'].x = xcenter
-            self.window.sprites['menu'].y = ycenter
+            self.window.sprites['menu'].y = ycenter + menu
             self.window.sprites['menu'].group = self.group(rows + 1)
             self.window.sprites['menu'].batch = self.window.batch
             selection = self.highlighted()
@@ -472,7 +473,7 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['classification'] = Sprite(image, 0, 0)
             self.window.sprites['classification'].image = image
             self.window.sprites['classification'].x = xcenter
-            self.window.sprites['classification'].y = ycenter + 55
+            self.window.sprites['classification'].y = ycenter + 55 + menu
             self.window.sprites['classification'].group = self.group(rows + 1)
             self.window.sprites['classification'].batch = self.window.batch
             if isinstance(selection, int):
@@ -494,7 +495,7 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['chip'] = Sprite(image, 0, 0)
             self.window.sprites['chip'].image = image
             self.window.sprites['chip'].x = xcenter + 15
-            self.window.sprites['chip'].y = ycenter + 88
+            self.window.sprites['chip'].y = ycenter + 88 + menu
             self.window.sprites['chip'].group = self.group(rows + 2)
             self.window.sprites['chip'].batch = self.window.batch
             if isinstance(selection, int):
@@ -505,7 +506,7 @@ class GameProtocol(LineReceiver):
                     self.window.sprites['type'] = Sprite(image, 0, 0)
                 self.window.sprites['type'].image = image
                 self.window.sprites['type'].x = xcenter + 25
-                self.window.sprites['type'].y = ycenter + 73
+                self.window.sprites['type'].y = ycenter + 73 + menu
                 self.window.sprites['type'].group = self.group(rows + 2)
                 self.window.sprites['type'].batch = self.window.batch
             image = self.window.images[
@@ -518,19 +519,19 @@ class GameProtocol(LineReceiver):
             if self.selection['row']:
                 yoffset = -24
             self.window.sprites['cursor'].x = xcenter + 5 + (16 * xoffset)
-            self.window.sprites['cursor'].y = ycenter + 37 + yoffset
+            self.window.sprites['cursor'].y = ycenter + 37 + yoffset + menu
             if not self.selection['row'] and self.selection['col'] == 5:
                 image = self.window.images[
                     'battle'
                 ]['select']['cursors']['ok']['0']
                 self.window.sprites['cursor'].x = xcenter + 89
-                self.window.sprites['cursor'].y = ycenter + 25
+                self.window.sprites['cursor'].y = ycenter + 25 + menu
             if self.selection['row'] and self.selection['col'] == 3:
                 image = self.window.images[
                     'battle'
                 ]['select']['cursors']['shuffle']['0']
                 self.window.sprites['cursor'].x = xcenter + 55
-                self.window.sprites['cursor'].y = ycenter + 7
+                self.window.sprites['cursor'].y = ycenter + 7 + menu
             self.window.sprites['cursor'].image = image
             self.window.sprites['cursor'].group = self.group(rows + 3)
             self.window.sprites['cursor'].batch = self.window.batch
@@ -546,7 +547,7 @@ class GameProtocol(LineReceiver):
                     self.window.sprites['shuffle'] = Sprite(image, 0, 0)
                 self.window.sprites['shuffle'].image = image
                 self.window.sprites['shuffle'].x = xcenter + 58
-                self.window.sprites['shuffle'].y = ycenter + 10
+                self.window.sprites['shuffle'].y = ycenter + 10 + menu
                 self.window.sprites['shuffle'].group = self.group(rows + 2)
                 self.window.sprites['shuffle'].batch = self.window.batch
             for index, chip in enumerate(self.chips):
@@ -571,7 +572,7 @@ class GameProtocol(LineReceiver):
                     thissprite = self.window.sprites['icons'][index]
                     thissprite.image = image
                     thissprite.x = xcenter + 9 + (16 * xoffset)
-                    thissprite.y = ycenter + 41 + (yoffset)
+                    thissprite.y = ycenter + 41 + (yoffset) + menu
                     thissprite.group = self.group(rows + 2)
                     thissprite.batch = self.window.batch
             for index, chip in enumerate(self.selected):
@@ -591,7 +592,7 @@ class GameProtocol(LineReceiver):
                 thissprite = self.window.sprites['selected'][index]
                 thissprite['icon'].image = icon
                 thissprite['icon'].x = xcenter + 97
-                thissprite['icon'].y = ycenter + 121 - (16 * index)
+                thissprite['icon'].y = ycenter + 121 - (16 * index) + menu
                 thissprite['icon'].group = self.group(rows + 3)
                 thissprite['icon'].batch = self.window.batch
                 thissprite['selected'].image = selected
@@ -600,6 +601,14 @@ class GameProtocol(LineReceiver):
                 thissprite['selected'].group = self.group(rows + 2)
                 thissprite['selected'].batch = self.window.batch
         elif len(winner) != 1:
+            image = self.window.images['battle']['custom']['bar']
+            if not 'bar' in self.window.sprites:
+                self.window.sprites['bar'] = Sprite(image, 0, 0)
+            self.window.sprites['bar'].image = image
+            self.window.sprites['bar'].x = xcenter - 72 + (40 * (cols / 2))
+            self.window.sprites['bar'].y = ycenter + 56 + (25 * rows)
+            self.window.sprites['bar'].group = self.group(rows + 1)
+            self.window.sprites['bar'].batch = self.window.batch
             chips = self.character.chips[:]
             chips.reverse()
             for index, chip in enumerate(chips):
