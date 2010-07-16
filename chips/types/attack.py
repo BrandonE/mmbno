@@ -26,12 +26,3 @@ class Chip(Parent):
         if hasattr(chip, 'power'):
             chip.power += self.plus
             return True
-
-    def properties(self):
-        """Overwrite the default properties."""
-        self.type = 'number'
-        self.properties2()
-
-    def properties2(self):
-        """Overwrite the default properties."""
-        return

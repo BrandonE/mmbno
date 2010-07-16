@@ -26,10 +26,10 @@ class Chip(Parent):
         """Overwrite the default properties."""
         self.codes = ('*',)
         self.description = 'Knock enemy back 1 square'
+        self.element = 'wind'
         self.name = 'Airshot'
         self.power = 20
         self.stars = 2
-        self.type = 'wind'
 
     def use(self):
         """Use the chip."""
@@ -42,7 +42,7 @@ class Chip(Parent):
                 panel['character'] and
                 ((col > (cols / 2) - 1) ^ panel['stolen'])
             ):
-                self.owner.owner.hit(row, col, self.power, self.type)
+                self.owner.owner.hit(row, col, self.power, self.element)
                 # Move it back 1.
                 self.owner.owner.move(row, col, cols=1)
                 break

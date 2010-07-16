@@ -34,7 +34,7 @@ class Chip(Parent):
                 panel['character'] and
                 ((col > (cols / 2) - 1) ^ panel['stolen'])
             ):
-                self.owner.owner.hit(row, col, self.power, self.type)
+                self.owner.owner.hit(row, col, self.power, self.element)
                 # Move it back 1.
                 self.owner.owner.move(row, col, cols=1)
                 return
@@ -47,7 +47,9 @@ class Chip(Parent):
                 panel = self.owner.owner.field[row][cols - 1]
                 # If this panel contains a character
                 if panel['character']:
-                    self.owner.owner.hit(row, cols - 1, self.power, self.type)
+                    self.owner.owner.hit(
+                        row, cols - 1, self.power, self.element
+                    )
                 # If the panel is cracked, break it.
                 if panel['status'] == 'cracked':
                     panel['status'] = 'broken'

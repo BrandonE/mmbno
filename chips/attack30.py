@@ -22,11 +22,11 @@ __all__ = ['Chip']
 
 class Chip(Parent):
     """A version of the Chip class."""
-    def properties2(self):
+    def properties(self):
         """Overwrite the default properties."""
         self.codes = ('*',)
         self.description = '+30 for selected attack chip'
+        self.element = 'plus'
         self.name = 'Attack+30'
         self.plus = 30
         self.stars = 4
-        self.type = 'plus'

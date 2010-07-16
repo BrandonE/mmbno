@@ -30,15 +30,17 @@ __all__ = ['application', 'config', 'factory', 'GameProtocol', 'server']
 config = json.loads(open('config.json').read())
 
 class GameProtocol(LineReceiver):
-    def characters(self, player, health, image, maxhealth, name, status, type):
+    def characters(
+        self, player, element, health, image, maxhealth, name, status
+    ):
         """Send this characters data."""
         player = self.factory.players[player - 1]
+        player.element = element
         player.health = health
         player.image = image
         player.maxhealth = maxhealth
         player.name = name
         player.status = status
-        player.type = type
 
     def connectionMade(self):
         print 'Client Connected.'
@@ -82,7 +84,7 @@ class GameProtocol(LineReceiver):
                 cols.append(panel)
             self.factory.field.append(cols)
 
-    def hit(self, row, col, flip, power, type, flinch):
+    def hit(self, row, col, flip, power, element, flinch):
         """Forward damage."""
         if flip:
             col = range(config['cols'] - 1, -1, -1)[col]
@@ -97,17 +99,17 @@ class GameProtocol(LineReceiver):
         # Revert the panel if the attack is the panel's weakness.
         if (
             panel['status'] in weaknesses and
-            weaknesses[panel['status']] == type
+            weaknesses[panel['status']] == element
         ):
             panel['status'] = 'normal'
-        # Crack the panel if the attack is a break type
-        if type == 'break':
+        # Crack the panel if the attack has the element break
+        if element == 'break':
             panel['status'] = 'cracked'
         self.update()
         self.sendone(
             {
                 'function': 'hit',
-                'kwargs': {'power': power, 'type': type},
+                'kwargs': {'power': power, 'element': element},
                 'object': 'character'
             },
             player
@@ -128,7 +130,7 @@ class GameProtocol(LineReceiver):
         getattr(self, loaded['function'])(**loaded['kwargs'])
         self.update()
 
-    def move(self, row, col, flip, info, rows = 0, cols = 0, force = False):
+    def move(self, sender, row, col, flip, rows = 0, cols = 0, force = False):
         """Move the character if possible."""
         if flip:
             col = range(config['cols'] - 1, -1, -1)[col]
@@ -136,6 +138,10 @@ class GameProtocol(LineReceiver):
         if not player:
             return
         character = self.factory.players[player - 1]
+        # If this message was not sent by the player on the panel and it has
+        # the break element
+        if player != sender and character.element == 'break':
+            return
         # Grab the panel the character is on.
         panel = self.factory.field[character.row][character.col]
         if flip:
@@ -174,9 +180,9 @@ class GameProtocol(LineReceiver):
                         newpanel['status'] == 'blank' or
                         newpanel['status'] == 'broken'
                     ) and
-                    not 'airshoes' in info['status']
+                    not 'airshoes' in character.status
                 ) or
-                'paralyzed' in info['status'] or
+                'paralyzed' in character.status or
                 'frozen' in self.status
             ):
                 return
@@ -185,15 +191,16 @@ class GameProtocol(LineReceiver):
         # Add the character to the new panel.
         newpanel['character'] = player
         fire = False
-        if not 'floatshoes' in info['status']:
+        if not 'floatshoes' in character.status:
             # If the panel is cracked and the character moved, break it.
             if (
                 panel['status'] == 'cracked' and
                 (character.row != newrow or character.col != newcol)
             ):
                 panel['status'] = 'broken'
-            # If the character moved onto a lava panel and is not a fire type
-            if newpanel['status'] == 'lava' and self.type != 'fire':
+            # If the character moved onto a lava panel and does not have the
+            # element fire
+            if newpanel['status'] == 'lava' and self.element != 'fire':
                 fire = True
                 # Revert the panel.
                 newpanel['status'] = 'normal'
@@ -216,19 +223,20 @@ class GameProtocol(LineReceiver):
             },
             player
         )
-        if not 'floatshoes' in info['status'] and not force:
-            # Slide if the panel is frozen and the character is not aqua.
-            if panel['status'] == 'frozen' and character.type != 'aqua':
-                self.move(row, col, flip, info, rows, cols)
+        if not 'floatshoes' in character.status and not force:
+            # Slide if the panel is frozen and the character does not have the
+            # element aqua.
+            if panel['status'] == 'frozen' and character.element != 'aqua':
+                self.move(row, col, flip, rows, cols)
             # Handle road panels.
             if panel['status'] == 'up':
-                self.move(row, col, flip, info, rows=1)
+                self.move(row, col, flip, rows=1)
             if panel['status'] == 'down':
-                self.move(row, col, flip, info, rows=-1)
+                self.move(row, col, flip, rows=-1)
             if panel['status'] == 'coming':
-                self.move(row, col, flip, info, cols=1)
+                self.move(row, col, flip, cols=1)
             if panel['status'] == 'going':
-                self.move(row, col, flip, info, cols=-1)
+                self.move(row, col, flip, cols=-1)
 
     def panel(self, row, col, flip, status, stolen):
         """Change a panel."""
@@ -310,13 +318,13 @@ class GameProtocol(LineReceiver):
         players = []
         for value in self.factory.players:
             players.append({
+                'element': value.element,
                 'health': value.health,
                 'image': value.image,
                 'maxhealth': value.maxhealth,
                 'images': value.images,
                 'name': value.name,
-                'status': value.status,
-                'type': value.type
+                'status': value.status
             })
         self.sendall({
             'function': 'update',

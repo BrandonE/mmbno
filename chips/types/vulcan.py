@@ -41,10 +41,6 @@ class Chip(Parent):
                 # Shoot all of the bullets.
                 for bullet in range(0, self.bullets):
                     self.owner.owner.hit(
-                        row,
-                        col,
-                        self.power,
-                        self.type,
-                        False
+                        row, col, self.power, self.element, False
                     )
                 hit += 1

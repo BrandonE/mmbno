@@ -23,9 +23,9 @@ class Chip():
     def __init__(self, owner):
         """A class to base the chips off of."""
         self.owner = owner
+        self.element = 'none'
         self.classification = 'standard'
         self.priority = 0
-        self.type = 'none'
         self.stars = 1
         self.properties()
 
