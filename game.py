@@ -24,9 +24,10 @@ except ImportError:
     import json
 
 from pyglet import clock, image, media, resource
-from pyglet.window import key, Window as Parent
-from pyglet.graphics import Batch, OrderedGroup
+from pyglet.gl import GL_QUADS
+from pyglet.graphics import Batch, draw, OrderedGroup
 from pyglet.sprite import Sprite
+from pyglet.window import key, Window as Parent
 
 from twisted.internet import protocol
 from twisted.protocols.basic import LineReceiver
@@ -95,6 +96,44 @@ class Window(Parent):
         """Draw the screen."""
         self.clear()
         self.batch.draw()
+        if (
+            self.owner.ready and
+            not self.owner.select and
+            len(self.owner.winners()) != 1 and
+            self.owner.custombar < 10
+        ):
+            rows = len(self.owner.field)
+            cols = len(self.owner.field[0])
+            width = 0
+            if self.owner.custombar:
+                width = 12.8 * self.owner.custombar
+            xcenter = (self.width / 2.0) - ((40 * cols) / 2.0)
+            ycenter = (self.height / 2.0) - (((25 * rows) + 80) / 2.0)
+            border = (120 / 255.0, 152 / 255.0, 216 / 255.0)
+            x = xcenter - 64 + (40 * (cols / 2.0))
+            y = ycenter + 58 + (25 * rows)
+            draw(
+                4,
+                GL_QUADS,
+                ('v2f', (x, y, x, y + 1, x + width, y + 1, x + width, y)),
+                ('c3f', border * 4)
+            )
+            x = xcenter - 64 + (40 * (cols / 2.0))
+            y = ycenter + 63 + (25 * rows)
+            draw(
+                4,
+                GL_QUADS,
+                ('v2f', (x, y, x, y + 1, x + width, y + 1, x + width, y)),
+                ('c3f', border * 4)
+            )
+            x = xcenter - 64 + (40 * (cols / 2.0))
+            y = ycenter + 59 + (25 * rows)
+            draw(
+                4,
+                GL_QUADS,
+                ('v2f', (x, y, x, y + 4, x + width, y + 4, x + width, y)),
+                ('c3f', (224 / 255.0, 232 / 255.0, 248 / 255.0) * 4)
+            )
 
 class GameProtocol(LineReceiver):
     """Client for Twisted Server."""
@@ -174,11 +213,7 @@ class GameProtocol(LineReceiver):
                     # Undo the selection.
                     self.selected.pop()
             else:
-                winner = []
-                for player in self.players:
-                    if player and player['health']:
-                        winner.append(player['name'])
-                if len(winner) != 1:
+                if len(self.winners()) != 1:
                     row = self.character.row
                     col = self.character.col
                     if symbol == key.UP:
@@ -397,7 +432,7 @@ class GameProtocol(LineReceiver):
                         if character == self.player:
                             label = 'o'
                 # Label a blue panels.
-                if (col > (cols / 2) - 1) ^ panel['stolen']:
+                if (col > (cols / 2.0) - 1) ^ panel['stolen']:
                     blue = 'B'
                 grid += ' %s%s%s |' % (status[panel['status']], label, blue)
             grid += '\n %s' % (top)
@@ -429,12 +464,9 @@ class GameProtocol(LineReceiver):
                     names.append(chip.name)
                 print '--%s: %s' % (type, ', '.join(names))
         # If the game is over, display the winner prompt restarting.
-        winner = []
-        for player in self.players:
-            if player and player['health']:
-                winner.append(player['name'])
-        if not self.select and len(winner) == 1:
-            print '\n%s wins! Press "r" to restart.' % (winner[0])
+        winners = self.winners()
+        if not self.select and len(winners) == 1:
+            print '\n%s wins! Press "r" to restart.' % (winners[0])
         print '\nControls:'
         print 'Directional Keys - Move Player / Chip Selection'
         print 'A: Use / Select Chip'
@@ -450,8 +482,8 @@ class GameProtocol(LineReceiver):
         self.window.batch = Batch()
         rows = len(self.field)
         cols = len(self.field[0])
-        xcenter = (self.window.width / 2) - ((40 * cols) / 2)
-        ycenter = (self.window.height / 2) - (((25 * rows) + 80) / 2)
+        xcenter = (self.window.width / 2.0) - ((40 * cols) / 2.0)
+        ycenter = (self.window.height / 2.0) - (((25 * rows) + 80) / 2.0)
         if self.select:
             if not 'menu' in self.window.sprites:
                 self.window.sprites['menu'] = Sprite(
@@ -603,12 +635,12 @@ class GameProtocol(LineReceiver):
                 thissprite['selected'].y = ycenter + 120 - (16 * index)
                 thissprite['selected'].group = self.group(rows + 2)
                 thissprite['selected'].batch = self.window.batch
-        elif len(winner) != 1:
+        elif len(winners) != 1:
             image = self.window.images['battle']['custom']['bar']
             if not 'bar' in self.window.sprites:
                 self.window.sprites['bar'] = Sprite(image, 0, 0)
             self.window.sprites['bar'].image = image
-            self.window.sprites['bar'].x = xcenter - 72 + (40 * (cols / 2))
+            self.window.sprites['bar'].x = xcenter - 72 + (40 * (cols / 2.0))
             self.window.sprites['bar'].y = ycenter + 56 + (25 * rows)
             self.window.sprites['bar'].group = self.group(0)
             self.window.sprites['bar'].batch = self.window.batch
@@ -623,7 +655,7 @@ class GameProtocol(LineReceiver):
                     self.window.sprites['full'] = Sprite(image, 0, 0)
                 self.window.sprites['full'].image = image
                 self.window.sprites['full'].x = xcenter - 63 + (
-                    40 * (cols / 2)
+                    40 * (cols / 2.0)
                 )
                 self.window.sprites['full'].y = ycenter + 57 + (25 * rows)
                 self.window.sprites['full'].group = self.group(1)
@@ -672,7 +704,7 @@ class GameProtocol(LineReceiver):
                 x = 40 * col + xcenter
                 y = 25 * row + ycenter
                 color = 'red'
-                if (col > (cols / 2) - 1) ^ panel['stolen']:
+                if (col > (cols / 2.0) - 1) ^ panel['stolen']:
                     color = 'blue'
                 shading = 'middle'
                 if row == rows - 1 and rows > 1:
@@ -696,7 +728,7 @@ class GameProtocol(LineReceiver):
                         image = self.window.images['characters'
                         ]['mega'][player['image']]['0']
                         xoffset = 24
-                        if (col > (cols / 2) - 1) ^ panel['stolen']:
+                        if (col > (cols / 2.0) - 1) ^ panel['stolen']:
                             image = image.get_transform()
                             image.anchor_x = image.width
                             image = image.get_transform(flip_x=True)
@@ -948,6 +980,13 @@ class GameProtocol(LineReceiver):
             self.players.pop()
             if len(self.players) < self.player:
                 self.player -= 1
+
+    def winners(self):
+        winners = []
+        for player in self.players:
+            if player and player['health']:
+                winners.append(player['name'])
+        return winners
 
 def animate(dt, image):
     if image['index'] == len(image['frames']) - 1:
