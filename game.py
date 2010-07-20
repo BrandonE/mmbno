@@ -111,23 +111,23 @@ class Window(Parent):
             ycenter = (self.height / 2.0) - (((25 * rows) + 80) / 2.0)
             border = (120 / 255.0, 152 / 255.0, 216 / 255.0)
             x = xcenter - 64 + (40 * (cols / 2.0))
+            y = ycenter + 57 + (25 * rows)
+            draw(
+                4,
+                GL_QUADS,
+                ('v2f', (x, y, x, y + 1, x + width, y + 1, x + width, y)),
+                ('c3f', border * 4)
+            )
+            x = xcenter - 64 + (40 * (cols / 2.0))
+            y = ycenter + 62 + (25 * rows)
+            draw(
+                4,
+                GL_QUADS,
+                ('v2f', (x, y, x, y + 1, x + width, y + 1, x + width, y)),
+                ('c3f', border * 4)
+            )
+            x = xcenter - 64 + (40 * (cols / 2.0))
             y = ycenter + 58 + (25 * rows)
-            draw(
-                4,
-                GL_QUADS,
-                ('v2f', (x, y, x, y + 1, x + width, y + 1, x + width, y)),
-                ('c3f', border * 4)
-            )
-            x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 63 + (25 * rows)
-            draw(
-                4,
-                GL_QUADS,
-                ('v2f', (x, y, x, y + 1, x + width, y + 1, x + width, y)),
-                ('c3f', border * 4)
-            )
-            x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 59 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
