@@ -119,7 +119,7 @@ class Window(Parent):
                 ('c3f', border * 4)
             )
             x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 62 + (25 * rows)
+            y = ycenter + 63 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
@@ -127,7 +127,7 @@ class Window(Parent):
                 ('c3f', border * 4)
             )
             x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 58 + (25 * rows)
+            y = ycenter + 59 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
@@ -606,6 +606,9 @@ class GameProtocol(LineReceiver):
                         yoffset = -24
                     thissprite = self.window.sprites['icons'][index]
                     thissprite.image = image
+                    thissprite.color = (255, 255, 255)
+                    if not self.equipable(index):
+                        thissprite.color = (184, 196, 255)
                     thissprite.x = xcenter + 9 + (16 * xoffset)
                     thissprite.y = ycenter + 41 + (yoffset) + menu
                     thissprite.group = self.group(rows + 2)
