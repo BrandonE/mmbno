@@ -111,7 +111,7 @@ class Window(Parent):
             ycenter = (self.height / 2.0) - (((25 * rows) + 80) / 2.0)
             border = (120 / 255.0, 152 / 255.0, 216 / 255.0)
             x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 57 + (25 * rows)
+            y = ycenter + 71 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
@@ -119,7 +119,7 @@ class Window(Parent):
                 ('c3f', border * 4)
             )
             x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 63 + (25 * rows)
+            y = ycenter + 76 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
@@ -127,7 +127,7 @@ class Window(Parent):
                 ('c3f', border * 4)
             )
             x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 59 + (25 * rows)
+            y = ycenter + 72 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
@@ -608,7 +608,7 @@ class GameProtocol(LineReceiver):
                     thissprite.image = image
                     thissprite.color = (255, 255, 255)
                     if not self.equipable(index):
-                        thissprite.color = (184, 196, 255)
+                        thissprite.color = (184, 184, 176)
                     thissprite.x = xcenter + 9 + (16 * xoffset)
                     thissprite.y = ycenter + 41 + (yoffset) + menu
                     thissprite.group = self.group(rows + 2)
@@ -644,7 +644,7 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['bar'] = Sprite(image, 0, 0)
             self.window.sprites['bar'].image = image
             self.window.sprites['bar'].x = xcenter - 72 + (40 * (cols / 2.0))
-            self.window.sprites['bar'].y = ycenter + 56 + (25 * rows)
+            self.window.sprites['bar'].y = ycenter + 69 + (25 * rows)
             self.window.sprites['bar'].group = self.group(0)
             self.window.sprites['bar'].batch = self.window.batch
             if self.custombar >= 10:
@@ -657,10 +657,10 @@ class GameProtocol(LineReceiver):
                 if not 'full' in self.window.sprites:
                     self.window.sprites['full'] = Sprite(image, 0, 0)
                 self.window.sprites['full'].image = image
-                self.window.sprites['full'].x = xcenter - 63 + (
+                self.window.sprites['full'].x = xcenter - 64 + (
                     40 * (cols / 2.0)
                 )
-                self.window.sprites['full'].y = ycenter + 57 + (25 * rows)
+                self.window.sprites['full'].y = ycenter + 70 + (25 * rows)
                 self.window.sprites['full'].group = self.group(1)
                 self.window.sprites['full'].batch = self.window.batch
             chips = self.character.chips[:]
@@ -668,9 +668,7 @@ class GameProtocol(LineReceiver):
             for index, chip in enumerate(chips):
                 x = xcenter + (40 * self.character.col) - (2 * index)
                 y = ycenter + (30 * self.character.row) + (2 * index)
-                border = self.window.images['battle']['extra'][
-                    'iconborder'
-                ]
+                border = self.window.images['battle']['misc']['iconborder']
                 icon = self.window.images['chips']['icon']
                 classification = self.window.images['chips'][
                     chip.classification
@@ -701,11 +699,26 @@ class GameProtocol(LineReceiver):
                 stack['icon'].y = y + 49
                 stack['icon'].group = stack['border'].group
                 stack['icon'].batch = self.window.batch
+        image = self.window.images['battle']['misc']['health']
+        if not 'health' in self.window.sprites:
+            self.window.sprites['health'] = Sprite(image, 0, 0)
+        xoffset = -118
+        if self.select:
+            xoffset = 2
+        self.window.sprites['health'].image = image
+        self.window.sprites['health'].x = xcenter + xoffset + (
+            40 * (cols / 2.0)
+        )
+        self.window.sprites['health'].y = ycenter + 69 + (25 * rows)
+        self.window.sprites['health'].group = self.group(0)
+        self.window.sprites['health'].batch = self.window.batch
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.field[row][col]
                 x = 40 * col + xcenter
                 y = 25 * row + ycenter
+                if not self.select:
+                    y += 13
                 color = 'red'
                 if (col > (cols / 2.0) - 1) ^ panel['stolen']:
                     color = 'blue'
