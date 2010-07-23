@@ -542,6 +542,20 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['element'].y = ycenter + 73 + menu
                 self.window.sprites['element'].group = self.group(rows + 2)
                 self.window.sprites['element'].batch = self.window.batch
+                if hasattr(self.chips[selection], 'power'):
+                    if not 'power' in self.window.sprites:
+                        self.window.sprites['power'] = []
+                    string = str(self.chips[selection].power)
+                    self.window.sprites['power'] = text(
+                        string,
+                        self.window.sprites['power'],
+                        8,
+                        self.window.images['fonts']['power'],
+                        xcenter + 73 - (8 * len(string)),
+                        ycenter + 74,
+                        self.group(rows + 2),
+                        self.window.batch
+                    )
             cursor = 'chip'
             if not self.selection['row'] and self.selection['col'] == 5:
                 cursor = 'ok'
@@ -1065,7 +1079,7 @@ def loader(path, function):
                         '%s%s' % (name, ext)
                     ).replace('\\', '/')
                 )
-            elif name != '.svn':
+            elif not name.startswith('.'):
                 items[name] = loader(os.path.join(path, name), function)
     return items
 
