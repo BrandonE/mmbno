@@ -700,34 +700,47 @@ class GameProtocol(LineReceiver):
                 stack['icon'].group = stack['border'].group
                 stack['icon'].batch = self.window.batch
         image = self.window.images['battle']['misc']['health']
-        if not 'health' in self.window.sprites:
-            self.window.sprites['health'] = Sprite(image, 0, 0)
+        if not 'healthbox' in self.window.sprites:
+            self.window.sprites['healthbox'] = Sprite(image, 0, 0)
         xoffset = -118
         if self.select:
             xoffset = 2
-        self.window.sprites['health'].image = image
-        self.window.sprites['health'].x = xcenter + xoffset + (
+        self.window.sprites['healthbox'].image = image
+        self.window.sprites['healthbox'].x = xcenter + xoffset + (
             40 * (cols / 2.0)
         )
-        self.window.sprites['health'].y = ycenter + 69 + (25 * rows)
-        self.window.sprites['health'].group = self.group(0)
-        self.window.sprites['health'].batch = self.window.batch
+        self.window.sprites['healthbox'].y = ycenter + 69 + (25 * rows)
+        self.window.sprites['healthbox'].group = self.group(0)
+        self.window.sprites['healthbox'].batch = self.window.batch
+        if not 'health' in self.window.sprites:
+            self.window.sprites['health'] = []
+        self.window.sprites['health'] = text(
+            str(self.character.health),
+            self.window.sprites['health'],
+            8,
+            self.window.images['fonts']['health'],
+            self.window.sprites['healthbox'].x + 4,
+            self.window.sprites['healthbox'].y + 2,
+            self.group(1),
+            self.window.batch
+        )
         for row in range(0, rows):
             for col in range(0, cols):
                 panel = self.field[row][col]
-                x = 40 * col + xcenter
-                y = 25 * row + ycenter
+                x = xcenter + (40 * col)
+                y = ycenter + (25 * row)
                 if not self.select:
                     y += 13
                 color = 'red'
                 if (col > (cols / 2.0) - 1) ^ panel['stolen']:
                     color = 'blue'
                 shading = 'middle'
+                yoffset = 0
                 if row == rows - 1 and rows > 1:
                     shading = 'top'
                 if not row:
                     shading = 'bottom'
-                    y -= 5
+                    yoffset = -5
                 image = self.window.images[
                     'panels'
                 ][color][panel['status']][shading]
@@ -735,14 +748,21 @@ class GameProtocol(LineReceiver):
                     panel['sprite'] = Sprite(image, 0, 0, group=self.group(0))
                 panel['sprite'].image = image
                 panel['sprite'].x = x
-                panel['sprite'].y = y
+                panel['sprite'].y = y + yoffset
                 panel['sprite'].batch = self.window.batch
                 character = panel['character']
                 if character:
                     player = self.players[character - 1]
                     if player and player['health']:
-                        image = self.window.images['characters'
-                        ]['mega'][player['image']]['0']
+                        if not 'sprites' in player:
+                            player['sprites'] = {
+                                'health': []
+                            }
+                        image = self.window.images['characters']['mega'][
+                            player['image']
+                        ]['0']
+                        if not 'self' in player['sprites']:
+                            player['sprites']['self'] = Sprite(image, 0, 0)
                         xoffset = 24
                         if (col > (cols / 2.0) - 1) ^ panel['stolen']:
                             image = image.get_transform()
@@ -752,13 +772,22 @@ class GameProtocol(LineReceiver):
                         x = x - xoffset
                         y = y - 23
                         group = range(rows - 1, -1, -1)[row] + 1
-                        if not 'sprite' in player:
-                            player['sprite'] = Sprite(image, x, y)
-                        player['sprite'].image = image
-                        player['sprite'].x = x
-                        player['sprite'].y = y
-                        player['sprite'].group = self.group(group)
-                        player['sprite'].batch = self.window.batch
+                        player['sprites']['self'].image = image
+                        player['sprites']['self'].x = x
+                        player['sprites']['self'].y = y
+                        player['sprites']['self'].group = self.group(group)
+                        player['sprites']['self'].batch = self.window.batch
+                        if character != self.player:
+                            player['sprites']['health'] = text(
+                                str(player['health']),
+                                player['sprites']['health'],
+                                8,
+                                self.window.images['fonts']['health'],
+                                x,
+                                y,
+                                self.group(group + 3),
+                                self.window.batch
+                            )
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
@@ -1036,12 +1065,24 @@ def loader(path, function):
                         '%s%s' % (name, ext)
                     ).replace('\\', '/')
                 )
-            else:
+            elif name != '.svn':
                 items[name] = loader(os.path.join(path, name), function)
     return items
 
 def loadmedia(path):
     return media.load(path, streaming=False)
+
+def text(characters, sprites, spacing, font, x, y, group, batch):
+    for index, character in enumerate(characters):
+        image = font[character]
+        if index > len(sprites) - 1:
+            sprites.append(Sprite(image, 0, 0))
+        sprites[index].image = image
+        sprites[index].x = x + (index * spacing)
+        sprites[index].y = y
+        sprites[index].group = group
+        sprites[index].batch = batch
+    return sprites
 
 factory = protocol.ClientFactory()
 factory.protocol = GameProtocol
