@@ -681,7 +681,7 @@ class GameProtocol(LineReceiver):
             chips.reverse()
             for index, chip in enumerate(chips):
                 x = xcenter + (40 * self.character.col) - (2 * index)
-                y = ycenter + (30 * self.character.row) + (2 * index)
+                y = ycenter + (25 * self.character.row) + (2 * index)
                 border = self.window.images['battle']['misc']['iconborder']
                 icon = self.window.images['chips']['icon']
                 classification = self.window.images['chips'][
@@ -696,7 +696,7 @@ class GameProtocol(LineReceiver):
                         'icon': Sprite(icon, 0, 0)
                     })
                 stack = self.window.sprites['stack'][index]
-                group = rows + (
+                group = rows + 1 + (
                     range(
                         len(self.character.chips) - 1,
                         -1,
@@ -705,12 +705,12 @@ class GameProtocol(LineReceiver):
                 )
                 stack['border'].image = border
                 stack['border'].x = x + 19
-                stack['border'].y = y + 48
+                stack['border'].y = y + 66
                 stack['border'].group = self.group(group)
                 stack['border'].batch = self.window.batch
                 stack['icon'].image = icon
                 stack['icon'].x = x + 20
-                stack['icon'].y = y + 49
+                stack['icon'].y = y + 67
                 stack['icon'].group = stack['border'].group
                 stack['icon'].batch = self.window.batch
         image = self.window.images['battle']['misc']['health']
@@ -728,13 +728,14 @@ class GameProtocol(LineReceiver):
         self.window.sprites['healthbox'].batch = self.window.batch
         if not 'health' in self.window.sprites:
             self.window.sprites['health'] = []
+        string = str(self.character.health)
         self.window.sprites['health'] = text(
-            str(self.character.health),
+            string,
             self.window.sprites['health'],
             8,
-            self.window.images['fonts']['health'],
-            self.window.sprites['healthbox'].x + 4,
-            self.window.sprites['healthbox'].y + 2,
+            self.window.images['fonts']['health']['self'],
+            self.window.sprites['healthbox'].x + 39 - (8 * len(string)),
+            self.window.sprites['healthbox'].y + 3,
             self.group(1),
             self.window.batch
         )
@@ -796,7 +797,9 @@ class GameProtocol(LineReceiver):
                                 str(player['health']),
                                 player['sprites']['health'],
                                 8,
-                                self.window.images['fonts']['health'],
+                                self.window.images['fonts']['health'][
+                                    'opponent'
+                                ],
                                 x,
                                 y,
                                 self.group(group + 3),
