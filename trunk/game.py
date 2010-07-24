@@ -107,31 +107,35 @@ class Window(Parent):
             width = 0
             if self.owner.custombar:
                 width = 12.8 * self.owner.custombar
-            xcenter = (self.width / 2.0) - ((40 * cols) / 2.0)
-            ycenter = (self.height / 2.0) - (((25 * rows) + 80) / 2.0)
+            x = (self.width / 2.0) - ((40 * cols) / 2.0) - 64 + (
+                40 * (cols / 2.0)
+            )
+            y = (self.height / 2.0) - (((25 * rows) + 80) / 2.0) + 70 + (
+                25 * rows
+            )
             border = (120 / 255.0, 152 / 255.0, 216 / 255.0)
-            x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 71 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
                 ('v2f', (x, y, x, y + 1, x + width, y + 1, x + width, y)),
                 ('c3f', border * 4)
             )
-            x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 76 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
-                ('v2f', (x, y, x, y + 1, x + width, y + 1, x + width, y)),
+                (
+                    'v2f',
+                    (x, y + 5, x, y + 6, x + width, y + 6, x + width, y + 5)
+                ),
                 ('c3f', border * 4)
             )
-            x = xcenter - 64 + (40 * (cols / 2.0))
-            y = ycenter + 72 + (25 * rows)
             draw(
                 4,
                 GL_QUADS,
-                ('v2f', (x, y, x, y + 4, x + width, y + 4, x + width, y)),
+                (
+                    'v2f',
+                    (x, y + 1, x, y + 5, x + width, y + 5, x + width, y + 1)
+                ),
                 ('c3f', (224 / 255.0, 232 / 255.0, 248 / 255.0) * 4)
             )
 
