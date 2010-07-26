@@ -28,3 +28,4 @@ class Chip(Parent):
         self.description = 'Cannon to attack 1 enemy'
         self.name = 'Cannon'
         self.power = 40
+        self.short = 'Cannon'

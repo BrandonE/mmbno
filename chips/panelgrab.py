@@ -26,7 +26,8 @@ class Chip(Parent):
         """Overwrite the default properties."""
         self.codes = ('*',)
         self.description = 'Steals 1 enemy square'
-        self.name = 'PanelGrab'
+        self.name = 'Panel Grab'
+        self.short = 'PanlGrab'
 
     def use(self):
         """Use the chip."""

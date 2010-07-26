@@ -27,8 +27,9 @@ class Chip(Parent):
         self.codes = ('*',)
         self.description = 'Knock enemy back 1 square'
         self.element = 'wind'
-        self.name = 'Airshot'
+        self.name = 'Air Shot'
         self.power = 20
+        self.short = 'AirShot'
         self.stars = 2
 
     def use(self):

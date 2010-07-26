@@ -29,6 +29,7 @@ class Chip(Parent):
         self.description = 'Invisible for a while'
         self.limit = 10
         self.name = 'Invisible'
+        self.short = 'Invisibl'
         self.stars = 3
 
     def time(self):

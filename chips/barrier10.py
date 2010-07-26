@@ -28,4 +28,5 @@ class Chip(Parent):
         self.description = 'Nullifies 10HP of damage'
         self.health = 10
         self.name = 'Barrier'
+        self.short = 'Barrier'
         self.stars = 2

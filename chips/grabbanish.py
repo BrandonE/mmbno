@@ -27,5 +27,6 @@ class Chip(Parent):
         self.codes = ('B', 'M', 'S')
         self.damage = 20
         self.description = '20 damage for every stolen square'
-        self.name = 'GrabBanish'
+        self.name = 'Grab Banish'
+        self.short = 'GrabBnsh'
         self.stars = 3

@@ -27,5 +27,6 @@ class Chip(Parent):
         self.codes = ('A', 'F', 'R', '*')
         self.description = 'Nullifies 100HP of damage'
         self.health = 100
-        self.name = 'Barrier100'
+        self.name = 'Barrier 100'
+        self.short = 'Barr100'
         self.stars = 3

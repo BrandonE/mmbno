@@ -27,8 +27,9 @@ class Chip(Parent):
         self.codes = ('*',)
         self.description = 'Power goes up by 1'
         self.element = 'plus'
-        self.name = 'BusterUp'
+        self.name = 'Buster Up'
         self.plus = 1
+        self.short = 'BusterUp'
         self.stars = 2
 
     def use(self):
