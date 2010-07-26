@@ -27,6 +27,7 @@ class Chip(Parent):
         self.codes = ('B', 'F', 'S')
         self.description = 'Steals left edge from enemy'
         self.name = 'AreaGrab'
+        self.short = 'AreaGrab'
         self.stars = 2
 
     def use(self):

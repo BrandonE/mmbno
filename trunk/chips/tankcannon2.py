@@ -26,5 +26,6 @@ class Chip(Parent):
         """Overwrite the default properties."""
         self.codes = ('L', 'S', 'V')
         self.description = '3-square blast if hits end row'
-        self.name = 'TankCannon2'
+        self.name = 'Tank Cannon 2'
         self.power = 160
+        self.short = 'TankCan2'

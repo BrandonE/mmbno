@@ -27,6 +27,7 @@ class Chip(Parent):
         self.codes = ('*',)
         self.description = '+30 for selected attack chip'
         self.element = 'plus'
-        self.name = 'Attack+30'
+        self.name = 'Attack +30'
         self.plus = 30
+        self.short = 'Atk+30'
         self.stars = 4

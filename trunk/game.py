@@ -61,7 +61,30 @@ class Window(Parent):
         self.fx = loader(os.path.join('res', 'sound', 'fx'), loadmedia)
         self.groups = {}
         self.images = loader(os.path.join('res', 'images'), resource.image)
-        self.sprites = {'icons': [], 'selected': [], 'stack': []}
+        self.sprites = {
+            'debug': {
+                'a': [],
+                'active': [],
+                'chips': [],
+                'c': [],
+                'count': [],
+                'd': [],
+                'directional': [],
+                'enter': [],
+                'escape': [],
+                'f': [],
+                'players': [],
+                's': [],
+                'winner': []
+            },
+            'health': [],
+            'icons': [],
+            'name': [],
+            'power': [],
+            'selected': [],
+            'stack': [],
+            'thischip': []
+        }
         self.set_icon(
             image.load(
                 os.path.join(
@@ -110,7 +133,7 @@ class Window(Parent):
             x = (self.width / 2.0) - ((40 * cols) / 2.0) - 64 + (
                 40 * (cols / 2.0)
             )
-            y = (self.height / 2.0) - (((25 * rows) + 80) / 2.0) + 70 + (
+            y = (self.height / 2.0) - (((25 * rows) + 80) / 2.0) + 71 + (
                 25 * rows
             )
             border = (120 / 255.0, 152 / 255.0, 216 / 255.0)
@@ -342,147 +365,9 @@ class GameProtocol(LineReceiver):
 
     def draw(self):
         """Draw the screen"""
-        os.system('cls')
-        # Graphically display a character or chip's element.
-        elements = {'wind': 'A', 'none': 'N', 'plus': 'P'}
-        if not self.ready:
-            return
-        # If the player is prompted to select a chip
-        if self.select:
-            # Display the chip selection.
-            menu = 'Custom: '
-            for index in range(0, len(self.chips)):
-                if index == 8:
-                    break
-                chip = self.chips[index]
-                menu += '|'
-                cursor = '  '
-                if index == self.selection:
-                    cursor = '+ '
-                menu += cursor
-                power = ''
-                if hasattr(chip, 'power'):
-                    power = ' %s' % (chip.power)
-                equipable = self.equipable(index)
-                if equipable:
-                    equipable = ' '
-                else:
-                    equipable = 'X'
-                if not index in self.selected:
-                    menu += '%s%s %s %s %s' % (
-                        chip.name,
-                        power,
-                        elements[chip.element],
-                        chip.code,
-                        equipable
-                    )
-                else:
-                    menu += '%s%s %s %s %s' % (
-                        ' ' * len(chip.name),
-                        ' ' * len(str(power)),
-                        ' ' * len(elements[chip.element]),
-                        ' ' * len(chip.code),
-                        ' ' * len(equipable)
-                    )
-            if self.chips:
-                menu += '|'
-            print menu
-        print 'Players: %s' % (len(self.players))
-        # Display the custom bar.
-        custom = ''
-        # If the bar is full, display a message.
-        if self.custombar >= 10:
-            custom = ' Custom'
-        print '%s%s' % (('*' * self.custombar), custom)
-        grid = ''
-        cols = len(self.field[0])
-        top = []
-        for col in range(0, cols):
-            top.append('-----')
-        top = ' '.join(top)
-        for row in range(len(self.field) - 1, -1, -1):
-            grid += '\n %s' % (top)
-            grid += '\n|'
-            for col in range(0, cols):
-                panel = self.field[row][col]
-                label = ' '
-                blue = ' '
-                coming = '>'
-                going = '<'
-                if self.flip:
-                    coming = '<'
-                    going = '>'
-                status = {
-                    'blank': 'X',
-                    'broken': 'B',
-                    'coming': coming,
-                    'cracked': 'C',
-                    'down': 'V',
-                    'frozen': 'F',
-                    'going': going,
-                    'grass': 'G',
-                    'holy': 'H',
-                    'normal': ' ',
-                    'poison': 'P',
-                    'up': '^'
-                }
-                # Place all living characters.
-                character = panel['character']
-                if character:
-                    player = self.players[character - 1]
-                    if player and player['health']:
-                        label = 'x'
-                        # If the player is this character, change the symbol.
-                        if character == self.player:
-                            label = 'o'
-                # Label a blue panels.
-                if (col > (cols / 2.0) - 1) ^ panel['stolen']:
-                    blue = 'B'
-                grid += ' %s%s%s |' % (status[panel['status']], label, blue)
-            grid += '\n %s' % (top)
-        print grid
-        for player in self.players:
-            if player:
-                print '\n%s' % (player['name'])
-                print '-HP: %s' % (player['health'])
-                print '-Status: %s' % (', '.join(player['status']))
-                print '-Element: %s' % (player['element'])
-        chips = []
-        # Display the usable chips.
-        for chip in self.character.chips:
-            power = ''
-            if hasattr(chip, 'power'):
-                power = ' %s' % (chip.power)
-            chips.append('%s%s %s' % (chip.name, power, elements[chip.element]))
-        print '-Chips: %s' % (', '.join(chips))
-        print '-Active Chip:'
-        # Display the active chips.
-        for type, chips in self.character.activechips.items():
-            if chips:
-                names = []
-                if isinstance(chips, dict):
-                    chips = list(
-                        dict([(v, k) for (k, v) in chips.iteritems()])
-                    )
-                for chip in chips:
-                    names.append(chip.name)
-                print '--%s: %s' % (type, ', '.join(names))
-        # If the game is over, display the winner prompt restarting.
-        winners = self.winners()
-        if not self.select and len(winners) == 1:
-            print '\n%s wins! Press "r" to restart.' % (winners[0])
-        print '\nControls:'
-        print 'Directional Keys - Move Player / Chip Selection'
-        print 'A: Use / Select Chip'
-        print 'S: Use Buster / Remove Chip'
-        print 'D: Prompt Chip Selection'
-        print 'C: Charge Shot'
-        print 'F: Go forward in time'
-        print 'Enter: End Chip Selection'
-        print 'Escape - End Game'
-        player = self.players[self.player - 1]
         if not self.window.images:
             return
+        winners = self.winners()
         self.window.batch = Batch()
         rows = len(self.field)
         cols = len(self.field[0])
@@ -531,11 +416,21 @@ class GameProtocol(LineReceiver):
             if not 'chip' in self.window.sprites:
                 self.window.sprites['chip'] = Sprite(image, 0, 0)
             self.window.sprites['chip'].image = image
-            self.window.sprites['chip'].x = xcenter + 15
+            self.window.sprites['chip'].x = xcenter + 16
             self.window.sprites['chip'].y = ycenter + 88 + menu
             self.window.sprites['chip'].group = self.group(rows + 2)
             self.window.sprites['chip'].batch = self.window.batch
             if isinstance(selection, int):
+                self.window.sprites['name'] = text(
+                    self.chips[selection].short,
+                    self.window.sprites['name'],
+                    8,
+                    self.window.images['fonts']['chip'],
+                    xcenter + 17,
+                    ycenter + 137 + menu,
+                    self.group(rows + 2),
+                    self.window.batch
+                )
                 image = self.window.images['chips']['elements'][
                     self.chips[selection].element
                 ]
@@ -547,8 +442,6 @@ class GameProtocol(LineReceiver):
                 self.window.sprites['element'].group = self.group(rows + 2)
                 self.window.sprites['element'].batch = self.window.batch
                 if hasattr(self.chips[selection], 'power'):
-                    if not 'power' in self.window.sprites:
-                        self.window.sprites['power'] = []
                     string = str(self.chips[selection].power)
                     self.window.sprites['power'] = text(
                         string,
@@ -556,7 +449,7 @@ class GameProtocol(LineReceiver):
                         8,
                         self.window.images['fonts']['power'],
                         xcenter + 73 - (8 * len(string)),
-                        ycenter + 74,
+                        ycenter + 74 + menu,
                         self.group(rows + 2),
                         self.window.batch
                     )
@@ -628,7 +521,7 @@ class GameProtocol(LineReceiver):
                     if not self.equipable(index):
                         thissprite.color = (184, 184, 176)
                     thissprite.x = xcenter + 9 + (16 * xoffset)
-                    thissprite.y = ycenter + 41 + (yoffset) + menu
+                    thissprite.y = ycenter + 41 + yoffset + menu
                     thissprite.group = self.group(rows + 2)
                     thissprite.batch = self.window.batch
             for index, chip in enumerate(self.selected):
@@ -653,7 +546,7 @@ class GameProtocol(LineReceiver):
                 thissprite['icon'].batch = self.window.batch
                 thissprite['selected'].image = selected
                 thissprite['selected'].x = xcenter + 93
-                thissprite['selected'].y = ycenter + 120 - (16 * index)
+                thissprite['selected'].y = ycenter + 120 - (16 * index) + menu
                 thissprite['selected'].group = self.group(rows + 2)
                 thissprite['selected'].batch = self.window.batch
         elif len(winners) != 1:
@@ -713,10 +606,21 @@ class GameProtocol(LineReceiver):
                 stack['border'].group = self.group(group)
                 stack['border'].batch = self.window.batch
                 stack['icon'].image = icon
-                stack['icon'].x = x + 20
-                stack['icon'].y = y + 67
+                stack['icon'].x = stack['border'].x + 1
+                stack['icon'].y = stack['border'].y + 1
                 stack['icon'].group = stack['border'].group
                 stack['icon'].batch = self.window.batch
+            if self.character.chips:
+                self.window.sprites['thischip'] = text(
+                    self.character.chips[len(self.character.chips) - 1].short,
+                    self.window.sprites['thischip'],
+                    8,
+                    self.window.images['fonts']['main'],
+                    xcenter + 1,
+                    ycenter - 1,
+                    self.group(rows + 1),
+                    self.window.batch
+                )
         image = self.window.images['battle']['misc']['health']
         if not 'healthbox' in self.window.sprites:
             self.window.sprites['healthbox'] = Sprite(image, 0, 0)
@@ -730,8 +634,6 @@ class GameProtocol(LineReceiver):
         self.window.sprites['healthbox'].y = ycenter + 69 + (25 * rows)
         self.window.sprites['healthbox'].group = self.group(0)
         self.window.sprites['healthbox'].batch = self.window.batch
-        if not 'health' in self.window.sprites:
-            self.window.sprites['health'] = []
         string = str(self.character.health)
         self.window.sprites['health'] = text(
             string,
@@ -809,6 +711,192 @@ class GameProtocol(LineReceiver):
                                 self.group(group + 3),
                                 self.window.batch
                             )
+        self.window.sprites['debug']['count'] = text(
+            'Players: %s' % (len(self.players)),
+            self.window.sprites['debug']['count'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 50,
+            self.group(rows + 1),
+            self.window.batch
+        )
+        for index, player in enumerate(self.players):
+            if player:
+                if index > len(self.window.sprites['debug']['players']) - 1:
+                    self.window.sprites['debug']['players'].append({
+                        'element': [],
+                        'health': [],
+                        'name': [],
+                        'status': []
+                    })
+                this = self.window.sprites['debug']['players'][index]
+                this['name'] = text(
+                    player['name'],
+                    this['name'],
+                    8,
+                    self.window.images['fonts']['main'],
+                    xcenter - 500 + (300 * index),
+                    ycenter - 76,
+                    self.group(rows + 1),
+                    self.window.batch
+                )
+                this['health'] = text(
+                    'HP: %s' % (player['health']),
+                    this['health'],
+                    8,
+                    self.window.images['fonts']['main'],
+                    xcenter - 500 + (300 * index),
+                    ycenter - 89,
+                    self.group(rows + 1),
+                    self.window.batch
+                )
+                this['status'] = text(
+                    'Status: %s' % (', '.join(player['status'])),
+                    this['status'],
+                    8,
+                    self.window.images['fonts']['main'],
+                    xcenter - 500 + (300 * index),
+                    ycenter - 102,
+                    self.group(rows + 1),
+                    self.window.batch
+                )
+                this['element'] = text(
+                    'Element: %s' % (player['element']),
+                    this['element'],
+                    8,
+                    self.window.images['fonts']['main'],
+                    xcenter - 500 + (300 * index),
+                    ycenter - 115,
+                    self.group(rows + 1),
+                    self.window.batch
+                )
+        self.window.sprites['debug']['active'] = text(
+            'Active Chip:',
+            self.window.sprites['debug']['active'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 141,
+            self.group(rows + 1),
+            self.window.batch
+        )
+        index = 0
+        # Display the active chips.
+        for type, chips in self.character.activechips.items():
+            if chips:
+                names = []
+                if isinstance(chips, dict):
+                    chips = list(
+                        dict([(v, k) for (k, v) in chips.iteritems()])
+                    )
+                for chip in chips:
+                    names.append(chip.name)
+                if index > len(self.window.sprites['debug']['chips']) - 1:
+                    self.window.sprites['debug']['chips'].append([])
+                self.window.sprites['debug']['chips'][index] = text(
+                    '%s: %s' % (type, ' '.join(names)),
+                    self.window.sprites['debug']['chips'][index],
+                    8,
+                    self.window.images['fonts']['main'],
+                    xcenter - 500,
+                    ycenter - 154 - (13 * index),
+                    self.group(rows + 1),
+                    self.window.batch
+                )
+                index += 1
+        if not self.select and len(winners) == 1:
+            self.window.sprites['debug']['winner'] = text(
+                '%s wins. Press r to restart.' % (winners[0]),
+                self.window.sprites['debug']['winner'],
+                8,
+                self.window.images['fonts']['main'],
+                xcenter - 500,
+                ycenter - 167 - (13 * index),
+                self.group(rows + 1),
+                self.window.batch
+            )
+            index += 1
+        self.window.sprites['debug']['directional'] = text(
+            'Directional Keys: Move Player or Chip Selection',
+            self.window.sprites['debug']['directional'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 180 - (13 * index),
+            self.group(rows + 1),
+            self.window.batch
+        )
+        self.window.sprites['debug']['a'] = text(
+            'A: Use or Select Chip',
+            self.window.sprites['debug']['a'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 193 - (13 * index),
+            self.group(rows + 1),
+            self.window.batch
+        )
+        self.window.sprites['debug']['s'] = text(
+            'S: Use Buster or Remove Chip',
+            self.window.sprites['debug']['s'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 206 - (13 * index),
+            self.group(rows + 1),
+            self.window.batch
+        )
+        self.window.sprites['debug']['d'] = text(
+            'D: Prompt Chip Selection',
+            self.window.sprites['debug']['d'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 219 - (13 * index),
+            self.group(rows + 1),
+            self.window.batch
+        )
+        self.window.sprites['debug']['c'] = text(
+            'C: Charge Shot',
+            self.window.sprites['debug']['c'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 232 - (13 * index),
+            self.group(rows + 1),
+            self.window.batch
+        )
+        self.window.sprites['debug']['f'] = text(
+            'F: Go forward in time',
+            self.window.sprites['debug']['f'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 245 - (13 * index),
+            self.group(rows + 1),
+            self.window.batch
+        )
+        self.window.sprites['debug']['enter'] = text(
+            'Enter: End Chip Selection',
+            self.window.sprites['debug']['enter'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 258 - (13 * index),
+            self.group(rows + 1),
+            self.window.batch
+        )
+        self.window.sprites['debug']['escape'] = text(
+            'Escape: End Game',
+            self.window.sprites['debug']['escape'],
+            8,
+            self.window.images['fonts']['main'],
+            xcenter - 500,
+            ycenter - 271 - (13 * index),
+            self.group(rows + 1),
+            self.window.batch
+        )
 
     def equipable(self, chip):
         """Check if a chip can be equipped."""
@@ -1094,15 +1182,32 @@ def loadmedia(path):
     return media.load(path, streaming=False)
 
 def text(characters, sprites, spacing, font, x, y, group, batch):
+    offset = 0
     for index, character in enumerate(characters):
-        image = font[character]
-        if index > len(sprites) - 1:
-            sprites.append(Sprite(image, 0, 0))
-        sprites[index].image = image
-        sprites[index].x = x + (index * spacing)
-        sprites[index].y = y
-        sprites[index].group = group
-        sprites[index].batch = batch
+        if character != ' ':
+            symbols = {
+                ':': 'colon',
+                '=': 'equal',
+                '.': 'period',
+                '+': 'plus',
+                '*': 'asterisk'
+            }
+            if character in font:
+                image = font[character]
+            elif character in symbols:
+                image = font['symbols'][symbols[character]]
+            else:
+                image = font['uppercase'][character.lower()]
+            index -= offset
+            if index > len(sprites) - 1:
+                sprites.append(Sprite(image, 0, 0))
+            sprites[index].image = image
+            sprites[index].x = x + (spacing * (index + offset))
+            sprites[index].y = y
+            sprites[index].group = group
+            sprites[index].batch = batch
+        else:
+            offset += 1
     return sprites
 
 factory = protocol.ClientFactory()

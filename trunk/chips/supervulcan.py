@@ -27,6 +27,7 @@ class Chip(Parent):
         self.bullets = 10
         self.codes = ('V',)
         self.description = '10-shot vulcan cannon'
-        self.name = 'SuperVulcan'
+        self.name = 'Super Vulcan'
         self.power = 20
+        self.short = 'SuprVulc'
         self.stars = 4

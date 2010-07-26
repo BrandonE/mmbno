@@ -26,6 +26,7 @@ class Chip(Parent):
         """Overwrite the default properties."""
         self.codes = ('A', 'B', 'C', '*')
         self.description = 'Spreads damage to adjacent panels'
-        self.name = 'Spreader2'
+        self.name = 'Spreader 2'
         self.power = 60
+        self.short = 'Spreadr2'
         self.stars = 2

@@ -26,6 +26,7 @@ class Chip(Parent):
         """Overwrite the default properties."""
         self.codes = ('L', 'M', 'N', '*')
         self.description = 'Cannon to attack 1 enemy'
-        self.name = 'HighCannon'
+        self.name = 'High Cannon'
         self.power = 100
+        self.short = 'HiCannon'
         self.stars = 2

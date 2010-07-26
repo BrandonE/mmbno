@@ -27,6 +27,7 @@ class Chip(Parent):
         self.bullets = 5
         self.codes = ('A', 'G', 'R')
         self.description = '5-Shot to pierce one panel'
-        self.name = 'Vulcan3'
+        self.name = 'Vulcan 3'
         self.power = 20
+        self.short = 'Vulcan3'
         self.stars = 3

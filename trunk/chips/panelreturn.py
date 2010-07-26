@@ -26,7 +26,8 @@ class Chip(Parent):
         """Overwrite the default properties."""
         self.codes = ('*',)
         self.description = 'Fix your area\'s panels'
-        self.name = 'PanelReturn'
+        self.name = 'Panel Return'
+        self.short = 'PnlRetrn'
         self.stars = 2
 
     def use(self):

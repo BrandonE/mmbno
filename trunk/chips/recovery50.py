@@ -27,4 +27,5 @@ class Chip(Parent):
         self.codes = ('C', 'M', 'P', '*')
         self.description = 'Recovers 50HP'
         self.health = 50
-        self.name = 'Recovery50'
+        self.name = 'Recovery +50'
+        self.short = 'Recov50'
