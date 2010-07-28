@@ -20,9 +20,9 @@ from math import ceil
 
 __all__ = ['Character']
 
-class Character():
+class Character(object):
     """A class to base the characters off of."""
-    def __init__(self, owner = None):
+    def __init__(self, owner=None):
         """A class to base the characters off of."""
         if owner:
             self.owner = owner
@@ -85,7 +85,7 @@ class Character():
         if self.health > self.maxhealth:
             self.health = self.maxhealth
 
-    def hit(self, power, element = 'none', flinch = True):
+    def hit(self, power, element='none', flinch=True):
         """Forward damage."""
         weaknesses = {
             'aqua': 'electric',
@@ -120,7 +120,7 @@ class Character():
             self.damage(power, element, flinch)
         self.owner.characters()
 
-    def move(self, row, col, rows = 0, cols = 0, force = False):
+    def move(self, row, col, rows=0, cols=0, force = False):
         if self.activechips['move']:
             self.priority('move').damage(row, col, rows, cols, force)
             return
@@ -139,7 +139,7 @@ class Character():
         for value in converted:
             value.moved()
 
-    def movement(self, row, col, rows = 0, cols = 0, force = False):
+    def movement(self, row, col, rows=0, cols=0, force=False):
         self.owner.move(row, col, rows, cols, force)
 
     def priority(self, type):
@@ -149,9 +149,9 @@ class Character():
 
     def properties(self):
         """Overwrite the default properties."""
-        return
+        pass
 
-    def shoot(self, power, element = 'none'):
+    def shoot(self, power, element='none'):
         """Hit the first person across from the character."""
         self.image = 'shoot'
         self.owner.characters()
