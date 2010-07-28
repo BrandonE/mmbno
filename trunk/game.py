@@ -699,15 +699,16 @@ class GameProtocol(LineReceiver):
                         player['sprites']['self'].group = self.group(group)
                         player['sprites']['self'].batch = self.window.batch
                         if character != self.player:
+                            string = str(player['health'])
                             player['sprites']['health'] = text(
-                                str(player['health']),
+                                string,
                                 player['sprites']['health'],
                                 8,
                                 self.window.images['fonts']['health'][
                                     'opponent'
                                 ],
-                                x,
-                                y,
+                                x + 56 - (4 * len(string)),
+                                y + 23,
                                 self.group(group + 3),
                                 self.window.batch
                             )
