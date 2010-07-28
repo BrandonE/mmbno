@@ -733,7 +733,7 @@ class GameProtocol(LineReceiver):
                     })
                 this = self.window.sprites['debug']['players'][index]
                 this['name'] = text(
-                    player['name'],
+                    '-Name: %s' % (player['name']),
                     this['name'],
                     8,
                     self.window.images['fonts']['main'],
@@ -743,7 +743,7 @@ class GameProtocol(LineReceiver):
                     self.window.batch
                 )
                 this['health'] = text(
-                    'HP: %s' % (player['health']),
+                    '-HP: %s' % (player['health']),
                     this['health'],
                     8,
                     self.window.images['fonts']['main'],
@@ -753,7 +753,7 @@ class GameProtocol(LineReceiver):
                     self.window.batch
                 )
                 this['status'] = text(
-                    'Status: %s' % (', '.join(player['status'])),
+                    '-Status: %s' % (', '.join(player['status'])),
                     this['status'],
                     8,
                     self.window.images['fonts']['main'],
@@ -763,7 +763,7 @@ class GameProtocol(LineReceiver):
                     self.window.batch
                 )
                 this['element'] = text(
-                    'Element: %s' % (player['element']),
+                    '-Element: %s' % (player['element']),
                     this['element'],
                     8,
                     self.window.images['fonts']['main'],
@@ -773,7 +773,7 @@ class GameProtocol(LineReceiver):
                     self.window.batch
                 )
         self.window.sprites['debug']['active'] = text(
-            'Active Chip:',
+            '-Active Chip:',
             self.window.sprites['debug']['active'],
             8,
             self.window.images['fonts']['main'],
@@ -796,7 +796,7 @@ class GameProtocol(LineReceiver):
                 if index > len(self.window.sprites['debug']['chips']) - 1:
                     self.window.sprites['debug']['chips'].append([])
                 self.window.sprites['debug']['chips'][index] = text(
-                    '%s: %s' % (type, ' '.join(names)),
+                    '--%s: %s' % (type, ', '.join(names)),
                     self.window.sprites['debug']['chips'][index],
                     8,
                     self.window.images['fonts']['main'],
@@ -808,7 +808,7 @@ class GameProtocol(LineReceiver):
                 index += 1
         if not self.select and len(winners) == 1:
             self.window.sprites['debug']['winner'] = text(
-                '%s wins. Press r to restart.' % (winners[0]),
+                '%s wins! Press "r" to restart.' % (winners[0]),
                 self.window.sprites['debug']['winner'],
                 8,
                 self.window.images['fonts']['main'],
@@ -819,7 +819,7 @@ class GameProtocol(LineReceiver):
             )
             index += 1
         self.window.sprites['debug']['directional'] = text(
-            'Directional Keys: Move Player or Chip Selection',
+            'Directional Keys: Move Player / Chip Selection',
             self.window.sprites['debug']['directional'],
             8,
             self.window.images['fonts']['main'],
@@ -829,7 +829,7 @@ class GameProtocol(LineReceiver):
             self.window.batch
         )
         self.window.sprites['debug']['a'] = text(
-            'A: Use or Select Chip',
+            'A: Use / Select Chip',
             self.window.sprites['debug']['a'],
             8,
             self.window.images['fonts']['main'],
@@ -839,7 +839,7 @@ class GameProtocol(LineReceiver):
             self.window.batch
         )
         self.window.sprites['debug']['s'] = text(
-            'S: Use Buster or Remove Chip',
+            'S: Use Buster / Remove Chip',
             self.window.sprites['debug']['s'],
             8,
             self.window.images['fonts']['main'],
@@ -1188,7 +1188,12 @@ def text(characters, sprites, spacing, font, x, y, group, batch):
         if character != ' ':
             symbols = {
                 ':': 'colon',
+                ',': 'comma',
+                '-': 'dash',
+                '"': 'doublequote',
                 '=': 'equal',
+                '!': 'exclamation',
+                '/': 'forwardslash',
                 '.': 'period',
                 '+': 'plus',
                 '*': 'asterisk'
