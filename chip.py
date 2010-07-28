@@ -18,7 +18,7 @@
 
 __all__ = ['Chip']
 
-class Chip():
+class Chip(object):
     """A class to base the chips off of."""
     def __init__(self, owner):
         """A class to base the chips off of."""
