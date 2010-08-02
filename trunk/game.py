@@ -62,6 +62,7 @@ class Window(Parent):
         self.groups = {}
         self.images = loader(os.path.join('res', 'images'), resource.image)
         self.sprites = {
+            'code': [],
             'debug': {
                 'a': [],
                 'active': [],
@@ -428,6 +429,16 @@ class GameProtocol(LineReceiver):
                     self.window.images['fonts']['chip'],
                     xcenter + 17,
                     ycenter + 137 + menu,
+                    self.group(rows + 2),
+                    self.window.batch
+                )
+                self.window.sprites['code'] = text(
+                    self.chips[selection].code,
+                    self.window.sprites['code'],
+                    8,
+                    self.window.images['fonts']['code']['big'],
+                    xcenter + 16,
+                    ycenter + 74 + menu,
                     self.group(rows + 2),
                     self.window.batch
                 )
