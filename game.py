@@ -63,6 +63,7 @@ class Window(Parent):
         self.images = loader(os.path.join('res', 'images'), resource.image)
         self.sprites = {
             'code': [],
+            'codes': [],
             'debug': {
                 'a': [],
                 'active': [],
@@ -510,6 +511,11 @@ class GameProtocol(LineReceiver):
             for index, chip in enumerate(self.chips):
                 if (index == 5 and not config['extra']) or index == 8:
                     break
+                xoffset = index
+                yoffset = 0
+                if xoffset > 4:
+                    xoffset -= 5
+                    yoffset = -24
                 if not index in self.selected:
                     image = self.window.images['chips']['icon']
                     classification = self.window.images['chips'][
@@ -521,11 +527,6 @@ class GameProtocol(LineReceiver):
                         self.window.sprites['icons'].append(
                             Sprite(image, 0, 0)
                         )
-                    xoffset = index
-                    yoffset = 0
-                    if xoffset > 4:
-                        xoffset -= 5
-                        yoffset = -24
                     thissprite = self.window.sprites['icons'][index]
                     thissprite.image = image
                     thissprite.color = (255, 255, 255)
@@ -535,6 +536,18 @@ class GameProtocol(LineReceiver):
                     thissprite.y = ycenter + 41 + yoffset + menu
                     thissprite.group = self.group(rows + 2)
                     thissprite.batch = self.window.batch
+                if len(self.window.sprites['codes']) < index + 1:
+                    self.window.sprites['codes'].append([])
+                self.window.sprites['codes'][index] = text(
+                    chip.code,
+                    self.window.sprites['codes'][index],
+                    8,
+                    self.window.images['fonts']['code']['small'],
+                    xcenter + 13 + (16 * xoffset),
+                    ycenter + 34 + yoffset + menu,
+                    self.group(rows + 6),
+                    self.window.batch
+                )
             for index, chip in enumerate(self.selected):
                 icon = self.window.images['chips']['icon']
                 selected = self.window.images['battle']['select']['selected']
