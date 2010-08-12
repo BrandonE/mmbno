@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*- 
 # This file is part of MMBN Online
 # MMBN Online is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ class Window(Parent):
         self.owner = owner
         self.batch = Batch()
         super(Window, self).__init__(**kwargs)
-        
+
         self.fx = loader(os.path.join('res', 'sound', 'fx'), loadmedia)
         self.groups = {}
         self.images = loader(os.path.join('res', 'images'), resource.image)
@@ -85,7 +85,8 @@ class Window(Parent):
             'power': [],
             'selected': [],
             'stack': [],
-            'thischip': []
+            'thischip': [],
+            'thispower': []
         }
         self.set_icon(
             image.load(
@@ -635,8 +636,9 @@ class GameProtocol(LineReceiver):
                 stack['icon'].group = stack['border'].group
                 stack['icon'].batch = self.window.batch
             if self.character.chips:
+                chip = self.character.chips[len(self.character.chips) - 1]
                 self.window.sprites['thischip'] = text(
-                    self.character.chips[len(self.character.chips) - 1].short,
+                    chip.short,
                     self.window.sprites['thischip'],
                     8,
                     self.window.images['fonts']['main'],
@@ -645,6 +647,21 @@ class GameProtocol(LineReceiver):
                     self.group(rows + 1),
                     self.window.batch
                 )
+                if hasattr(
+                    self.character.chips[len(self.character.chips) - 1],
+                    'power'
+                ):
+                    string = str(chip.power)
+                    self.window.sprites['thispower'] = text(
+                        string,
+                        self.window.sprites['thispower'],
+                        8,
+                        self.window.images['fonts']['power']['battle'],
+                        xcenter + 1 + (8 * len(chip.short)),
+                        ycenter - 1,
+                        self.group(rows + 1),
+                        self.window.batch
+                    )
         image = self.window.images['battle']['misc']['health']
         if not 'healthbox' in self.window.sprites:
             self.window.sprites['healthbox'] = Sprite(image, 0, 0)
@@ -658,12 +675,15 @@ class GameProtocol(LineReceiver):
         self.window.sprites['healthbox'].y = ycenter + 69 + (25 * rows)
         self.window.sprites['healthbox'].group = self.group(0)
         self.window.sprites['healthbox'].batch = self.window.batch
+        font = self.window.images['fonts']['health']['self']
+        if self.character.health <= 20:
+            font = self.window.images['fonts']['health']['self']['red']
         string = str(self.character.health)
         self.window.sprites['health'] = text(
             string,
             self.window.sprites['health'],
             8,
-            self.window.images['fonts']['health']['self'],
+            font,
             self.window.sprites['healthbox'].x + 39 - (8 * len(string)),
             self.window.sprites['healthbox'].y + 3,
             self.group(1),
@@ -1090,7 +1110,7 @@ class GameProtocol(LineReceiver):
         }
 
         Where 'function' is the name of the callback function, and 'kwargs'
-        being the keyword arguments.  
+        being the keyword arguments.
         """
         self.sendLine(json.dumps(line, **kwargs))
 
