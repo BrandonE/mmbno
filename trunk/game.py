@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # This file is part of MMBN Online
 # MMBN Online is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
