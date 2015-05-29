@@ -112,7 +112,9 @@ module.exports = function(config) {
                 if (
                     checkPanelInBounds(playerNum, newRow, newCol) &&
                         checkCanStand(player, newPanel) &&
-                        !newPanel.character
+                        !newPanel.character &&
+                        player.status.indexOf('paralyzed') === -1 &&
+                        player.status.indexOf('frozen') === -1
                 ) {
                     currentPanel.character = null;
 
