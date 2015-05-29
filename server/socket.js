@@ -21,9 +21,8 @@ module.exports = function(config) {
         if (playerNum !== -1) {
             player = new Character(config, field, socket.id, playerNum);
             players[playerNum - 1] = player;
-            console.log(players);
 
-            IO.emit('user connected', playerNum);
+            IO.emit('user connected', playerNum, player.getRow(), player.getCol());
 
             field.draw();
             console.log('user `' + socket.id + '` connected');
@@ -66,6 +65,7 @@ module.exports = function(config) {
 
                 if (player) {
                     player.move(direction);
+                    socket.emit('moved', player.getPlayerNum(), player.getRow(), player.getCol());
                 }
             });
 
