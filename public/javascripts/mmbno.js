@@ -136,24 +136,25 @@ $(document).ready
 (
     function ()
     {
-        socket.on('user connected', function(playerNum, row, col) {
-            var player;
+        socket.on('user connected', function(playerNum, playersToSend) {
+            var player,
+                p;
 
             if (clientPlayerNum === -1) {
                 clientPlayerNum = playerNum;
                 $('#playerNum').text(clientPlayerNum);
+            }
 
-                if (playerNum === 1 || playerNum === 2) {
-                    player = {
-                        row : row,
-                        col : col
-                    };
-                    players[playerNum - 1] = player;
-                    grid[row][col].character = player;
+            for (p in playersToSend) {
+                player = playersToSend[p];
 
-                    draw();
+                if (player) {
+                    players[p] = player;
+                    grid[player.row][player.col].character = player;
                 }
             }
+
+            draw();
         });
 
         socket.on('user disconnected', function(playerNum) {

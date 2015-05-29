@@ -10,7 +10,8 @@ module.exports = function(config) {
 
     function connect(socket) {
         var player,
-            playerNum = -1;
+            playerNum = -1,
+            playersToSend = [null, null];
 
         if (!players[0]) {
             playerNum = 1;
@@ -22,7 +23,21 @@ module.exports = function(config) {
             player = new Character(config, field, socket.id, playerNum);
             players[playerNum - 1] = player;
 
-            IO.emit('user connected', playerNum, player.getRow(), player.getCol());
+            if (players[0]) {
+                playersToSend[0] = {
+                    row : players[0].row,
+                    col : players[0].col
+                }
+            }
+
+            if (players[1]) {
+                playersToSend[1] = {
+                    row : players[1].row,
+                    col : players[1].col
+                }
+            }
+
+            IO.emit('user connected', playerNum, playersToSend);
 
             field.draw();
             console.log('user `' + socket.id + '` connected');
@@ -65,7 +80,7 @@ module.exports = function(config) {
 
                 if (player) {
                     player.move(direction);
-                    socket.emit('moved', player.getPlayerNum(), player.getRow(), player.getCol());
+                    io.sockets.emit('moved', player.getPlayerNum(), player.getRow(), player.getCol());
                 }
             });
 
