@@ -94,11 +94,17 @@ module.exports = function(config) {
                     break;
             }
 
-            field[currentRow][currentCol].character = null;
-            field[newRow][newCol].character = player;
-            player.setRow(newRow);
-            player.setCol(newCol);
-            drawField();
+            // Destination must be a real panel.
+            if (
+                newRow >= 0 && newRow < config.rows &&
+                   newCol >= 0 && newCol < config.cols
+            ) {
+                field[currentRow][currentCol].character = null;
+                field[newRow][newCol].character = player;
+                player.setRow(newRow);
+                player.setCol(newCol);
+                drawField();
+            }
         }
     }
 
