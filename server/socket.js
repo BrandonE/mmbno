@@ -79,6 +79,11 @@ module.exports = function(config) {
             newRow = currentRow;
             newCol = currentCol;
 
+            // If the panel doesn't contain the character, something went horribly wrong.
+            if (currentPanel.character != player) {
+                throw new Error('Field desync.');
+            }
+
             switch (direction) {
                 case 'up':
                     newRow -= rows;
