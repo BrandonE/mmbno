@@ -33,6 +33,10 @@ $(document).ready
                     socket.emit('move', 'down');
                     break;
 
+                case 65:
+                    socket.emit('buster');
+                    break;
+
                 default:
                     return;
             }

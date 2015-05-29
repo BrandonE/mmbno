@@ -45,7 +45,7 @@ module.exports = function Field(config, players) {
 
     this.draw = function draw() {
         var response = EOL,
-            grid = self.getGrid(),
+            grid = self.grid,
             panelStatus = {
                 broken  : 'B',
                 cracked : 'C',

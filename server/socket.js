@@ -68,6 +68,14 @@ module.exports = function(config) {
                     player.move(direction);
                 }
             });
+
+            socket.on('buster', function() {
+                var player = getPlayerById(socket.id);
+
+                if (player) {
+                    player.shoot(player.getBusterPower());
+                }
+            });
         });
     }
 
