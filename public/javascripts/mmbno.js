@@ -1,11 +1,15 @@
-var socket = io();
+var socket = io(),
+    clientPlayerNum = -1;
 
 $(document).ready
 (
     function ()
     {
         socket.on('user connected', function (playerNum) {
-            $('#playerNum').text(playerNum);
+            if (clientPlayerNum === -1) {
+                clientPlayerNum = playerNum;
+                $('#playerNum').text(clientPlayerNum);
+            }
         });
 
         socket.on('user disconnected', function (playerNum) {
