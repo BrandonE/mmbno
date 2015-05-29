@@ -1,17 +1,29 @@
-var EOL = require('os').EOL;
+var Character = require(__dirname + '/character'),
+    EOL = require('os').EOL;
 
 module.exports = function(config) {
     var IO = null,
-        field;
+        field,
+        players = [];
 
     function connect(socket) {
+        var player = new Character();
         IO.emit('user connected');
+        players.push(player);
+
+        if (players.length === 1) {
+            placeCharacter(player, 1, 1);
+        } else if (players.length === 2) {
+            placeCharacter(player, 1, 4);
+        }
+
         drawField();
         console.log('user connected');
     }
 
     function disconnect() {
         IO.emit('user disconnected');
+        // TODO: Remove player.
         drawField();
         console.log('user disconnected');
     }
@@ -94,7 +106,7 @@ module.exports = function(config) {
 
                 grid += ' ' + panelStatus[col.status];
 
-                if (col.character && col.character.health) {
+                if (col.character && col.character.getHealth()) {
                     grid += 'x';
                 } else {
                     grid += ' ';
@@ -109,5 +121,12 @@ module.exports = function(config) {
 
         console.log('\033[2J');
         console.log(grid);
+    }
+
+    function placeCharacter(character, row, col) {
+        character.setRow(row);
+        character.setCol(col);
+
+        field[row][col].character = character;
     }
 };
