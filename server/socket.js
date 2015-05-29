@@ -7,18 +7,22 @@ module.exports = function(config) {
         players = [];
 
     function connect(socket) {
-        var player = new Character();
-        IO.emit('user connected');
-        players.push(player);
+        var player = new Character(socket.id),
+            playerNum;
 
-        if (players.length === 1) {
+        players.push(player);
+        playerNum = players.length;
+
+        IO.emit('user connected', playerNum);
+
+        if (playerNum === 1) {
             placeCharacter(player, 1, 1);
-        } else if (players.length === 2) {
+        } else if (playerNum === 2) {
             placeCharacter(player, 1, 4);
         }
 
         drawField();
-        console.log('user connected');
+        console.log('user `' + socket.id + '` connected');
     }
 
     function disconnect() {
@@ -28,36 +32,43 @@ module.exports = function(config) {
         console.log('user disconnected');
     }
 
-    function move(direction) {
-        var character = players[0],
-            currentRow = character.getRow(),
-            currentCol = character.getCol(),
-            newRow = currentRow,
+    function move(playerId, direction) {
+        var player = getPlayerById(playerId),
+            currentRow,
+            currentCol,
+            newRow,
+            newCol;
+
+        if (player) {
+            currentRow = player.getRow();
+            currentCol = player.getCol();
+            newRow = currentRow;
             newCol = currentCol;
 
-        switch (direction) {
-            case 'up':
-                newRow--;
-                break;
+            switch (direction) {
+                case 'up':
+                    newRow--;
+                    break;
 
-            case 'down':
-                newRow++;
-                break;
+                case 'down':
+                    newRow++;
+                    break;
 
-            case 'left':
-                newCol--;
-                break;
+                case 'left':
+                    newCol--;
+                    break;
 
-            case 'right':
-                newCol++;
-                break;
+                case 'right':
+                    newCol++;
+                    break;
+            }
+
+            field[currentRow][currentCol].character = null;
+            field[newRow][newCol].character = player;
+            player.setRow(newRow);
+            player.setCol(newCol);
+            drawField();
         }
-
-        field[currentRow][currentCol].character = null;
-        field[newRow][newCol].character = character;
-        character.setRow(newRow);
-        character.setCol(newCol);
-        drawField();
     }
 
     function attach(io) {
@@ -70,7 +81,10 @@ module.exports = function(config) {
 
             connect(socket);
             socket.on('disconnect', disconnect);
-            socket.on('move', move);
+
+            socket.on('move', function(direction) {
+                move(socket.id, direction);
+            });
         });
     };
 
@@ -154,6 +168,21 @@ module.exports = function(config) {
 
         console.log('\033[2J');
         console.log(grid);
+    }
+
+    function getPlayerById(id) {
+        var player,
+            p;
+
+        for (p in players) {
+            player = players[p];
+
+            if (player.getId() === id) {
+                return player;
+            }
+        }
+
+        return null;
     }
 
     function placeCharacter(character, row, col) {

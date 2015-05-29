@@ -4,12 +4,10 @@ $(document).ready
 (
     function ()
     {
-        socket.on('user connected', function () {
-            alert('User connected');
+        socket.on('user connected', function (id) {
         });
 
         socket.on('user disconnected', function () {
-            alert('User disconnected');
         });
 
         $(document).keydown(function(e) {
