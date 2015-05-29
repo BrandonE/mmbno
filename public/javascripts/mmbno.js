@@ -4,10 +4,11 @@ $(document).ready
 (
     function ()
     {
-        socket.on('user connected', function (id) {
+        socket.on('user connected', function (playerNum) {
+            $('#playerNum').text(playerNum);
         });
 
-        socket.on('user disconnected', function () {
+        socket.on('user disconnected', function (playerNum) {
         });
 
         $(document).keydown(function(e) {
