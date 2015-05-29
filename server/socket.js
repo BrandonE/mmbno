@@ -115,9 +115,30 @@ module.exports = function(config) {
                         !newPanel.character
                 ) {
                     currentPanel.character = null;
+
                     newPanel.character = player;
                     player.setRow(newRow);
                     player.setCol(newCol);
+
+                    if (player.status.indexOf('floatshoes') === -1) {
+                        // If the panel is cracked and the character moved, break it.
+                        if (
+                            currentPanel.status === 'cracked' &&
+                                (currentRow !== newRow || currentCol !== newCol)
+                        ) {
+                            currentPanel.status = 'broken';
+                        }
+
+                        /*
+                         If the character moved onto a lava panel and doesn't have the fire element, burn the character
+                         and revert the panel.
+                         */
+                        if (newPanel.status === 'lava' && player.getElement() !== 'fire') {
+                            player.takeDamage(10);
+                            newPanel.status = 'normal';
+                        }
+                    }
+
                     drawField();
                 }
             }

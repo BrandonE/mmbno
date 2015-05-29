@@ -7,6 +7,7 @@ module.exports = function Character(id, playerNum) {
     this.playerNum = playerNum;
     this.maxHealth = 500;
     this.health = this.maxHealth;
+    this.element = 'none';
     this.status = [];
     this.busterPower = 1;
 
@@ -36,5 +37,13 @@ module.exports = function Character(id, playerNum) {
 
     this.getHealth = function getHealth() {
         return self.health;
+    }
+
+    this.takeDamage = function takeDamage(damage) {
+        self.health -= damage;
+    }
+
+    this.getElement = function getElement() {
+        return self.element;
     }
 }
