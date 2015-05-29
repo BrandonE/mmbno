@@ -45,6 +45,10 @@ module.exports = function Character(config, field, id, playerNum) {
         return self.element;
     };
 
+    this.getStatus = function getStatus() {
+        return self.status;
+    };
+
     this.enterField = function enterField(row, col) {
         self.setRow(row);
         self.setCol(col);
@@ -59,6 +63,7 @@ module.exports = function Character(config, field, id, playerNum) {
     this.move = function move(direction, rows, cols) {
         var playerNum = self.getPlayerNum(),
             playerElement = self.getElement(),
+            playerStatus = self.getStatus(),
             grid = self.field.getGrid(),
             currentRow,
             currentCol,
@@ -116,24 +121,24 @@ module.exports = function Character(config, field, id, playerNum) {
             newPanel = grid[newRow][newCol];
 
             if (
-                field.checkPanelInBounds(self, newRow, newCol) &&
-                    field.checkCanStand(self, newPanel) &&
+                field.checkPanelInBounds(playerNum, newRow, newCol) &&
+                    field.checkCanStand(playerStatus, newPanel) &&
                     !newPanel.character &&
-                    self.status.indexOf('paralyzed') === -1 &&
-                    self.status.indexOf('frozen') === -1
-                ) {
+                    playerStatus.indexOf('paralyzed') === -1 &&
+                    playerStatus.indexOf('frozen') === -1
+            ) {
                 currentPanel.character = null;
 
                 newPanel.character = self;
                 self.setRow(newRow);
                 self.setCol(newCol);
 
-                if (self.status.indexOf('floatshoes') === -1) {
+                if (playerStatus.indexOf('floatshoes') === -1) {
                     // If the panel is cracked and the character moved, break it.
                     if (
                         currentPanel.status === 'cracked' &&
                             (currentRow !== newRow || currentCol !== newCol)
-                        ) {
+                    ) {
                         currentPanel.status = 'broken';
                     }
 

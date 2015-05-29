@@ -1,6 +1,6 @@
 var EOL = require('os').EOL;
 
-module.exports = function Field(config, players) {
+module.exports = function Field(config) {
     var self = this,
         row,
         col,
@@ -9,27 +9,26 @@ module.exports = function Field(config, players) {
 
     this.config = config;
     this.grid = [];
-    this.players = players;
 
     this.getGrid = function getGrid() {
         return self.grid;
     };
 
-    this.checkCanStand = function checkCanStand(player, newPanel) {
+    this.checkCanStand = function checkCanStand(playerStatus, newPanel) {
         return (
             ['blank', 'broken'].indexOf(newPanel.status) === -1 ||
-                player.status.indexOf('airshoes') > -1
+                playerStatus.indexOf('airshoes') > -1
         );
     };
 
-    this.checkPanelInBounds = function checkPanelInBounds(player, newRow, newCol) {
+    this.checkPanelInBounds = function checkPanelInBounds(playerNum, newRow, newCol) {
         var newPanel = self.grid[newRow][newCol],
             isInBounds,
             // Check if the player is on the left side of the field.
             isNormalSide = (newCol < (config.cols / 2));
 
         // Player 2 should be on the right side.
-        if (player.getPlayerNum() === 2) {
+        if (playerNum === 2) {
             isNormalSide = !isNormalSide;
         }
 
@@ -95,7 +94,8 @@ module.exports = function Field(config, players) {
                 }
 
                 // Label the red-side of the field from Player 1's perspective.
-                if (self.checkPanelInBounds(self.players[0], r, c)) {
+                console.log(self.players);
+                if (self.checkPanelInBounds(1, r, c)) {
                     response += ' ';
                 } else {
                     response += 'R';
