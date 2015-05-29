@@ -28,6 +28,38 @@ module.exports = function(config) {
         console.log('user disconnected');
     }
 
+    function move(direction) {
+        var character = players[0],
+            currentRow = character.getRow(),
+            currentCol = character.getCol(),
+            newRow = currentRow,
+            newCol = currentCol;
+
+        switch (direction) {
+            case 'up':
+                newRow--;
+                break;
+
+            case 'down':
+                newRow++;
+                break;
+
+            case 'left':
+                newCol--;
+                break;
+
+            case 'right':
+                newCol++;
+                break;
+        }
+
+        field[currentRow][currentCol].character = null;
+        field[newRow][newCol].character = character;
+        character.setRow(newRow);
+        character.setCol(newCol);
+        drawField();
+    }
+
     function attach(io) {
         IO = io;
 
@@ -38,6 +70,7 @@ module.exports = function(config) {
 
             connect(socket);
             socket.on('disconnect', disconnect);
+            socket.on('move', move);
         });
     };
 
