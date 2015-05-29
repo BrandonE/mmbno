@@ -111,6 +111,7 @@ module.exports = function(config) {
 
                 if (
                     checkPanelInBounds(playerNum, newRow, newCol) &&
+                        checkCanStand(player, newPanel) &&
                         !newPanel.character
                 ) {
                     currentPanel.character = null;
@@ -146,6 +147,13 @@ module.exports = function(config) {
     return {
         attach : attach
     };
+
+    function checkCanStand(player, newPanel) {
+        return (
+            ['blank', 'broken'].indexOf(newPanel.status) === -1 ||
+                player.status.indexOf('airshoes') > -1
+        );
+    }
 
     function checkPanelInBounds(playerNum, newRow, newCol) {
         var newPanel = field[newRow][newCol],
