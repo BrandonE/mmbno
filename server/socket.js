@@ -4,32 +4,50 @@ var Character = require(__dirname + '/character'),
 module.exports = function(config) {
     var IO = null,
         field,
-        players = [];
+        players = [null, null];
 
     function connect(socket) {
-        var player = new Character(socket.id),
-            playerNum;
+        var player,
+            playerNum = -1;
 
-        players.push(player);
-        playerNum = players.length;
-
-        IO.emit('user connected', playerNum);
-
-        if (playerNum === 1) {
-            placeCharacter(player, 1, 1);
-        } else if (playerNum === 2) {
-            placeCharacter(player, 1, 4);
+        if (!players[0]) {
+            playerNum = 1;
+        } else if (!players[1]) {
+            playerNum = 2;
         }
 
-        drawField();
-        console.log('user `' + socket.id + '` connected');
+        if (playerNum !== -1) {
+            player = new Character(socket.id, playerNum);
+            players[playerNum - 1] = player;
+
+            if (playerNum === 1) {
+                placeCharacter(player, 1, 1);
+            } else if (playerNum === 2) {
+                placeCharacter(player, 1, 4);
+            }
+
+            IO.emit('user connected', playerNum);
+
+            drawField();
+            console.log('user `' + socket.id + '` connected');
+        }
     }
 
-    function disconnect() {
-        IO.emit('user disconnected');
-        // TODO: Remove player.
-        drawField();
-        console.log('user disconnected');
+    function disconnect(id) {
+        var player = getPlayerById(id),
+            playerNum;
+
+        if (player) {
+            playerNum = player.getPlayerNum();
+
+            IO.emit('user disconnected', playerNum);
+
+            field[player.getRow()][player.getCol()].character = null;
+            delete players[playerNum - 1];
+
+            drawField();
+            console.log('user `' + id + '` disconnected');
+        }
     }
 
     function move(playerId, direction) {
@@ -80,7 +98,10 @@ module.exports = function(config) {
             }
 
             connect(socket);
-            socket.on('disconnect', disconnect);
+
+            socket.on('disconnect', function() {
+                disconnect(socket.id);
+            });
 
             socket.on('move', function(direction) {
                 move(socket.id, direction);

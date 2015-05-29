@@ -1,9 +1,10 @@
 'use strict';
 
-module.exports = function Character(id) {
+module.exports = function Character(id, playerNum) {
     var self = this;
 
     this.id = id;
+    this.playerNum = playerNum;
     this.maxHealth = 500;
     this.health = this.maxHealth;
     this.status = [];
@@ -11,6 +12,10 @@ module.exports = function Character(id) {
 
     this.getId = function getId() {
         return self.id;
+    }
+
+    this.getPlayerNum = function getPlayerNum() {
+        return self.playerNum;
     }
 
     this.getRow = function getRow() {
