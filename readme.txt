@@ -3,7 +3,7 @@ REQUIREMENTS
 ============================
 
 * Python >= 2.4 (2.5 or 2.6 is recommended)
-* pyglet >= 1.3.1 (http://pyglet.org/)
+* pyglet >= 1.1.3 (http://pyglet.org/)
 * Psyco >= 1.6 (Optional - http://pypi.python.org/pypi/psyco/1.6)
 * Twisted >= 8.2.0 (http://pypi.python.org/pypi/Twisted/8.2.0)
 * json/simplejson
