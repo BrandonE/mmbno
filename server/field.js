@@ -1,6 +1,6 @@
 var EOL = require('os').EOL;
 
-module.exports = function Field(config) {
+module.exports = function Field(config, players) {
     var self = this,
         row,
         col,
@@ -8,6 +8,7 @@ module.exports = function Field(config) {
         panel;
 
     this.config = config;
+    this.players = players;
     this.grid = [];
 
     this.getGrid = function getGrid() {
@@ -65,8 +66,10 @@ module.exports = function Field(config) {
             playerNum,
             row,
             col,
+            player,
             r,
-            c;
+            c,
+            p;
 
         for (r in grid) {
             row = grid[r];
@@ -106,6 +109,14 @@ module.exports = function Field(config) {
 
             response += EOL +
                 ' ----- ----- ----- ----- ----- -----' + EOL;
+        }
+
+        for (p in players) {
+            player = players[p];
+
+            if (player) {
+                response += 'Player ' + player.getPlayerNum() + ': ' + player.getHealth() + 'HP' + EOL;
+            }
         }
 
         console.log('\033[2J');

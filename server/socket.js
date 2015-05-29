@@ -52,7 +52,7 @@ module.exports = function(config) {
 
         io.on('connection', function (socket) {
             if (!field) {
-                field = new Field(config);
+                field = new Field(config, players);
             }
 
             connect(socket);
