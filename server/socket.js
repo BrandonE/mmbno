@@ -53,6 +53,7 @@ module.exports = function(config) {
     function move(playerId, direction, rows, cols) {
         var player = getPlayerById(playerId),
             playerNum = player.getPlayerNum(),
+            playerElement = player.getElement(),
             currentRow,
             currentCol,
             currentPanel,
@@ -135,9 +136,14 @@ module.exports = function(config) {
                          If the character moved onto a lava panel and doesn't have the fire element, burn the character
                          and revert the panel.
                          */
-                        if (newPanel.status === 'lava' && player.getElement() !== 'fire') {
+                        if (newPanel.status === 'lava' && playerElement !== 'fire') {
                             player.takeDamage(10);
                             newPanel.status = 'normal';
+                        }
+
+                        // Slide if the panel is frozen and the character does not have the aqua element.
+                        if (newPanel.status === 'frozen' && playerElement !== 'aqua') {
+                            move(playerId, direction, 1, 1);
                         }
                     }
 
@@ -234,9 +240,9 @@ module.exports = function(config) {
             panelStatus = {
                 broken: 'B',
                 cracked: 'C',
+                frozen: 'F',
                 grass: 'G',
                 holy: 'H',
-                ice: 'I',
                 lava: 'L',
                 normal: ' ',
                 metal: 'M',
