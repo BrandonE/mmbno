@@ -38,7 +38,7 @@ REPORT BUGS/FEATURE REQUESTS
 ============================
 
 We all know that MMBN Online is far from perfect, and there is no real end to
-such quirks; fortunately, they can be mitigated with cooperation. Should you 
+such quirks; fortunately, they can be mitigated with cooperation. Should you
 find a bug, it can be reported (and you probably should, even if you're not
 sure,) by submitting a support ticket and have it filed under "bugs".
 

@@ -1,0 +1,7 @@
+2015-05-28 23:18:01-0500 [-] Log opened.
+2015-05-28 23:18:01-0500 [-] twistd 13.2.0 (/System/Library/Frameworks/Python.framework/Versions/2.7/Resources/Python.app/Contents/MacOS/Python 2.7.6) starting up.
+2015-05-28 23:18:01-0500 [-] reactor class: twisted.internet.selectreactor.SelectReactor.
+2015-05-28 23:18:01-0500 [-] ServerFactory starting on 30686
+2015-05-28 23:18:01-0500 [-] Starting factory <twisted.internet.protocol.ServerFactory instance at 0x108f1ff38>
+2015-05-28 23:20:02-0500 [twisted.internet.protocol.ServerFactory] Client Connected.
+2015-05-28 23:20:03-0500 [GameProtocol,0,127.0.0.1] Client Disconnected.
