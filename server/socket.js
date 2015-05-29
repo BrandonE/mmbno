@@ -229,7 +229,14 @@ module.exports = function(config) {
                     grid += ' ';
                 }
 
-                grid += '  |';
+                // Label the red-side of the field from Player 1's perspective.
+                if (checkPanelInBounds(1, r, c)) {
+                    grid += ' ';
+                } else {
+                    grid += 'R';
+                }
+
+                grid += ' |';
             }
 
             grid += EOL +
