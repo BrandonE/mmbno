@@ -1,4 +1,21 @@
-var EOL = require('os').EOL;
+var EOL = require('os').EOL,
+    panelStatus = {
+        broken  : 'B',
+        cracked : 'C',
+        frozen  : 'F',
+        grass   : 'G',
+        holy    : 'H',
+        lava    : 'L',
+        normal  : ' ',
+        metal   : 'M',
+        poison  : 'P',
+        sand    : 'S',
+        water   : 'W',
+        up      : '^',
+        down    : 'V',
+        left    : '<',
+        right   : '>'
+    };
 
 module.exports = function Field(config, players) {
     var self = this,
@@ -46,23 +63,6 @@ module.exports = function Field(config, players) {
     this.draw = function draw() {
         var response = EOL,
             grid = self.grid,
-            panelStatus = {
-                broken  : 'B',
-                cracked : 'C',
-                frozen  : 'F',
-                grass   : 'G',
-                holy    : 'H',
-                lava    : 'L',
-                normal  : ' ',
-                metal   : 'M',
-                poison  : 'P',
-                sand    : 'S',
-                water   : 'W',
-                up      : '^',
-                down    : 'V',
-                left    : '<',
-                right   : '>'
-            },
             playerNum,
             row,
             col,
