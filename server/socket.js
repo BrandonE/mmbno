@@ -50,12 +50,25 @@ module.exports = function(config) {
         }
     }
 
-    function move(playerId, direction) {
+    function move(playerId, direction, rows, cols) {
         var player = getPlayerById(playerId),
+            playerNum = player.getPlayerNum(),
             currentRow,
             currentCol,
             newRow,
             newCol;
+
+        if (rows === undefined) {
+            rows = 1;
+        }
+
+        if (cols === undefined) {
+            cols = 1;
+        }
+
+        if (playerNum === 2) {
+            cols = -cols;
+        }
 
         if (player) {
             currentRow = player.getRow();
@@ -65,19 +78,19 @@ module.exports = function(config) {
 
             switch (direction) {
                 case 'up':
-                    newRow--;
+                    newRow -= rows;
                     break;
 
                 case 'down':
-                    newRow++;
+                    newRow += rows;
                     break;
 
                 case 'left':
-                    newCol--;
+                    newCol -= cols;
                     break;
 
                 case 'right':
-                    newCol++;
+                    newCol += cols;
                     break;
             }
 
