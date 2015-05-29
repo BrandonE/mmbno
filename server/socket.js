@@ -110,7 +110,8 @@ module.exports = function(config) {
                 newPanel = field[newRow][newCol];
 
                 if (
-                    checkPanelInBounds(playerNum, newRow, newCol)
+                    checkPanelInBounds(playerNum, newRow, newCol) &&
+                        !newPanel.character
                 ) {
                     currentPanel.character = null;
                     newPanel.character = player;
