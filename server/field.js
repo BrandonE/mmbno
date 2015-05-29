@@ -97,7 +97,6 @@ module.exports = function Field(config, players) {
                 }
 
                 // Label the red-side of the field from Player 1's perspective.
-                console.log(self.players);
                 if (self.checkPanelInBounds(1, r, c)) {
                     response += ' ';
                 } else {
