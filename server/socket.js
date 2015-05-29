@@ -55,8 +55,10 @@ module.exports = function(config) {
             playerNum = player.getPlayerNum(),
             currentRow,
             currentCol,
+            currentPanel,
             newRow,
-            newCol;
+            newCol,
+            newPanel;
 
         if (rows === undefined) {
             rows = 1;
@@ -73,6 +75,7 @@ module.exports = function(config) {
         if (player) {
             currentRow = player.getRow();
             currentCol = player.getCol();
+            currentPanel = field[currentRow][currentCol];
             newRow = currentRow;
             newCol = currentCol;
 
@@ -99,11 +102,17 @@ module.exports = function(config) {
                 newRow >= 0 && newRow < config.rows &&
                    newCol >= 0 && newCol < config.cols
             ) {
-                field[currentRow][currentCol].character = null;
-                field[newRow][newCol].character = player;
-                player.setRow(newRow);
-                player.setCol(newCol);
-                drawField();
+                newPanel = field[newRow][newCol];
+
+                if (
+                    checkPanelInBounds(playerNum, newRow, newCol)
+                ) {
+                    currentPanel.character = null;
+                    newPanel.character = player;
+                    player.setRow(newRow);
+                    player.setCol(newCol);
+                    drawField();
+                }
             }
         }
     }
@@ -131,6 +140,27 @@ module.exports = function(config) {
     return {
         attach : attach
     };
+
+    function checkPanelInBounds(playerNum, newRow, newCol) {
+        var newPanel = field[newRow][newCol],
+            isInBounds,
+            // Check if the player is on the left side of the field.
+            isNormalSide = (newCol < (config.cols / 2));
+
+        // Player 2 should be on the right side.
+        if (playerNum === 2) {
+            isNormalSide = !isNormalSide;
+        }
+
+        isInBounds = isNormalSide;
+
+        // Flip the result if this panel is stolen.
+        if (newPanel.stolen) {
+            isInBounds = !isInBounds;
+        }
+
+        return isInBounds;
+    }
 
     function createField() {
         var row,
