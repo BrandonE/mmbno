@@ -145,6 +145,11 @@ module.exports = function(config) {
                         if (newPanel.status === 'frozen' && playerElement !== 'aqua') {
                             move(playerId, direction, 1, 1);
                         }
+
+                        // Handle road panels.
+                        if (['up', 'down', 'left', 'right'].indexOf(newPanel.status) > -1) {
+                            move(playerId, newPanel.status, 1, 1);
+                        }
                     }
 
                     drawField();
@@ -238,17 +243,21 @@ module.exports = function(config) {
     function drawField() {
         var grid = EOL,
             panelStatus = {
-                broken: 'B',
-                cracked: 'C',
-                frozen: 'F',
-                grass: 'G',
-                holy: 'H',
-                lava: 'L',
-                normal: ' ',
-                metal: 'M',
-                poison: 'P',
-                sand: 'S',
-                water: 'W'
+                broken  : 'B',
+                cracked : 'C',
+                frozen  : 'F',
+                grass   : 'G',
+                holy    : 'H',
+                lava    : 'L',
+                normal  : ' ',
+                metal   : 'M',
+                poison  : 'P',
+                sand    : 'S',
+                water   : 'W',
+                up      : '^',
+                down    : 'V',
+                left    : '<',
+                right   : '>'
             },
             playerNum,
             row,
