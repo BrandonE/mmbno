@@ -207,6 +207,7 @@ module.exports = function(config) {
                 sand: 'S',
                 water: 'W'
             },
+            playerNum,
             row,
             col,
             r,
@@ -224,7 +225,15 @@ module.exports = function(config) {
                 grid += ' ' + panelStatus[col.status];
 
                 if (col.character && col.character.getHealth()) {
-                    grid += 'x';
+                    playerNum = col.character.getPlayerNum();
+
+                    if (playerNum === 1) {
+                        grid += 'x';
+                    } else if (playerNum === 2) {
+                        grid += 'o';
+                    } else {
+                        grid += '?';
+                    }
                 } else {
                     grid += ' ';
                 }
