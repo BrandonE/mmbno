@@ -11,11 +11,9 @@ var weaknesses = {
     wood     : 'fire'
 };
 
-module.exports = function Character(config, field, id, playerNum) {
+module.exports = function Character(io, config, field, id, playerNum) {
     var self = this;
 
-    this.config = config;
-    this.field = field;
     this.id = id;
     this.playerNum = playerNum;
     this.maxHealth = 500;
@@ -83,7 +81,7 @@ module.exports = function Character(config, field, id, playerNum) {
         var playerNum = self.playerNum,
             playerElement = self.element,
             playerStatus = self.status,
-            grid = self.field.getGrid(),
+            grid = field.getGrid(),
             currentRow,
             currentCol,
             currentPanel,
@@ -181,13 +179,14 @@ module.exports = function Character(config, field, id, playerNum) {
                     }
                 }
 
+                io.sockets.emit('moved', self.playerNum, self.row, self.col);
                 field.draw();
             }
         }
     };
 
     this.shoot = function shoot(power, element) {
-        var grid = self.field.getGrid(),
+        var grid = field.getGrid(),
             row,
             col,
             panel,
@@ -201,7 +200,7 @@ module.exports = function Character(config, field, id, playerNum) {
             row = self.row;
 
             if (self.playerNum === 1) {
-                for (col = self.col + 1; col < self.config.cols; col++) {
+                for (col = self.col + 1; col < config.cols; col++) {
                     panel = grid[row][col];
                     playerNumHit = self.shootPanel(power, element, panel);
 
@@ -258,7 +257,7 @@ module.exports = function Character(config, field, id, playerNum) {
         }
 
         // Double the damage if the panel is grass and the attack has the fire element.
-        panelStatus = self.field.getGrid()[self.row][self.col].status;
+        panelStatus = field.getGrid()[self.row][self.col].status;
 
         if (panelStatus === 'grass' && element === 'fire') {
             damage *= 2;
@@ -273,6 +272,8 @@ module.exports = function Character(config, field, id, playerNum) {
         // TODO
 
         self.health -= damage;
+
+        io.sockets.emit('health changed', self.playerNum, self.health);
         field.draw();
     };
 

@@ -8,7 +8,7 @@ module.exports = function(config) {
         field,
         players = [null, null];
 
-    function connect(socket) {
+    function connect(io, socket) {
         var playerNum = -1,
             player,
             p,
@@ -22,7 +22,7 @@ module.exports = function(config) {
         }
 
         if (playerNum !== -1) {
-            player = new Character(config, field, socket.id, playerNum);
+            player = new Character(io, config, field, socket.id, playerNum);
             players[playerNum - 1] = player;
 
             for (p in players) {
@@ -64,10 +64,10 @@ module.exports = function(config) {
 
         io.on('connection', function (socket) {
             if (!field) {
-                field = new Field(config, players);
+                field = new Field(io, config, players);
             }
 
-            connect(socket);
+            connect(io, socket);
 
             socket.on('disconnect', function() {
                 disconnect(socket.id);
@@ -78,23 +78,14 @@ module.exports = function(config) {
 
                 if (player) {
                     player.move(direction);
-                    io.sockets.emit('moved', player.getPlayerNum(), player.getRow(), player.getCol());
                 }
             });
 
             socket.on('buster', function() {
-                var player = getPlayerById(socket.id),
-                    playerNumHit,
-                    playerHit;
+                var player = getPlayerById(socket.id);
 
                 if (player) {
-                    playerNumHit = player.busterShot();
-
-                    if (playerNumHit) {
-                        playerHit = players[playerNumHit - 1];
-
-                        io.sockets.emit('health changed', playerNumHit, playerHit.getHealth());
-                    }
+                    player.busterShot();
                 }
             });
         });

@@ -1,12 +1,10 @@
 var EOL = require('os').EOL,
     common = require(__dirname + '/common');
 
-module.exports = function Field(config, players) {
+module.exports = function Field(io, config, players) {
     var self = this;
 
-    this.config = config;
-    this.players = players;
-    this.grid = [];
+    this.grid = common.createGrid(config);
 
     this.getGrid = function getGrid() {
         return self.grid;
@@ -20,7 +18,7 @@ module.exports = function Field(config, players) {
     };
 
     this.checkPanelInBounds = function checkPanelInBounds(playerNum, newRow, newCol) {
-        return common.checkPanelInBounds(self.config, self.grid, playerNum, newRow, newCol);
+        return common.checkPanelInBounds(config, self.grid, playerNum, newRow, newCol);
     };
 
     this.draw = function draw() {
@@ -28,12 +26,10 @@ module.exports = function Field(config, players) {
         console.log('\033[2J');
 
         // Draw the grid from Player 1's perspective.
-        console.log(common.gridToString(self.config, self.grid, this.players, 1));
+        console.log(common.gridToString(config, self.grid, players, 1));
     };
 
     this.placeCharacter = function place(character, row, col) {
         self.grid[row][col].character = character;
     };
-
-    this.grid = common.createGrid(config);
 };
