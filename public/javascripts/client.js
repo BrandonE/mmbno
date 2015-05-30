@@ -45,6 +45,9 @@ $(document).ready
             });
 
             socket.on('user disconnected', function(playerNum) {
+                var player = players[playerNum - 1];
+                grid[player.row][player.col].character = null;
+                delete player;
                 draw();
             });
 
