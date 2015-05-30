@@ -43,7 +43,7 @@ module.exports = function Field(io, config, players) {
             cols = [];
 
             for (col = 0; col < config.cols; col++) {
-                cols.push(new Panel(io, self));
+                cols.push(new Panel(io, self, row, col));
             }
 
             self.grid.push(cols);

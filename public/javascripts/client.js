@@ -63,6 +63,12 @@ $(document).ready
                 draw();
             });
 
+            socket.on('panel changed', function(panelSent) {
+                grid[panelSent.row][panelSent.col].status = panelSent.status;
+                grid[panelSent.row][panelSent.col].stolen = panelSent.stolen;
+                draw();
+            });
+
             $(document).keydown(function(e) {
                 switch(e.which) {
                     case 37:

@@ -1,8 +1,10 @@
 'use strict';
 
-module.exports = function Panel(io, field) {
+module.exports = function Panel(io, field, row, col) {
     var self = this;
 
+    this.row = row;
+    this.col = col;
     this.character = null;
     this.stolen = false;
     this.status = 'normal';
@@ -30,6 +32,8 @@ module.exports = function Panel(io, field) {
 
     this.setStatus = function setStatus(status) {
         self.status = status;
+        io.sockets.emit('panel changed', self.toSendable());
+        field.draw();
     };
 
     this.getTime = function getTime() {
@@ -42,9 +46,10 @@ module.exports = function Panel(io, field) {
 
     this.toSendable = function toSendable() {
         return {
+            row       : self.row,
+            col       : self.col,
             stolen    : self.stolen,
-            status    : self.status,
-            time      : self.time
+            status    : self.status
         };
     };
 };
