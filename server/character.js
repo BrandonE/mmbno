@@ -75,6 +75,10 @@ module.exports = function Character(config, field, id, playerNum) {
         field.placeCharacter(null, self.row, self.col);
     };
 
+    this.busterShot = function busterShot() {
+        return self.shoot(self.busterPower);
+    }
+
     this.move = function move(direction, rows, cols) {
         var playerNum = self.playerNum,
             playerElement = self.element,
@@ -186,7 +190,8 @@ module.exports = function Character(config, field, id, playerNum) {
         var grid = self.field.getGrid(),
             row,
             col,
-            panel;
+            panel,
+            playerNumHit;
 
         if (element === undefined) {
             element = 'none';
@@ -198,17 +203,19 @@ module.exports = function Character(config, field, id, playerNum) {
             if (self.playerNum === 1) {
                 for (col = self.col + 1; col < self.config.cols; col++) {
                     panel = grid[row][col];
+                    playerNumHit = self.shootPanel(power, element, panel);
 
-                    if (self.shootPanel(power, element, panel)) {
-                        break;
+                    if (playerNumHit) {
+                        return playerNumHit;
                     }
                 }
             } else {
                 for (col = self.col - 1; col >= 0; col--) {
                     panel = grid[row][col];
+                    playerNumHit = self.shootPanel(power, element, panel);
 
-                    if (self.shootPanel(power, element, panel)) {
-                        break;
+                    if (playerNumHit) {
+                        return playerNumHit;
                     }
                 }
             }
@@ -223,7 +230,7 @@ module.exports = function Character(config, field, id, playerNum) {
                 panel.status = 'normal';
             }
 
-            return true;
+            return panel.character.getPlayerNum();
         } else {
             return false;
         }

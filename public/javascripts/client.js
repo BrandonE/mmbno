@@ -47,6 +47,12 @@ $(document).ready
                 draw();
             });
 
+            socket.on('health changed', function(playerNum, health) {
+                var player = players[playerNum - 1];
+                player.health = health;
+                draw();
+            });
+
             socket.on('moved', function(playerNum, row, col) {
                 var player = players[playerNum - 1];
                 grid[player.row][player.col].character = null;

@@ -83,10 +83,18 @@ module.exports = function(config) {
             });
 
             socket.on('buster', function() {
-                var player = getPlayerById(socket.id);
+                var player = getPlayerById(socket.id),
+                    playerNumHit,
+                    playerHit;
 
                 if (player) {
-                    player.shoot(player.getBusterPower());
+                    playerNumHit = player.busterShot();
+
+                    if (playerNumHit) {
+                        playerHit = players[playerNumHit - 1];
+
+                        io.sockets.emit('health changed', playerNumHit, playerHit.getHealth());
+                    }
                 }
             });
         });
