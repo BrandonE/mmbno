@@ -98,69 +98,69 @@ $(document).ready
         $.getJSON('config.json', function(data) {
             config = data;
             grid = createGrid(config);
-        });
 
-        socket.on('user connected', function(playerNum, playersToSend) {
-            var player,
-                p;
+            socket.on('user connected', function(playerNum, playersToSend) {
+                var player,
+                    p;
 
-            if (clientPlayerNum === -1) {
-                clientPlayerNum = playerNum;
-                $('#playerNum').text(clientPlayerNum);
-            }
-
-            for (p in playersToSend) {
-                player = playersToSend[p];
-
-                if (player) {
-                    players[p] = player;
-                    grid[player.row][player.col].character = player;
+                if (clientPlayerNum === -1) {
+                    clientPlayerNum = playerNum;
+                    $('#playerNum').text(clientPlayerNum);
                 }
-            }
 
-            draw();
-        });
+                for (p in playersToSend) {
+                    player = playersToSend[p];
 
-        socket.on('user disconnected', function(playerNum) {
-            draw();
-        });
+                    if (player) {
+                        players[p] = player;
+                        grid[player.row][player.col].character = player;
+                    }
+                }
 
-        socket.on('moved', function(playerNum, row, col) {
-            var player = players[playerNum - 1];
-            grid[player.row][player.col].character = null;
-            player.row = row;
-            player.col = col;
-            grid[row][col].character = player;
-            draw();
-        });
+                draw();
+            });
 
-        $(document).keydown(function(e) {
-            switch(e.which) {
-                case 37:
-                    socket.emit('move', 'left');
-                    break;
+            socket.on('user disconnected', function(playerNum) {
+                draw();
+            });
 
-                case 38:
-                    socket.emit('move', 'up');
-                    break;
+            socket.on('moved', function(playerNum, row, col) {
+                var player = players[playerNum - 1];
+                grid[player.row][player.col].character = null;
+                player.row = row;
+                player.col = col;
+                grid[row][col].character = player;
+                draw();
+            });
 
-                case 39:
-                    socket.emit('move', 'right');
-                    break;
+            $(document).keydown(function(e) {
+                switch(e.which) {
+                    case 37:
+                        socket.emit('move', 'left');
+                        break;
 
-                case 40:
-                    socket.emit('move', 'down');
-                    break;
+                    case 38:
+                        socket.emit('move', 'up');
+                        break;
 
-                case 65:
-                    socket.emit('buster');
-                    break;
+                    case 39:
+                        socket.emit('move', 'right');
+                        break;
 
-                default:
-                    return;
-            }
+                    case 40:
+                        socket.emit('move', 'down');
+                        break;
 
-            e.preventDefault();
+                    case 65:
+                        socket.emit('buster');
+                        break;
+
+                    default:
+                        return;
+                }
+
+                e.preventDefault();
+            });
         });
     }
 );
