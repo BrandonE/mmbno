@@ -1,4 +1,5 @@
 var EOL = require('os').EOL,
+    common = require(__dirname + '/common'),
     panelStatus = {
         broken  : 'B',
         cracked : 'C',
@@ -18,11 +19,7 @@ var EOL = require('os').EOL,
     };
 
 module.exports = function Field(config, players) {
-    var self = this,
-        row,
-        col,
-        cols,
-        panel;
+    var self = this;
 
     this.config = config;
     this.players = players;
@@ -40,24 +37,7 @@ module.exports = function Field(config, players) {
     };
 
     this.checkPanelInBounds = function checkPanelInBounds(playerNum, newRow, newCol) {
-        var newPanel = self.grid[newRow][newCol],
-            isInBounds,
-            // Check if the player is on the left side of the field.
-            isNormalSide = (newCol < (config.cols / 2));
-
-        // Player 2 should be on the right side.
-        if (playerNum === 2) {
-            isNormalSide = !isNormalSide;
-        }
-
-        isInBounds = isNormalSide;
-
-        // Flip the result if this panel is stolen.
-        if (newPanel.stolen) {
-            isInBounds = !isInBounds;
-        }
-
-        return isInBounds;
+        return common.checkPanelInBounds(self.config, self.grid, playerNum, newRow, newCol);
     };
 
     this.draw = function draw() {
@@ -126,24 +106,5 @@ module.exports = function Field(config, players) {
         self.grid[row][col].character = character;
     };
 
-    if (config.rows < 1 || config.cols < 1 || config.cols % 2) {
-        throw new Error('Field dimensions invalid.');
-    }
-
-    for (row = 0; row < config.rows; row++) {
-        cols = [];
-
-        for (col = 0; col < config.cols; col++) {
-            panel = {
-                character : null,
-                stolen    : false,
-                status    : 'normal',
-                time      : 0
-            };
-
-            cols.push(panel);
-        }
-
-        this.grid.push(cols);
-    }
+    this.grid = common.createGrid(config);
 };

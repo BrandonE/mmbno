@@ -3,7 +3,7 @@
 var fs = require('fs'),
     express = require('express'),
     app = express(),
-    config = JSON.parse(fs.readFileSync(__dirname + '/config.json')),
+    config = JSON.parse(fs.readFileSync(__dirname + '/../public/config.json')),
     http = require('http').Server(app),
     io = require('socket.io')(http),
     socket = require(__dirname + '/socket')(config),

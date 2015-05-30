@@ -1,11 +1,8 @@
 var socket = io(),
+    config,
     clientPlayerNum = -1,
-    grid = [],
+    grid,
     players = [null, null],
-    config = {
-        rows : 3,
-        cols : 6
-    },
     panelStatus = {
         broken  : 'B',
         cracked : 'C',
@@ -28,27 +25,6 @@ var socket = io(),
     col,
     cols,
     panel;
-
-function checkPanelInBounds(playerNum, newRow, newCol) {
-    var newPanel = grid[newRow][newCol],
-        isInBounds,
-    // Check if the player is on the left side of the field.
-        isNormalSide = (newCol < (config.cols / 2));
-
-    // Player 2 should be on the right side.
-    if (playerNum === 2) {
-        isNormalSide = !isNormalSide;
-    }
-
-    isInBounds = isNormalSide;
-
-    // Flip the result if this panel is stolen.
-    if (newPanel.stolen) {
-        isInBounds = !isInBounds;
-    }
-
-    return isInBounds;
-};
 
 function draw() {
     var response = EOL,
@@ -89,7 +65,7 @@ function draw() {
             }
 
             // Label the red-side of the field from Player 1's perspective.
-            if (checkPanelInBounds(clientPlayerNum, r, c)) {
+            if (checkPanelInBounds(config, grid, clientPlayerNum, r, c)) {
                 response += ' ';
             } else {
                 response += 'R';
@@ -115,27 +91,15 @@ function draw() {
     $('#grid').text(response);
 }
 
-for (row = 0; row < config.rows; row++) {
-    cols = [];
-
-    for (col = 0; col < config.cols; col++) {
-        panel = {
-            character : null,
-            stolen    : false,
-            status    : 'normal',
-            time      : 0
-        };
-
-        cols.push(panel);
-    }
-
-    grid.push(cols);
-}
-
 $(document).ready
 (
     function ()
     {
+        $.getJSON('config.json', function(data) {
+            config = data;
+            grid = createGrid(config);
+        });
+
         socket.on('user connected', function(playerNum, playersToSend) {
             var player,
                 p;
