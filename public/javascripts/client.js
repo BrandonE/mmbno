@@ -10,7 +10,7 @@ var socket = io(),
     panel;
 
 function draw() {
-    $('#grid').text(gridToString(config, grid));
+    $('#grid').text(gridToString(config, grid, players, clientPlayerNum));
 }
 
 $(document).ready

@@ -24,8 +24,11 @@ module.exports = function Field(config, players) {
     };
 
     this.draw = function draw() {
+        // Clear the console.
         console.log('\033[2J');
-        console.log(common.gridToString(self.config, self.grid, this.players));
+
+        // Draw the grid from Player 1's perspective.
+        console.log(common.gridToString(self.config, self.grid, this.players, 1));
     };
 
     this.placeCharacter = function place(character, row, col) {

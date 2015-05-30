@@ -72,9 +72,8 @@ function createGrid(config) {
     return grid;
 };
 
-function gridToString(config, grid, players) {
+function gridToString(config, grid, players, playerNumPerspective) {
     var response = EOL,
-        playerNum,
         row,
         col,
         player,
@@ -94,21 +93,16 @@ function gridToString(config, grid, players) {
             response += ' ' + panelStatus[col.status];
 
             if (col.character && col.character.health) {
-                playerNum = col.character.playerNum;
-
-                if (playerNum === 1) {
+                if (playerNumPerspective === col.character.playerNum) {
                     response += 'x';
-                } else if (playerNum === 2) {
-                    response += 'o';
                 } else {
-                    response += '?';
+                    response += 'o';
                 }
             } else {
                 response += ' ';
             }
 
-            // Label the red-side of the field from Player 1's perspective.
-            if (checkPanelInBounds(config, grid, 1, r, c)) {
+            if (checkPanelInBounds(config, grid, playerNumPerspective, r, c)) {
                 response += ' ';
             } else {
                 response += 'R';
