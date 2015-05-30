@@ -1,8 +1,26 @@
 'use strict';
 
-var exports = (typeof module !== 'undefined' && typeof module.exports !== 'undefined') ? module.exports : window;
+var exports = (typeof module !== 'undefined' && typeof module.exports !== 'undefined') ? module.exports : window,
+    panelStatus = {
+        broken  : 'B',
+        cracked : 'C',
+        frozen  : 'F',
+        grass   : 'G',
+        holy    : 'H',
+        lava    : 'L',
+        normal  : ' ',
+        metal   : 'M',
+        poison  : 'P',
+        sand    : 'S',
+        water   : 'W',
+        up      : '^',
+        down    : 'V',
+        left    : '<',
+        right   : '>'
+    },
+    EOL = '\n';
 
-exports.checkPanelInBounds = function checkPanelInBounds(config, grid, playerNum, newRow, newCol) {
+function checkPanelInBounds(config, grid, playerNum, newRow, newCol) {
     var newPanel = grid[newRow][newCol],
         isInBounds,
     // Check if the player is on the left side of the field.
@@ -23,7 +41,7 @@ exports.checkPanelInBounds = function checkPanelInBounds(config, grid, playerNum
     return isInBounds;
 };
 
-exports.createGrid = function createGrid(config) {
+function createGrid(config) {
     var grid = [],
         cols,
         row,
@@ -53,3 +71,67 @@ exports.createGrid = function createGrid(config) {
 
     return grid;
 };
+
+function gridToString(config, grid, players) {
+    var response = EOL,
+        playerNum,
+        row,
+        col,
+        player,
+        r,
+        c,
+        p;
+
+    for (r in grid) {
+        row = grid[r];
+
+        response += ' ----- ----- ----- ----- ----- -----' + EOL +
+            '|';
+
+        for (c in row) {
+            col = row[c];
+
+            response += ' ' + panelStatus[col.status];
+
+            if (col.character && col.character.health) {
+                playerNum = col.character.playerNum;
+
+                if (playerNum === 1) {
+                    response += 'x';
+                } else if (playerNum === 2) {
+                    response += 'o';
+                } else {
+                    response += '?';
+                }
+            } else {
+                response += ' ';
+            }
+
+            // Label the red-side of the field from Player 1's perspective.
+            if (checkPanelInBounds(config, grid, 1, r, c)) {
+                response += ' ';
+            } else {
+                response += 'R';
+            }
+
+            response += ' |';
+        }
+
+        response += EOL +
+            ' ----- ----- ----- ----- ----- -----' + EOL;
+    }
+
+    for (p in players) {
+        player = players[p];
+
+        if (player) {
+            response += 'Player ' + player.playerNum + ': ' + player.health + 'HP' + EOL;
+        }
+    }
+
+    return response;
+};
+
+exports.checkPanelInBounds = checkPanelInBounds;
+exports.createGrid = createGrid;
+exports.gridToString = gridToString;

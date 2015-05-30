@@ -9,9 +9,11 @@ module.exports = function(config) {
         players = [null, null];
 
     function connect(socket) {
-        var player,
-            playerNum = -1,
-            playersToSend = [null, null];
+        var playerNum = -1,
+            player,
+            p,
+            playersToSend = [],
+            playerToSend;
 
         if (!players[0]) {
             playerNum = 1;
@@ -23,18 +25,14 @@ module.exports = function(config) {
             player = new Character(config, field, socket.id, playerNum);
             players[playerNum - 1] = player;
 
-            if (players[0]) {
-                playersToSend[0] = {
-                    row : players[0].row,
-                    col : players[0].col
-                }
-            }
+            for (p in players) {
+                playerToSend = players[p];
 
-            if (players[1]) {
-                playersToSend[1] = {
-                    row : players[1].row,
-                    col : players[1].col
+                if (playerToSend) {
+                    playerToSend = players[p].toSendable();
                 }
+
+                playersToSend.push(playerToSend);
             }
 
             IO.emit('user connected', playerNum, playersToSend);

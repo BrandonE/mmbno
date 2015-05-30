@@ -269,6 +269,20 @@ module.exports = function Character(config, field, id, playerNum) {
         field.draw();
     };
 
+    this.toSendable = function toSendable() {
+        return {
+            id          : self.id,
+            playerNum   : self.playerNum,
+            maxHealth   : self.maxHealth,
+            health      : self.maxHealth,
+            element     : self.element,
+            status      : self.status,
+            busterPower : self.busterPower,
+            row         : self.row,
+            col         : self.col
+        };
+    };
+
     if (playerNum === 1) {
         this.enterField(1, 1);
     } else if (playerNum === 2) {
