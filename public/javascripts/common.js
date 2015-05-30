@@ -88,6 +88,10 @@ function gridToString(config, grid, players, playerNumPerspective) {
             '|';
 
         for (c in row) {
+            if (playerNumPerspective === 2) {
+                c = config.cols - c - 1;
+            }
+
             col = row[c];
 
             response += ' ' + panelStatus[col.status];
