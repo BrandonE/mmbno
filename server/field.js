@@ -1,10 +1,11 @@
 var EOL = require('os').EOL,
-    common = require(__dirname + '/common');
+    common = require(__dirname + '/common'),
+    Panel = require(__dirname + '/panel');
 
 module.exports = function Field(io, config, players) {
     var self = this;
 
-    this.grid = common.createGrid(config);
+    this.grid = [];
 
     this.getGrid = function getGrid() {
         return self.grid;
@@ -12,7 +13,7 @@ module.exports = function Field(io, config, players) {
 
     this.checkCanStand = function checkCanStand(playerStatus, newPanel) {
         return (
-            ['blank', 'broken'].indexOf(newPanel.status) === -1 ||
+            ['blank', 'broken'].indexOf(newPanel.getStatus()) === -1 ||
                 playerStatus.indexOf('airshoes') > -1
         );
     };
@@ -29,7 +30,50 @@ module.exports = function Field(io, config, players) {
         console.log(common.gridToString(config, self.grid, players, 1));
     };
 
+    this.initialize = function initialize() {
+        var cols,
+            row,
+            col;
+
+        if (config.rows < 1 || config.cols < 1 || config.cols % 2) {
+            throw new Error('Field dimensions invalid.');
+        }
+
+        for (row = 0; row < config.rows; row++) {
+            cols = [];
+
+            for (col = 0; col < config.cols; col++) {
+                cols.push(new Panel(io, self));
+            }
+
+            self.grid.push(cols);
+        }
+
+        self.grid[0][0].status = 'cracked';
+    }
+
     this.placeCharacter = function place(character, row, col) {
         self.grid[row][col].character = character;
     };
+
+    this.toSendable = function toSendable() {
+        var sendable = [],
+            cols,
+            row,
+            col;
+
+        for (row = 0; row < config.rows; row++) {
+            cols = [];
+
+            for (col = 0; col < config.cols; col++) {
+                cols.push(self.grid[row][col].toSendable());
+            }
+
+            sendable.push(cols);
+        }
+
+        return sendable;
+    }
+
+    this.initialize();
 };

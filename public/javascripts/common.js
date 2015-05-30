@@ -41,37 +41,6 @@ function checkPanelInBounds(config, grid, playerNum, newRow, newCol) {
     return isInBounds;
 };
 
-function createGrid(config) {
-    var grid = [],
-        cols,
-        row,
-        col,
-        panel;
-
-    if (config.rows < 1 || config.cols < 1 || config.cols % 2) {
-        throw new Error('Field dimensions invalid.');
-    }
-
-    for (row = 0; row < config.rows; row++) {
-        cols = [];
-
-        for (col = 0; col < config.cols; col++) {
-            panel = {
-                character : null,
-                stolen    : false,
-                status    : 'normal',
-                time      : 0
-            };
-
-            cols.push(panel);
-        }
-
-        grid.push(cols);
-    }
-
-    return grid;
-};
-
 function gridToString(config, grid, players, playerNumPerspective) {
     var response = EOL,
         row,
@@ -131,5 +100,4 @@ function gridToString(config, grid, players, playerNumPerspective) {
 };
 
 exports.checkPanelInBounds = checkPanelInBounds;
-exports.createGrid = createGrid;
 exports.gridToString = gridToString;

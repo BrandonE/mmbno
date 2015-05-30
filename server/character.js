@@ -87,7 +87,8 @@ module.exports = function Character(io, config, field, id, playerNum) {
             currentPanel,
             newRow,
             newCol,
-            newPanel;
+            newPanel,
+            newPanelStatus;
 
         if (rows === undefined) {
             rows = 1;
@@ -108,7 +109,7 @@ module.exports = function Character(io, config, field, id, playerNum) {
         newCol = currentCol;
 
         // If the panel doesn't contain the character, something went horribly wrong.
-        if (currentPanel.character != self) {
+        if (currentPanel.getCharacter() != self) {
             throw new Error('Field desync.');
         }
 
@@ -140,42 +141,43 @@ module.exports = function Character(io, config, field, id, playerNum) {
             if (
                 field.checkPanelInBounds(playerNum, newRow, newCol) &&
                     field.checkCanStand(playerStatus, newPanel) &&
-                    !newPanel.character &&
+                    !newPanel.getCharacter() &&
                     playerStatus.indexOf('paralyzed') === -1 &&
                     playerStatus.indexOf('frozen') === -1
             ) {
-                currentPanel.character = null;
-
-                newPanel.character = self;
+                currentPanel.setCharacter(null);
+                newPanel.setCharacter(self);
                 self.setRow(newRow);
                 self.setCol(newCol);
 
                 if (playerStatus.indexOf('floatshoes') === -1) {
+                    newPanelStatus = newPanel.getStatus();
+
                     // If the panel is cracked and the character moved, break it.
                     if (
-                        currentPanel.status === 'cracked' &&
+                        currentPanel.getStatus() === 'cracked' &&
                             (currentRow !== newRow || currentCol !== newCol)
                     ) {
-                        currentPanel.status = 'broken';
+                        currentPanel.setStatus('broken');
                     }
 
                     /*
                      If the character moved onto a lava panel and doesn't have the fire element, burn the character
                      and revert the panel.
                      */
-                    if (newPanel.status === 'lava' && playerElement !== 'fire') {
+                    if (newPanelStatus === 'lava' && playerElement !== 'fire') {
                         self.takeDamage(10);
-                        newPanel.status = 'normal';
+                        newPanel.setStatus('normal');
                     }
 
                     // Slide if the panel is frozen and the character does not have the aqua element.
-                    if (newPanel.status === 'frozen' && playerElement !== 'aqua') {
+                    if (newPanelStatus === 'frozen' && playerElement !== 'aqua') {
                         self.move(direction, 1, 1);
                     }
 
                     // Handle road panels.
-                    if (['up', 'down', 'left', 'right'].indexOf(newPanel.status) > -1) {
-                        self.move(newPanel.status, 1, 1);
+                    if (['up', 'down', 'left', 'right'].indexOf(newPanelStatus) > -1) {
+                        self.move(newPanelStatus, 1, 1);
                     }
                 }
 
@@ -225,8 +227,8 @@ module.exports = function Character(io, config, field, id, playerNum) {
         if (panel.character) {
             panel.character.takeDamage(power, element);
 
-            if (panel.status === 'grass' && element === 'fire') {
-                panel.status = 'normal';
+            if (panel.getStatus() === 'grass' && element === 'fire') {
+                panel.setStatus('normal');
             }
 
             return panel.character.getPlayerNum();
@@ -257,7 +259,7 @@ module.exports = function Character(io, config, field, id, playerNum) {
         }
 
         // Double the damage if the panel is grass and the attack has the fire element.
-        panelStatus = field.getGrid()[self.row][self.col].status;
+        panelStatus = field.getGrid()[self.row][self.col].getStatus();
 
         if (panelStatus === 'grass' && element === 'fire') {
             damage *= 2;

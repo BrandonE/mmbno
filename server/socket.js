@@ -35,7 +35,7 @@ module.exports = function(config) {
                 playersToSend.push(playerToSend);
             }
 
-            IO.emit('user connected', playerNum, playersToSend);
+            IO.emit('user connected', playerNum, field.toSendable(), playersToSend);
 
             field.draw();
             console.log('user `' + socket.id + '` connected');

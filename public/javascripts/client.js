@@ -19,17 +19,18 @@ $(document).ready
     {
         $.getJSON('config.json', function(data) {
             config = data;
-            grid = createGrid(config);
 
-            socket.on('user connected', function(playerNum, playersToSend) {
+            socket.on('user connected', function(playerNum, fieldSent, playersSent) {
                 var player,
                     p;
 
-                players = playersToSend;
+                players = playersSent;
 
                 if (clientPlayerNum === -1) {
                     clientPlayerNum = playerNum;
                     $('#playerNum').text(clientPlayerNum);
+
+                    grid = fieldSent;
                 }
 
                 for (p in players) {
