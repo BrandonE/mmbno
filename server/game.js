@@ -11,6 +11,7 @@ module.exports = function Game(io, config, num) {
     this.num = num;
     this.players = [null, null];
     this.field = new Field(io, config, self);
+    this.observers = 0;
 
     this.getId = function getId() {
         return self.id;
@@ -56,12 +57,13 @@ module.exports = function Game(io, config, num) {
         if (playerNum) {
             player = new Character(io, config, self, socket.id, playerNum);
             self.players[playerNum - 1] = player;
-
-            self.field.draw();
+        } else {
+            self.observers++;
         }
 
-        console.log(self.connectionMessage(playerNum, socket.id));
         io.to(self.id).emit('user connected', playerNum, self.toSendable());
+        self.field.draw();
+        console.log(self.connectionMessage(playerNum, socket.id));
     };
 
     this.disconnect = function disconnect(id) {
@@ -71,14 +73,14 @@ module.exports = function Game(io, config, num) {
         if (player) {
             playerNum = player.getPlayerNum();
 
-            io.to(self.id).emit('user disconnected', playerNum);
-
             player.leaveField();
             delete self.players[playerNum - 1];
-
-            self.field.draw();
+        } else {
+            self.observers--;
         }
 
+        io.to(self.id).emit('user disconnected', playerNum);
+        self.field.draw();
         console.log(self.connectionMessage(playerNum, id, true));
     };
 
@@ -118,8 +120,9 @@ module.exports = function Game(io, config, num) {
         }
 
         return {
-            field   : self.field.toSendable(),
-            players : playersToSend
+            field     : self.field.toSendable(),
+            players   : playersToSend,
+            observers : self.observers
         };
     };
 };

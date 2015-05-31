@@ -29,6 +29,7 @@ $(document).ready
 
                 game.field = gameSent.field;
                 game.players = gameSent.players;
+                game.observers = gameSent.observers;
 
                 draw();
             });
@@ -43,8 +44,11 @@ $(document).ready
 
                     game.field[player.row][player.col].character = null;
                     delete game.players[playerIndex];
-                    draw();
+                } else {
+                    game.observers--;
                 }
+
+                draw();
             });
 
             socket.on('active connections', function(activeConnections) {

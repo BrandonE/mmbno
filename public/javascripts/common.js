@@ -106,6 +106,8 @@ function gameToString(config, game, playerNumPerspective) {
         }
     }
 
+    response += 'Observers: ' + game.observers;
+
     return response;
 };
 
