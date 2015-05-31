@@ -26,7 +26,7 @@ module.exports = function(config) {
                 socket.on('move', function(direction) {
                     var player = game.getPlayerById(socket.id);
 
-                    if (player) {
+                    if (player && player.getHealth()) {
                         player.move(direction);
                     }
                 });
@@ -34,7 +34,7 @@ module.exports = function(config) {
                 socket.on('buster', function() {
                     var player = game.getPlayerById(socket.id);
 
-                    if (player) {
+                    if (player && player.getHealth()) {
                         player.busterShot();
                     }
                 });
