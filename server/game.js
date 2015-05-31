@@ -88,7 +88,7 @@ module.exports = function Game(io, config, num) {
         if (playerNum) {
             message = 'Player #' + playerNum + ' (' + id + ')';
         } else {
-            message = 'Spectator (' + socket.id + ')';
+            message = 'Spectator (' + id + ')';
         }
 
         if (disconnected) {
