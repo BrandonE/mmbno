@@ -4,14 +4,26 @@
   "description": "Mega Man Battle Network Online http://brandonevans.org/mmbno/",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "megaman",
+    "battle",
+    "network",
+    "online",
+    "game"
+  ],
   "repository": {
     "type": "git",
     "url": "ssh://git@github.com:BrandonE/mmbno.git"
   },
+  "author": "Brandon Evans"
   "dependencies": {
     "express": "^4.12.4",
     "socket.io": "^1.3.5"
+  },
+  "engines": {
+    "node": "0.12.2"
   }
 }
