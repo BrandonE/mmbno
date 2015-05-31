@@ -3,7 +3,8 @@
 var Game = require(__dirname + '/game');
 
 module.exports = function(config) {
-    var games = [];
+    var games = [],
+        activeConnections = 0;
 
     return {
         attach : function attach(io) {
@@ -18,9 +19,13 @@ module.exports = function(config) {
                 socket.join(game.getId());
 
                 game.connect(socket);
+                activeConnections++;
+                io.emit('active connections', activeConnections);
 
                 socket.on('disconnect', function() {
                     game.disconnect(socket.id);
+                    activeConnections--;
+                    io.emit('active connections', activeConnections);
                 });
 
                 socket.on('move', function(direction) {

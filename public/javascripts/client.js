@@ -47,6 +47,10 @@ $(document).ready
                 }
             });
 
+            socket.on('active connections', function(activeConnections) {
+                $('#activeConnections').text(activeConnections);
+            });
+
             socket.on('health changed', function(playerNum, health) {
                 var player;
 
