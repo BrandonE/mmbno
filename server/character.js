@@ -293,7 +293,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.useChip = function useChip() {
-        var chip = self.chips.pop();
+        var chip = self.chips.shift();
         chip.use();
     }
 
