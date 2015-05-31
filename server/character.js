@@ -293,7 +293,21 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.useChip = function useChip() {
-        var chip = self.chips.shift();
+        var chip = self.chips.shift(),
+            nextChip,
+            chained = true;
+
+        // Handle a chip chain event.
+        while (self.chips.length && chained) {
+            nextChip = self.chips[0];
+            chained = nextChip.chain(chip);
+
+            // Remove the next chip if it should be used in a chain.
+            if (chained) {
+                self.chips.shift();
+            }
+        }
+
         chip.use();
     }
 
