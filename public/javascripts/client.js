@@ -71,7 +71,7 @@ $(document).ready
                 var player;
 
                 if (playerNum) {
-                    player = players[playerNum - 1];
+                    player = game.players[playerNum - 1];
                     player.health = health;
                     draw();
                 }
