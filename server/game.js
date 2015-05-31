@@ -58,11 +58,9 @@ module.exports = function Game(io, config, num) {
             self.players[playerNum - 1] = player;
 
             self.field.draw();
-            console.log('player `' + socket.id + '` connected to ' + self.id);
-        } else {
-            console.log('spectator `' + socket.id + '` connected to ' + self.id);
         }
 
+        console.log(self.connectionMessage(playerNum, socket.id));
         io.to(self.id).emit('user connected', playerNum, self.toSendable());
     };
 
@@ -79,10 +77,29 @@ module.exports = function Game(io, config, num) {
             delete self.players[playerNum - 1];
 
             self.field.draw();
-            console.log('player `' + id + '` disconnected from ' + self.id);
-        } else {
-            console.log('spectator `' + id + '` disconnected from ' + self.id);
         }
+
+        console.log(self.connectionMessage(playerNum, id, true));
+    };
+
+    this.connectionMessage = function connectionMessage(playerNum, id, disconnected) {
+        var message;
+
+        if (playerNum) {
+            message = 'Player #' + playerNum + ' (' + id + ')';
+        } else {
+            message = 'Spectator (' + socket.id + ')';
+        }
+
+        if (disconnected) {
+            message += ' disconnected from';
+        } else {
+            message += ' connected to';
+        }
+
+        message += ' Game #' + self.num + ' (' + self.id + ')';
+
+        return message;
     };
 
     this.toSendable = function toSendable() {
