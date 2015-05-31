@@ -21,11 +21,13 @@ module.exports = function(config) {
                 game.connect(socket);
                 activeConnections++;
                 io.emit('active connections', activeConnections);
+                console.log('Active Connections: ' + activeConnections);
 
                 socket.on('disconnect', function() {
                     game.disconnect(socket.id);
                     activeConnections--;
                     io.emit('active connections', activeConnections);
+                    console.log('Active Connections: ' + activeConnections);
                 });
 
                 socket.on('move', function(direction) {
