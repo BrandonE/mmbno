@@ -5,8 +5,7 @@ var socket = io(),
     players = [null, null],
     row,
     col,
-    cols,
-    panel;
+    cols;
 
 function draw() {
     $('#grid').text(gridToString(config, grid, players, clientPlayerNum));
@@ -23,8 +22,6 @@ $(document).ready
                 var player,
                     p;
 
-                players = game.players;
-
                 if (clientPlayerNum === undefined) {
                     clientPlayerNum = playerNum;
 
@@ -38,7 +35,8 @@ $(document).ready
                     grid = game.field;
                 }
 
-                for (p in players) {
+                for (p in game.players) {
+                    players[p] = game.players[p];
                     player = players[p];
 
                     if (player) {
@@ -50,12 +48,15 @@ $(document).ready
             });
 
             socket.on('user disconnected', function(playerNum) {
-                var player;
+                var player,
+                    playerIndex;
 
                 if (playerNum) {
-                    player = players[playerNum - 1];
+                    playerIndex = playerNum - 1;
+                    player = players[playerIndex];
+
                     grid[player.row][player.col].character = null;
-                    delete player;
+                    delete players[playerIndex];
                     draw();
                 }
             });
