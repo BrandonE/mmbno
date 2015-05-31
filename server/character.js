@@ -180,7 +180,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                     if (['up', 'down', 'left', 'right'].indexOf(newPanelStatus) > -1) {
                         setTimeout(
                             function() {
-                                if (newPanel.getRow() === self.row && newPanel.getCol() === self.col) {
+                                if (newPanel.getCharacter() === self) {
                                     self.move(newPanelStatus, 1, 1);
                                 }
                             },
