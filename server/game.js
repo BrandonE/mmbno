@@ -113,7 +113,7 @@ module.exports = function Game(io, config, num) {
             playerToSend = self.players[p];
 
             if (playerToSend) {
-                playerToSend = self.players[p].toSendable();
+                playerToSend = playerToSend.toSendable();
             }
 
             playersToSend.push(playerToSend);

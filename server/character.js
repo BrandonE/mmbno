@@ -297,7 +297,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             id          : self.id,
             playerNum   : self.playerNum,
             maxHealth   : self.maxHealth,
-            health      : self.maxHealth,
+            health      : self.health,
             element     : self.element,
             status      : self.status,
             busterPower : self.busterPower,
