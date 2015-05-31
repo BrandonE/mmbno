@@ -49,7 +49,6 @@ module.exports = function Field(io, config, players) {
             self.grid.push(cols);
         }
 
-        self.grid[0][0].status = 'cracked';
     }
 
     this.placeCharacter = function place(character, row, col) {

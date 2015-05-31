@@ -177,7 +177,14 @@ module.exports = function Character(io, config, field, id, playerNum) {
 
                     // Handle road panels.
                     if (['up', 'down', 'left', 'right'].indexOf(newPanelStatus) > -1) {
-                        self.move(newPanelStatus, 1, 1);
+                        setTimeout(
+                            function() {
+                                if (newPanel.getRow() === self.row && newPanel.getCol() === self.col) {
+                                    self.move(newPanelStatus, 1, 1);
+                                }
+                            },
+                            500
+                        );
                     }
                 }
 

@@ -10,6 +10,14 @@ module.exports = function Panel(io, field, row, col) {
     this.status = 'normal';
     this.time = 0;
 
+    this.getRow = function getRow() {
+        return self.row;
+    };
+
+    this.getCol = function getCol() {
+        return self.col;
+    };
+
     this.getCharacter = function getCharacter() {
         return self.character;
     };
