@@ -14,8 +14,24 @@ $(document).ready
             config = data;
 
             socket.on('user connected', function(playerNum, gameSent) {
-                if (!game) {
+                var player,
+                    playerIndex;
+
+                if (game) {
+                    if (playerNum) {
+                        playerIndex = playerNum - 1;
+                        player = gameSent.players[playerIndex];
+
+                        game.players[playerIndex] = player;
+                        game.field[player.row][player.col].character = player;
+                    } else {
+                        game.observers++;
+                    }
+                } else {
                     game = {
+                        field           : gameSent.field,
+                        players         : gameSent.players,
+                        observers       : gameSent.observers,
                         clientPlayerNum : playerNum
                     };
 
@@ -26,10 +42,6 @@ $(document).ready
                         $('.observing').show();
                     }
                 }
-
-                game.field = gameSent.field;
-                game.players = gameSent.players;
-                game.observers = gameSent.observers;
 
                 draw();
             });
