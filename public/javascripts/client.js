@@ -19,11 +19,11 @@ $(document).ready
         $.getJSON('config.json', function(data) {
             config = data;
 
-            socket.on('user connected', function(playerNum, fieldSent, playersSent) {
+            socket.on('user connected', function(playerNum, game) {
                 var player,
                     p;
 
-                players = playersSent;
+                players = game.players;
 
                 if (clientPlayerNum === undefined) {
                     clientPlayerNum = playerNum;
@@ -35,7 +35,7 @@ $(document).ready
                         $('.observing').show();
                     }
 
-                    grid = fieldSent;
+                    grid = game.field;
                 }
 
                 for (p in players) {
@@ -83,9 +83,9 @@ $(document).ready
                 }
             });
 
-            socket.on('panel changed', function(panelSent) {
-                grid[panelSent.row][panelSent.col].status = panelSent.status;
-                grid[panelSent.row][panelSent.col].stolen = panelSent.stolen;
+            socket.on('panel changed', function(panel) {
+                grid[panel.row][panel.col].status = panel.status;
+                grid[panel.row][panel.col].stolen = panel.stolen;
                 draw();
             });
 

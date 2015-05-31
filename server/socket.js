@@ -1,109 +1,56 @@
 'use strict';
 
-var Character = require(__dirname + '/character'),
-    Field = require(__dirname + '/field');
+var Game = require(__dirname + '/game');
 
 module.exports = function(config) {
-    var IO = null,
-        field,
-        players = [null, null];
-
-    function connect(io, socket) {
-        var playerNum = 0,
-            player,
-            p,
-            playersToSend = [],
-            playerToSend;
-
-        if (!players[0]) {
-            playerNum = 1;
-        } else if (!players[1]) {
-            playerNum = 2;
-        }
-
-        if (playerNum) {
-            player = new Character(io, config, field, socket.id, playerNum);
-            players[playerNum - 1] = player;
-
-            field.draw();
-            console.log('user `' + socket.id + '` connected');
-        }
-
-        for (p in players) {
-            playerToSend = players[p];
-
-            if (playerToSend) {
-                playerToSend = players[p].toSendable();
-            }
-
-            playersToSend.push(playerToSend);
-        }
-
-        IO.emit('user connected', playerNum, field.toSendable(), playersToSend);
-    }
-
-    function disconnect(id) {
-        var player = getPlayerById(id),
-            playerNum;
-
-        if (player) {
-            playerNum = player.getPlayerNum();
-
-            IO.emit('user disconnected', playerNum);
-
-            player.leaveField();
-            delete players[playerNum - 1];
-
-            field.draw();
-            console.log('user `' + id + '` disconnected');
-        }
-    }
-
-    function attach(io) {
-        IO = io;
-
-        io.on('connection', function (socket) {
-            if (!field) {
-                field = new Field(io, config, players);
-            }
-
-            connect(io, socket);
-
-            socket.on('disconnect', function() {
-                disconnect(socket.id);
-            });
-
-            socket.on('move', function(direction) {
-                var player = getPlayerById(socket.id);
-
-                if (player) {
-                    player.move(direction);
-                }
-            });
-
-            socket.on('buster', function() {
-                var player = getPlayerById(socket.id);
-
-                if (player) {
-                    player.busterShot();
-                }
-            });
-        });
-    }
+    var games = [];
 
     return {
-        attach : attach
+        attach : function attach(io) {
+            io.on('connection', function (socket) {
+                var game = getAvailableGame();
+
+                if (!game) {
+                    game = new Game(io, config);
+                    games.push(game);
+                }
+
+                socket.join(game.getId());
+
+                game.connect(socket);
+
+                socket.on('disconnect', function() {
+                    game.disconnect(socket.id);
+                });
+
+                socket.on('move', function(direction) {
+                    var player = game.getPlayerById(socket.id);
+
+                    if (player) {
+                        player.move(direction);
+                    }
+                });
+
+                socket.on('buster', function() {
+                    var player = game.getPlayerById(socket.id);
+
+                    if (player) {
+                        player.busterShot();
+                    }
+                });
+            });
+        }
     };
 
-    function getPlayerById(id) {
-        var player,
-            p;
+    function getAvailableGame() {
+        var game,
+            g;
 
-        for (p in players) {
-            player = players[p];
+        for (g in games) {
+            game = games[g];
 
-            if (player.getId() === id) {
-                return player;
+            if (game.isAvailable()) {
+                return game;
             }
         }
 

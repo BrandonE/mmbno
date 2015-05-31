@@ -1,7 +1,7 @@
 var common = require(__dirname + '/common'),
     Panel = require(__dirname + '/panel');
 
-module.exports = function Field(io, config, players) {
+module.exports = function Field(io, config, game) {
     var self = this;
 
     this.grid = [];
@@ -26,7 +26,7 @@ module.exports = function Field(io, config, players) {
         console.log('\033[2J');
 
         // Draw the grid from Player 1's perspective.
-        console.log(common.gridToString(config, self.grid, players, 1));
+        console.log(common.gridToString(config, self.grid, game.getPlayers(), 1));
     };
 
     this.initialize = function initialize() {
@@ -42,7 +42,7 @@ module.exports = function Field(io, config, players) {
             cols = [];
 
             for (col = 0; col < config.cols; col++) {
-                cols.push(new Panel(io, self, row, col));
+                cols.push(new Panel(io, game, self, row, col));
             }
 
             self.grid.push(cols);

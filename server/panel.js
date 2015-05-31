@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function Panel(io, field, row, col) {
+module.exports = function Panel(io, game, field, row, col) {
     var self = this;
 
     this.row = row;
@@ -40,7 +40,7 @@ module.exports = function Panel(io, field, row, col) {
 
     this.setStatus = function setStatus(status) {
         self.status = status;
-        io.sockets.emit('panel changed', self.toSendable());
+        io.to(game.getId()).emit('panel changed', self.toSendable());
         field.draw();
     };
 

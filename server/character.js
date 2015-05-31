@@ -11,7 +11,7 @@ var weaknesses = {
     wood     : 'fire'
 };
 
-module.exports = function Character(io, config, field, id, playerNum) {
+module.exports = function Character(io, config, game, id, playerNum) {
     var self = this;
 
     this.id = id;
@@ -66,11 +66,11 @@ module.exports = function Character(io, config, field, id, playerNum) {
         self.setRow(row);
         self.setCol(col);
 
-        field.placeCharacter(self, row, col);
+        game.getField().placeCharacter(self, row, col);
     };
 
     this.leaveField = function leave() {
-        field.placeCharacter(null, self.row, self.col);
+        game.getField().placeCharacter(null, self.row, self.col);
     };
 
     this.busterShot = function busterShot() {
@@ -81,6 +81,7 @@ module.exports = function Character(io, config, field, id, playerNum) {
         var playerNum = self.playerNum,
             playerElement = self.element,
             playerStatus = self.status,
+            field = game.getField(),
             grid = field.getGrid(),
             currentRow,
             currentCol,
@@ -188,14 +189,14 @@ module.exports = function Character(io, config, field, id, playerNum) {
                     }
                 }
 
-                io.sockets.emit('moved', self.playerNum, self.row, self.col);
+                io.to(game.getId()).emit('moved', self.playerNum, self.row, self.col);
                 field.draw();
             }
         }
     };
 
     this.shoot = function shoot(power, element) {
-        var grid = field.getGrid(),
+        var grid = game.getField().getGrid(),
             row,
             col,
             panel,
@@ -245,7 +246,8 @@ module.exports = function Character(io, config, field, id, playerNum) {
     };
 
     this.takeDamage = function takeDamage(damage, element, flinch) {
-        var frozenIndex,
+        var field = game.getField(),
+            frozenIndex,
             panelStatus;
 
         if (element === undefined) {
@@ -282,7 +284,7 @@ module.exports = function Character(io, config, field, id, playerNum) {
 
         self.health -= damage;
 
-        io.sockets.emit('health changed', self.playerNum, self.health);
+        io.to(game.getId()).emit('health changed', self.playerNum, self.health);
         field.draw();
     };
 
