@@ -292,6 +292,11 @@ module.exports = function Character(io, config, game, id, playerNum) {
         field.draw();
     };
 
+    this.useChip = function useChip() {
+        var chip = self.chips.pop();
+        chip.use();
+    }
+
     this.toSendable = function toSendable() {
         return {
             id          : self.id,
