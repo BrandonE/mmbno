@@ -7,6 +7,7 @@
     <meta name="author" content="Brandon Evans" />
 
     <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link href="/stylesheets/style.css" rel="stylesheet" type="text/css" />
 
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
@@ -14,7 +15,8 @@
     <script type="text/javascript" src="/javascripts/client.js"></script>
 </head>
 <body>
-<p>Player #<span id="playerNum" /></p>
+<p class="playing">Player #<span id="playerNum" /></p>
+<p class="observing">Observing</p>
 
 <pre id="grid" />
 </body>

@@ -1,9 +1,8 @@
 var socket = io(),
     config,
-    clientPlayerNum = -1,
+    clientPlayerNum,
     grid,
     players = [null, null],
-    EOL = '\n',
     row,
     col,
     cols,
@@ -26,9 +25,15 @@ $(document).ready
 
                 players = playersSent;
 
-                if (clientPlayerNum === -1) {
+                if (clientPlayerNum === undefined) {
                     clientPlayerNum = playerNum;
-                    $('#playerNum').text(clientPlayerNum);
+
+                    if (clientPlayerNum) {
+                        $('#playerNum').text(clientPlayerNum);
+                        $('.playing').show();
+                    } else {
+                        $('.observing').show();
+                    }
 
                     grid = fieldSent;
                 }
@@ -45,25 +50,37 @@ $(document).ready
             });
 
             socket.on('user disconnected', function(playerNum) {
-                var player = players[playerNum - 1];
-                grid[player.row][player.col].character = null;
-                delete player;
-                draw();
+                var player;
+
+                if (playerNum) {
+                    player = players[playerNum - 1];
+                    grid[player.row][player.col].character = null;
+                    delete player;
+                    draw();
+                }
             });
 
             socket.on('health changed', function(playerNum, health) {
-                var player = players[playerNum - 1];
-                player.health = health;
-                draw();
+                var player;
+
+                if (playerNum) {
+                    player = players[playerNum - 1];
+                    player.health = health;
+                    draw();
+                }
             });
 
             socket.on('moved', function(playerNum, row, col) {
-                var player = players[playerNum - 1];
-                grid[player.row][player.col].character = null;
-                player.row = row;
-                player.col = col;
-                grid[row][col].character = player;
-                draw();
+                var player;
+
+                if (playerNum) {
+                    player = players[playerNum - 1];
+                    grid[player.row][player.col].character = null;
+                    player.row = row;
+                    player.col = col;
+                    grid[row][col].character = player;
+                    draw();
+                }
             });
 
             socket.on('panel changed', function(panelSent) {

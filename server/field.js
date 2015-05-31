@@ -1,5 +1,4 @@
-var EOL = require('os').EOL,
-    common = require(__dirname + '/common'),
+var common = require(__dirname + '/common'),
     Panel = require(__dirname + '/panel');
 
 module.exports = function Field(io, config, players) {

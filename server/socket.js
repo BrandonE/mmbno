@@ -9,7 +9,7 @@ module.exports = function(config) {
         players = [null, null];
 
     function connect(io, socket) {
-        var playerNum = -1,
+        var playerNum = 0,
             player,
             p,
             playersToSend = [],
@@ -21,25 +21,25 @@ module.exports = function(config) {
             playerNum = 2;
         }
 
-        if (playerNum !== -1) {
+        if (playerNum) {
             player = new Character(io, config, field, socket.id, playerNum);
             players[playerNum - 1] = player;
-
-            for (p in players) {
-                playerToSend = players[p];
-
-                if (playerToSend) {
-                    playerToSend = players[p].toSendable();
-                }
-
-                playersToSend.push(playerToSend);
-            }
-
-            IO.emit('user connected', playerNum, field.toSendable(), playersToSend);
 
             field.draw();
             console.log('user `' + socket.id + '` connected');
         }
+
+        for (p in players) {
+            playerToSend = players[p];
+
+            if (playerToSend) {
+                playerToSend = players[p].toSendable();
+            }
+
+            playersToSend.push(playerToSend);
+        }
+
+        IO.emit('user connected', playerNum, field.toSendable(), playersToSend);
     }
 
     function disconnect(id) {
