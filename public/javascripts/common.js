@@ -41,7 +41,7 @@ function checkPanelInBounds(config, grid, playerNum, newRow, newCol) {
     return isInBounds;
 };
 
-function gridToString(config, grid, players, playerNumPerspective) {
+function gameToString(config, game, playerNumPerspective) {
     var response = EOL,
         row,
         col,
@@ -50,8 +50,8 @@ function gridToString(config, grid, players, playerNumPerspective) {
         c,
         p;
 
-    for (r in grid) {
-        row = grid[r];
+    for (r in game.field) {
+        row = game.field[r];
 
         response += ' ----- ----- ----- ----- ----- -----' + EOL +
             '|';
@@ -75,7 +75,7 @@ function gridToString(config, grid, players, playerNumPerspective) {
                 response += ' ';
             }
 
-            if (checkPanelInBounds(config, grid, playerNumPerspective, r, c)) {
+            if (checkPanelInBounds(config, game.field, playerNumPerspective, r, c)) {
                 response += ' ';
             } else {
                 response += 'R';
@@ -88,8 +88,8 @@ function gridToString(config, grid, players, playerNumPerspective) {
             ' ----- ----- ----- ----- ----- -----' + EOL;
     }
 
-    for (p in players) {
-        player = players[p];
+    for (p in game.players) {
+        player = game.players[p];
 
         if (player && player.health) {
             response += 'Player ' + player.playerNum + ': ' + player.health + 'HP' + EOL;
@@ -100,4 +100,4 @@ function gridToString(config, grid, players, playerNumPerspective) {
 };
 
 exports.checkPanelInBounds = checkPanelInBounds;
-exports.gridToString = gridToString;
+exports.gameToString = gameToString;

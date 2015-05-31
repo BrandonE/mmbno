@@ -53,9 +53,16 @@ module.exports = function Panel(io, game, field, row, col) {
     };
 
     this.toSendable = function toSendable() {
+        var character = self.character;
+
+        if (character) {
+            character = character.toSendable();
+        }
+
         return {
             row       : self.row,
             col       : self.col,
+            character : character,
             stolen    : self.stolen,
             status    : self.status
         };

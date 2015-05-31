@@ -1,14 +1,9 @@
 var socket = io(),
     config,
-    clientPlayerNum,
-    grid,
-    players = [null, null],
-    row,
-    col,
-    cols;
+    game;
 
 function draw() {
-    $('#grid').text(gridToString(config, grid, players, clientPlayerNum));
+    $('#game').text(gameToString(config, game, game.clientPlayerNum));
 }
 
 $(document).ready
@@ -18,31 +13,22 @@ $(document).ready
         $.getJSON('config.json', function(data) {
             config = data;
 
-            socket.on('user connected', function(playerNum, game) {
-                var player,
-                    p;
+            socket.on('user connected', function(playerNum, gameSent) {
+                if (!game) {
+                    game = {
+                        clientPlayerNum : playerNum
+                    };
 
-                if (clientPlayerNum === undefined) {
-                    clientPlayerNum = playerNum;
-
-                    if (clientPlayerNum) {
-                        $('#playerNum').text(clientPlayerNum);
+                    if (playerNum) {
+                        $('#playerNum').text(playerNum);
                         $('.playing').show();
                     } else {
                         $('.observing').show();
                     }
-
-                    grid = game.field;
                 }
 
-                for (p in game.players) {
-                    players[p] = game.players[p];
-                    player = players[p];
-
-                    if (player) {
-                        grid[player.row][player.col].character = player;
-                    }
-                }
+                game.field = gameSent.field;
+                game.players = gameSent.players;
 
                 draw();
             });
@@ -53,10 +39,10 @@ $(document).ready
 
                 if (playerNum) {
                     playerIndex = playerNum - 1;
-                    player = players[playerIndex];
+                    player = game.players[playerIndex];
 
-                    grid[player.row][player.col].character = null;
-                    delete players[playerIndex];
+                    game.field[player.row][player.col].character = null;
+                    delete game.players[playerIndex];
                     draw();
                 }
             });
@@ -75,18 +61,18 @@ $(document).ready
                 var player;
 
                 if (playerNum) {
-                    player = players[playerNum - 1];
-                    grid[player.row][player.col].character = null;
+                    player = game.players[playerNum - 1];
+                    game.field[player.row][player.col].character = null;
                     player.row = row;
                     player.col = col;
-                    grid[row][col].character = player;
+                    game.field[row][col].character = player;
                     draw();
                 }
             });
 
             socket.on('panel changed', function(panel) {
-                grid[panel.row][panel.col].status = panel.status;
-                grid[panel.row][panel.col].stolen = panel.stolen;
+                game.field[panel.row][panel.col].status = panel.status;
+                game.field[panel.row][panel.col].stolen = panel.stolen;
                 draw();
             });
 

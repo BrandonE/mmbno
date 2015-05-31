@@ -26,8 +26,8 @@ module.exports = function Field(io, config, game) {
             // Clear the console.
             console.log('\033[2J');
 
-            // Draw the grid from Player 1's perspective.
-            console.log(common.gridToString(config, self.grid, game.getPlayers(), 1));
+            // Draw the game from Player 1's perspective.
+            console.log(common.gameToString(config, game.toSendable(), 1));
         }
     };
 
