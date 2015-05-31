@@ -22,11 +22,13 @@ module.exports = function Field(io, config, game) {
     };
 
     this.draw = function draw() {
-        // Clear the console.
-        console.log('\033[2J');
+        if (game.num === 1) {
+            // Clear the console.
+            console.log('\033[2J');
 
-        // Draw the grid from Player 1's perspective.
-        console.log(common.gridToString(config, self.grid, game.getPlayers(), 1));
+            // Draw the grid from Player 1's perspective.
+            console.log(common.gridToString(config, self.grid, game.getPlayers(), 1));
+        }
     };
 
     this.initialize = function initialize() {

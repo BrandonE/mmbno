@@ -4,10 +4,11 @@ var uuid = require('uuid'),
     Character = require(__dirname + '/character'),
     Field = require(__dirname + '/field');
 
-module.exports = function Game(io, config) {
+module.exports = function Game(io, config, num) {
     var self = this;
 
     this.id = uuid.v4();
+    this.num = num;
     this.players = [null, null];
     this.field = new Field(io, config, self);
 
