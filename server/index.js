@@ -9,6 +9,10 @@ var fs = require('fs'),
     socket = require(__dirname + '/socket')(config),
     server;
 
+if (process.env.PORT) {
+    config.port = process.env.PORT;
+}
+
 app.set('views', __dirname, '../views');
 
 app.use(express.static(__dirname + '/../public'));
