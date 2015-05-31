@@ -284,6 +284,10 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
         self.health -= damage;
 
+        if (self.health < 0) {
+            self.health = 0;
+        }
+
         io.to(game.getId()).emit('health changed', self.playerNum, self.health);
         field.draw();
     };
