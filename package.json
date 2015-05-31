@@ -2,7 +2,10 @@
   "name": "mmbno",
   "version": "2.0.0",
   "description": "Mega Man Battle Network Online http://brandonevans.org/mmbno/",
-  "main": "server/server.js",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "ssh://git@github.com:BrandonE/mmbno.git"
