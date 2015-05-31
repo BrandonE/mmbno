@@ -1,7 +1,7 @@
 'use strict';
 
 var exports = (typeof module !== 'undefined' && typeof module.exports !== 'undefined') ? module.exports : window,
-    panelStatus = {
+    panelStatusLabels = {
         broken  : 'B',
         cracked : 'C',
         frozen  : 'F',
@@ -44,7 +44,8 @@ function checkPanelInBounds(config, grid, playerNum, newRow, newCol) {
 function gameToString(config, game, playerNumPerspective) {
     var response = EOL,
         row,
-        col,
+        panel,
+        panelStatus,
         player,
         r,
         c,
@@ -61,12 +62,21 @@ function gameToString(config, game, playerNumPerspective) {
                 c = config.cols - c - 1;
             }
 
-            col = row[c];
+            panel = row[c];
+            panelStatus = panel.status;
 
-            response += ' ' + panelStatus[col.status];
+            if (playerNumPerspective === 2) {
+                if (panelStatus === 'left') {
+                    panelStatus = 'right';
+                } else if (panelStatus === 'right') {
+                    panelStatus = 'left';
+                }
+            }
 
-            if (col.character && col.character.health) {
-                if (playerNumPerspective === col.character.playerNum) {
+            response += ' ' + panelStatusLabels[panelStatus];
+
+            if (panel.character && panel.character.health) {
+                if (playerNumPerspective === panel.character.playerNum) {
                     response += 'x';
                 } else {
                     response += 'o';
