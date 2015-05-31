@@ -91,7 +91,7 @@ function gridToString(config, grid, players, playerNumPerspective) {
     for (p in players) {
         player = players[p];
 
-        if (player) {
+        if (player && player.health) {
             response += 'Player ' + player.playerNum + ': ' + player.health + 'HP' + EOL;
         }
     }
