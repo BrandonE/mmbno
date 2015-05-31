@@ -1,6 +1,7 @@
 'use strict';
 
-var CannonType = require(__dirname + '/types/cannon');
+var CannonType = require(__dirname + '/types/cannon'),
+    extend = require(__dirname + '/extend');
 
 function CannonConstructor(io, config, character) {
     this.properties.codes = ['A', 'B', 'C', '*'];
@@ -11,7 +12,5 @@ function CannonConstructor(io, config, character) {
 }
 
 module.exports = function Cannon(io, config, character) {
-    CannonConstructor.prototype = new CannonType(io, config, character);
-    CannonConstructor.constructor = CannonConstructor;
-    return new CannonConstructor(io, config, character);
+    return extend(CannonConstructor, CannonType, io, config, character);
 };

@@ -1,6 +1,7 @@
 'use strict';
 
-var Chip = require(__dirname + '/..');
+var Chip = require(__dirname + '/..'),
+    extend = require(__dirname + '/../extend');
 
 function CannonConstructor(io, config, character) {
     var self = this;
@@ -11,7 +12,5 @@ function CannonConstructor(io, config, character) {
 }
 
 module.exports = function Cannon(io, config, character) {
-    CannonConstructor.prototype = new Chip(io, config, character);
-    CannonConstructor.constructor = CannonConstructor;
-    return new CannonConstructor(io, config, character);
+    return extend(CannonConstructor, Chip, io, config, character);
 };
