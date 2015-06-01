@@ -54,8 +54,20 @@ module.exports = function Character(io, config, game, id, playerNum) {
         return self.element;
     };
 
-    this.getStatus = function getStatus() {
-        return self.status;
+    this.hasStatus = function hasStatus(status) {
+        return (self.statuses.indexOf(status) > -1);
+    };
+
+    this.addStatus = function addStatus(status) {
+        self.statuses.push(status);
+    }
+
+    this.removeStatus = function removeStatus(status) {
+        var index = self.statuses.indexOf(status);
+
+        if (index > -1) {
+            delete self.statuses[index];
+        }
     };
 
     this.getBusterPower = function getStatus() {
@@ -80,7 +92,6 @@ module.exports = function Character(io, config, game, id, playerNum) {
     this.move = function move(direction, rows, cols) {
         var playerNum = self.playerNum,
             playerElement = self.element,
-            playerStatus = self.status,
             field = game.getField(),
             grid = field.getGrid(),
             currentRow,
@@ -141,17 +152,17 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
             if (
                 field.checkPanelInBounds(playerNum, newRow, newCol) &&
-                    field.checkCanStand(playerStatus, newPanel) &&
+                    field.checkCanStand(self, newPanel) &&
                     !newPanel.getCharacter() &&
-                    playerStatus.indexOf('paralyzed') === -1 &&
-                    playerStatus.indexOf('frozen') === -1
+                    !self.hasStatus('paralyzed') &&
+                    !self.hasStatus('frozen')
             ) {
                 currentPanel.setCharacter(null);
                 newPanel.setCharacter(self);
                 self.setRow(newRow);
                 self.setCol(newCol);
 
-                if (playerStatus.indexOf('floatshoes') === -1) {
+                if (!self.hasStatus('floatshoes')) {
                     newPanelStatus = newPanel.getStatus();
 
                     // If the panel is cracked and the character moved, break it.
@@ -205,7 +216,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             element = 'none';
         }
 
-        if (self.status.indexOf('paralyzed')) {
+        if (self.hasStatus('paralyzed')) {
             row = self.row;
 
             if (self.playerNum === 1) {
@@ -230,7 +241,6 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.takeDamage = function takeDamage(damage, element, flinch) {
         var field = game.getField(),
-            frozenIndex,
             panelStatus;
 
         if (element === undefined) {
@@ -242,12 +252,10 @@ module.exports = function Character(io, config, game, id, playerNum) {
             damage *= 2;
         }
 
-        frozenIndex = self.status.indexOf('frozen');
-
         // Double the damage and revert if the character is frozen and the attack is break.
-        if (frozenIndex > -1 && element === 'break') {
+        if (self.hasStatus('frozen') && element === 'break') {
             damage *= 2;
-            delete self.status[frozenIndex];
+            self.removeStatus('frozen');;
         }
 
         // Double the damage if the panel is grass and the attack has the fire element.
@@ -315,7 +323,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             maxHealth   : self.maxHealth,
             health      : self.health,
             element     : self.element,
-            status      : self.status,
+            statuses    : self.statuses,
             busterPower : self.busterPower,
             chips       : chipsToSend,
             row         : self.row,

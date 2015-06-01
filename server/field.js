@@ -10,10 +10,10 @@ module.exports = function Field(io, config, game) {
         return self.grid;
     };
 
-    this.checkCanStand = function checkCanStand(playerStatus, newPanel) {
+    this.checkCanStand = function checkCanStand(player, newPanel) {
         return (
             ['blank', 'broken'].indexOf(newPanel.getStatus()) === -1 ||
-                playerStatus.indexOf('airshoes') > -1
+                playerStatus.hasStatus('airshoes')
         );
     };
 
