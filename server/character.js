@@ -280,20 +280,22 @@ module.exports = function Character(io, config, game, id, playerNum) {
             nextChip,
             chained = true;
 
-        // Handle a chip chain event.
-        while (self.chips.length && chained) {
-            nextChip = self.chips[0];
-            chained = nextChip.chain(chip);
+        if (chip) {
+            // Handle a chip chain event.
+            while (self.chips.length && chained) {
+                nextChip = self.chips[0];
+                chained = nextChip.chain(chip);
 
-            // Remove the next chip if it should be used in a chain.
-            if (chained) {
-                self.chips.shift();
-                nextChip.used();
+                // Remove the next chip if it should be used in a chain.
+                if (chained) {
+                    self.chips.shift();
+                    nextChip.used();
+                }
             }
-        }
 
-        chip.use();
-        chip.used();
+            chip.use();
+            chip.used();
+        }
     }
 
     this.toSendable = function toSendable() {
