@@ -288,10 +288,12 @@ module.exports = function Character(io, config, game, id, playerNum) {
             // Remove the next chip if it should be used in a chain.
             if (chained) {
                 self.chips.shift();
+                nextChip.used();
             }
         }
 
         chip.use();
+        chip.used();
     }
 
     this.toSendable = function toSendable() {

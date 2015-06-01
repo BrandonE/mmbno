@@ -87,6 +87,23 @@ $(document).ready
                 $('#activeConnections').text(activeConnections);
             });
 
+            socket.on('chip used', function(playerNum, chip) {
+                var player,
+                    c;
+
+                if (playerNum) {
+                    player = game.players[playerNum - 1];
+
+                    for (c in player.chips) {
+                        if (chip.name === player.chips[c].name) {
+                            delete player.chips[c];
+                        }
+                    }
+
+                    showChips();
+                }
+            });
+
             socket.on('health changed', function(playerNum, health) {
                 var player;
 
@@ -95,6 +112,12 @@ $(document).ready
                     player.health = health;
                     draw();
                 }
+            });
+
+            socket.on('panel changed', function(panel) {
+                game.field[panel.row][panel.col].status = panel.status;
+                game.field[panel.row][panel.col].stolen = panel.stolen;
+                draw();
             });
 
             socket.on('player moved', function(playerNum, row, col) {
@@ -108,12 +131,6 @@ $(document).ready
                     game.field[row][col].character = player;
                     draw();
                 }
-            });
-
-            socket.on('panel changed', function(panel) {
-                game.field[panel.row][panel.col].status = panel.status;
-                game.field[panel.row][panel.col].stolen = panel.stolen;
-                draw();
             });
 
             $(document).keydown(function(e) {

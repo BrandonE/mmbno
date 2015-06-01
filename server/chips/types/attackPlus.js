@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/..'),
     extend = require(__dirname + '/../extend');
 
-function AttackPlusConstructor(io, config, character) {
+function AttackPlusConstructor(io, config, game, character) {
     var self = this;
 
     this.chain = function chain(chip) {
@@ -15,6 +15,6 @@ function AttackPlusConstructor(io, config, character) {
     };
 }
 
-module.exports = function AttackPlus(io, config, character) {
-    return extend(AttackPlusConstructor, Chip, io, config, character);
+module.exports = function AttackPlus(io, config, game, character) {
+    return extend(AttackPlusConstructor, Chip, io, config, game, character);
 };

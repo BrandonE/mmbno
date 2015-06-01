@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function Chip(io, config, character) {
+module.exports = function Chip(io, config, game, character) {
     var self = this;
 
     this.properties = {
@@ -30,6 +30,11 @@ module.exports = function Chip(io, config, character) {
 
     this.use = function use() {
         // Use the chip.
+        self.used();
+    };
+
+    this.used = function used() {
+        io.to(game.getId()).emit('chip used', character.getPlayerNum(), self.toSendable());
     };
 
     this.toSendable = function toSendable() {
