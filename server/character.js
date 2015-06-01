@@ -189,7 +189,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                     }
                 }
 
-                io.to(game.getId()).emit('moved', self.playerNum, self.row, self.col);
+                io.to(game.getId()).emit('player moved', self.playerNum, self.row, self.col);
                 field.draw();
             }
         }

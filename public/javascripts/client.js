@@ -97,7 +97,7 @@ $(document).ready
                 }
             });
 
-            socket.on('moved', function(playerNum, row, col) {
+            socket.on('player moved', function(playerNum, row, col) {
                 var player;
 
                 if (playerNum) {
