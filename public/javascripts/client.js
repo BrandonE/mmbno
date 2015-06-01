@@ -6,6 +6,25 @@ function draw() {
     $('#game').text(gameToString(config, game, game.clientPlayerNum));
 }
 
+function showChips() {
+    var chips,
+        chipNames,
+        chip,
+        c;
+
+    if (game.clientPlayerNum) {
+        chips = game.players[game.clientPlayerNum - 1].chips;
+        chipNames = [];
+
+        for (c in chips) {
+            chip = chips[c];
+            chipNames.push(chip.name);
+        }
+
+        $('#chips').text(chipNames.join(', '));
+    }
+}
+
 $(document).ready
 (
     function ()
@@ -43,6 +62,7 @@ $(document).ready
                     }
                 }
 
+                showChips();
                 draw();
             });
 

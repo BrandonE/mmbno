@@ -312,6 +312,16 @@ module.exports = function Character(io, config, game, id, playerNum) {
     }
 
     this.toSendable = function toSendable() {
+        var chipsToSend = [],
+            chipToSend,
+            c;
+
+        for (c in self.chips) {
+            chipToSend = self.chips[c].toSendable();
+
+            chipsToSend.push(chipToSend);
+        }
+
         return {
             id          : self.id,
             playerNum   : self.playerNum,
@@ -320,6 +330,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             element     : self.element,
             status      : self.status,
             busterPower : self.busterPower,
+            chips       : chipsToSend,
             row         : self.row,
             col         : self.col
         };

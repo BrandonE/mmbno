@@ -31,4 +31,8 @@ module.exports = function Chip(io, config, character) {
     this.use = function use() {
         // Use the chip.
     };
+
+    this.toSendable = function toSendable() {
+        return self.properties;
+    };
 };
