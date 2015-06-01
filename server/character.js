@@ -74,7 +74,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.busterShot = function busterShot() {
-        return self.shoot(self.busterPower);
+        self.shoot(self.busterPower);
     }
 
     this.move = function move(direction, rows, cols) {
@@ -199,8 +199,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
         var grid = game.getField().getGrid(),
             row,
             col,
-            panel,
-            playerNumHit;
+            panel;
 
         if (element === undefined) {
             element = 'none';
@@ -212,36 +211,20 @@ module.exports = function Character(io, config, game, id, playerNum) {
             if (self.playerNum === 1) {
                 for (col = self.col + 1; col < config.cols; col++) {
                     panel = grid[row][col];
-                    playerNumHit = self.shootPanel(power, element, panel);
 
-                    if (playerNumHit) {
-                        return playerNumHit;
+                    if (panel.shot(power, element)) {
+                        break;
                     }
                 }
             } else {
                 for (col = self.col - 1; col >= 0; col--) {
                     panel = grid[row][col];
-                    playerNumHit = self.shootPanel(power, element, panel);
 
-                    if (playerNumHit) {
-                        return playerNumHit;
+                    if (panel.shot(power, element)) {
+                        break;
                     }
                 }
             }
-        }
-    };
-
-    this.shootPanel = function shootPanel(power, element, panel) {
-        if (panel.character) {
-            panel.character.takeDamage(power, element);
-
-            if (panel.getStatus() === 'grass' && element === 'fire') {
-                panel.setStatus('normal');
-            }
-
-            return panel.character.getPlayerNum();
-        } else {
-            return false;
         }
     };
 

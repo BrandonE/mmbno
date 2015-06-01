@@ -52,6 +52,20 @@ module.exports = function Panel(io, game, field, row, col) {
         self.time = time;
     };
 
+    this.shot = function shot(power, element) {
+        if (self.character) {
+            self.character.takeDamage(power, element);
+
+            if (self.getStatus() === 'grass' && element === 'fire') {
+                self.setStatus('normal');
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    };
+
     this.toSendable = function toSendable() {
         var character = self.character;
 
