@@ -169,6 +169,8 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 self.setRow(newRow);
                 self.setCol(newCol);
 
+                clearTimeout(self.roadPanelTimeout);
+
                 if (!self.hasStatus('floatshoes')) {
                     newPanelType = newPanel.getType();
 
@@ -196,7 +198,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
                     // Handle road panels.
                     if (['up', 'down', 'left', 'right'].indexOf(newPanelType) > -1) {
-                        setTimeout(
+                        self.roadPanelTimeout = setTimeout(
                             function() {
                                 if (newPanel.getCharacter() === self) {
                                     self.move(newPanelType, 1, 1);
