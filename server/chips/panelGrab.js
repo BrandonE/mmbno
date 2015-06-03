@@ -6,26 +6,27 @@ var GrabType = require(__dirname + '/types/grab'),
 function AreaGrabConstructor(io, config, game, character) {
     var self = this;
 
-    this.properties.codes = ['B', 'F', 'S'];
-    this.properties.description = 'Steals left edge from enemy';
-    this.properties.name = 'Area Grab';
-    this.properties.short = 'AreaGrab';
-    this.properties.stars = 2;
+    this.properties.codes = ['*'];
+    this.properties.description = 'Steals 1 enemy square';
+    this.properties.name = 'Panel Grab';
+    this.properties.short = 'PanlGrab';
 
     this.use = function use() {
-        var col,
+        var grid = game.getField().getGrid(),
+            row = character.getRow(),
+            col,
             stole = false;
 
         if (character.getPlayerNum() === 1) {
             for (col = character.getCol(); col < config.cols; col++) {
-                if (self.stealRows(col)) {
+                if (self.stealPanel(grid[row][col])) {
                     stole = true;
                     break;
                 }
             }
         } else {
             for (col = character.getCol(); col >= 0; col--) {
-                if (self.stealRows(col)) {
+                if (self.stealPanel(grid[row][col])) {
                     stole = true;
                     break;
                 }
@@ -41,12 +42,21 @@ function AreaGrabConstructor(io, config, game, character) {
         var grid = game.getField().getGrid(),
             row,
             panel,
+            panelCharacter,
             stole = false;
 
         for (row = 0; row < config.rows; row++) {
             panel = grid[row][col];
 
-            if (self.stealPanel(panel)) {
+            if (!panel.isInBounds(character)) {
+                panelCharacter = panel.getCharacter();
+
+                if (panelCharacter) {
+                    panelCharacter.takeDamage(self.damage);
+                } else {
+                    panel.flipStolen();
+                }
+
                 stole = true;
             }
         }
