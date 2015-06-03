@@ -206,6 +206,14 @@ module.exports = function Character(io, config, game, id, playerNum) {
                         self.roadPanelTimeout = setTimeout(
                             function() {
                                 if (newPanel.getCharacter() === self) {
+                                    if (self.getPlayerNum() === 2) {
+                                        if (newPanelType === 'left') {
+                                            newPanelType = 'right';
+                                        } else if (newPanelType === 'right') {
+                                            newPanelType = 'left';
+                                        }
+                                    }
+
                                     self.move(newPanelType, 1, 1);
                                 }
                             },
