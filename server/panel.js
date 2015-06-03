@@ -7,7 +7,7 @@ module.exports = function Panel(io, game, field, row, col) {
     this.col = col;
     this.character = null;
     this.stolen = false;
-    this.status = 'normal';
+    this.type = 'normal';
     this.time = 0;
 
     this.getRow = function getRow() {
@@ -34,13 +34,13 @@ module.exports = function Panel(io, game, field, row, col) {
         self.stolen = stolen;
     };
 
-    this.getStatus = function getStatus() {
-        return self.status;
+    this.getType = function getType() {
+        return self.type;
     };
 
-    this.setStatus = function setStatus(status) {
-        self.status = status;
-        io.to(game.getId()).emit('panel changed', self.toSendable());
+    this.setType = function setType(type) {
+        self.type = type;
+        io.to(game.getId()).emit('panel type changed', type);
         field.draw();
     };
 
@@ -56,8 +56,8 @@ module.exports = function Panel(io, game, field, row, col) {
         if (self.character) {
             self.character.takeDamage(power, element);
 
-            if (self.getStatus() === 'grass' && element === 'fire') {
-                self.setStatus('normal');
+            if (self.getType() === 'grass' && element === 'fire') {
+                self.setType('normal');
             }
 
             return true;
@@ -78,7 +78,7 @@ module.exports = function Panel(io, game, field, row, col) {
             col       : self.col,
             character : character,
             stolen    : self.stolen,
-            status    : self.status
+            type      : self.type
         };
     };
 };

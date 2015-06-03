@@ -1,7 +1,7 @@
 'use strict';
 
 var exports = (typeof module !== 'undefined' && typeof module.exports !== 'undefined') ? module.exports : window,
-    panelStatusLabels = {
+    panelTypeLabels = {
         broken  : 'B',
         cracked : 'C',
         frozen  : 'F',
@@ -45,7 +45,7 @@ function gameToString(config, game, playerNumPerspective) {
     var response = EOL,
         row,
         panel,
-        panelStatus,
+        panelType,
         player,
         r,
         c,
@@ -63,17 +63,17 @@ function gameToString(config, game, playerNumPerspective) {
             }
 
             panel = row[c];
-            panelStatus = panel.status;
+            panelType = panel.type;
 
             if (playerNumPerspective === 2) {
-                if (panelStatus === 'left') {
-                    panelStatus = 'right';
-                } else if (panelStatus === 'right') {
-                    panelStatus = 'left';
+                if (panelType === 'left') {
+                    panelType = 'right';
+                } else if (panelType === 'right') {
+                    panelType = 'left';
                 }
             }
 
-            response += ' ' + panelStatusLabels[panelStatus];
+            response += ' ' + panelTypeLabels[panelType];
 
             if (panel.character && panel.character.health) {
                 if (playerNumPerspective === panel.character.playerNum) {

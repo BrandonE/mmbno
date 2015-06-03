@@ -12,8 +12,8 @@ module.exports = function Field(io, config, game) {
 
     this.checkCanStand = function checkCanStand(player, newPanel) {
         return (
-            ['blank', 'broken'].indexOf(newPanel.getStatus()) === -1 ||
-                playerStatus.hasStatus('airshoes')
+            ['blank', 'broken'].indexOf(newPanel.getType()) === -1 ||
+                player.hasStatus('airshoes')
         );
     };
 

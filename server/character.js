@@ -19,7 +19,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
     this.maxHealth = 500;
     this.health = this.maxHealth;
     this.element = 'none';
-    this.status = [];
+    this.statuses = [];
     this.busterPower = 1;
 
     this.getId = function getId() {
@@ -70,7 +70,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
         }
     };
 
-    this.getBusterPower = function getStatus() {
+    this.getBusterPower = function getBusterPower() {
         return self.busterPower;
     };
 
@@ -100,7 +100,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             newRow,
             newCol,
             newPanel,
-            newPanelStatus;
+            newPanelType;
 
         if (rows === undefined) {
             rows = 1;
@@ -163,36 +163,36 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 self.setCol(newCol);
 
                 if (!self.hasStatus('floatshoes')) {
-                    newPanelStatus = newPanel.getStatus();
+                    newPanelType = newPanel.getType();
 
                     // If the panel is cracked and the character moved, break it.
                     if (
-                        currentPanel.getStatus() === 'cracked' &&
+                        currentPanel.getType() === 'cracked' &&
                             (currentRow !== newRow || currentCol !== newCol)
                     ) {
-                        currentPanel.setStatus('broken');
+                        currentPanel.setType('broken');
                     }
 
                     /*
                      If the character moved onto a lava panel and doesn't have the fire element, burn the character
                      and revert the panel.
                      */
-                    if (newPanelStatus === 'lava' && playerElement !== 'fire') {
+                    if (newPanelType === 'lava' && playerElement !== 'fire') {
                         self.takeDamage(10);
-                        newPanel.setStatus('normal');
+                        newPanel.setType('normal');
                     }
 
                     // Slide if the panel is frozen and the character does not have the aqua element.
-                    if (newPanelStatus === 'frozen' && playerElement !== 'aqua') {
+                    if (newPanelType === 'frozen' && playerElement !== 'aqua') {
                         self.move(direction, 1, 1);
                     }
 
                     // Handle road panels.
-                    if (['up', 'down', 'left', 'right'].indexOf(newPanelStatus) > -1) {
+                    if (['up', 'down', 'left', 'right'].indexOf(newPanelType) > -1) {
                         setTimeout(
                             function() {
                                 if (newPanel.getCharacter() === self) {
-                                    self.move(newPanelStatus, 1, 1);
+                                    self.move(newPanelType, 1, 1);
                                 }
                             },
                             500
@@ -241,7 +241,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.takeDamage = function takeDamage(damage, element, flinch) {
         var field = game.getField(),
-            panelStatus;
+            panelType;
 
         if (element === undefined) {
             element = 'none';
@@ -259,14 +259,14 @@ module.exports = function Character(io, config, game, id, playerNum) {
         }
 
         // Double the damage if the panel is grass and the attack has the fire element.
-        panelStatus = field.getGrid()[self.row][self.col].getStatus();
+        panelType = field.getGrid()[self.row][self.col].getType();
 
-        if (panelStatus === 'grass' && element === 'fire') {
+        if (panelType === 'grass' && element === 'fire') {
             damage *= 2;
         }
 
         // Half the damage if on a holy panel.
-        if (panelStatus === 'holy') {
+        if (panelType === 'holy') {
             damage = parseInt(Math.ceil(damage / 2));
         }
 
@@ -279,7 +279,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             self.health = 0;
         }
 
-        io.to(game.getId()).emit('health changed', self.playerNum, self.health);
+        io.to(game.getId()).emit('player health changed', self.playerNum, self.health);
         field.draw();
     };
 

@@ -104,7 +104,17 @@ $(document).ready
                 }
             });
 
-            socket.on('health changed', function(playerNum, health) {
+            socket.on('panel type changed', function(panelRow, panelCol, type) {
+                game.field[panelRow][panelCol].type = type;
+                draw();
+            });
+
+            socket.on('panel stolen changed', function(panelRow, panelCol, stolen) {
+                game.field[panelRow][panelCol].stolen = stolen;
+                draw();
+            });
+
+            socket.on('player health changed', function(playerNum, health) {
                 var player;
 
                 if (playerNum) {
@@ -112,12 +122,6 @@ $(document).ready
                     player.health = health;
                     draw();
                 }
-            });
-
-            socket.on('panel changed', function(panel) {
-                game.field[panel.row][panel.col].status = panel.status;
-                game.field[panel.row][panel.col].stolen = panel.stolen;
-                draw();
             });
 
             socket.on('player moved', function(playerNum, row, col) {
