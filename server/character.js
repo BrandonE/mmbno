@@ -89,6 +89,13 @@ module.exports = function Character(io, config, game, id, playerNum) {
         self.shoot(self.busterPower);
     }
 
+    this.canStandOn = function canStandOn(panel) {
+        return (
+            ['blank', 'broken'].indexOf(panel.getType()) === -1 ||
+                self.hasStatus('airshoes')
+        );
+    };
+
     this.move = function move(direction, rows, cols) {
         var playerNum = self.playerNum,
             playerElement = self.element,
@@ -151,8 +158,8 @@ module.exports = function Character(io, config, game, id, playerNum) {
             newPanel = grid[newRow][newCol];
 
             if (
-                field.checkPanelInBounds(playerNum, newRow, newCol) &&
-                    field.checkCanStand(self, newPanel) &&
+                newPanel.isInBounds(self) &&
+                    self.canStandOn(newPanel) &&
                     !newPanel.getCharacter() &&
                     !self.hasStatus('paralyzed') &&
                     !self.hasStatus('frozen')

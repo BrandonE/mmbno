@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = function Panel(io, game, field, row, col) {
+var common = require(__dirname + '/common');
+
+module.exports = function Panel(io, config, game, field, row, col) {
     var self = this;
 
     this.row = row;
@@ -52,6 +54,10 @@ module.exports = function Panel(io, game, field, row, col) {
 
     this.setTime = function setTime(time) {
         self.time = time;
+    };
+
+    this.isInBounds = function isInBounds(player) {
+        return common.isPanelInBounds(config, field.getGrid(), player.getPlayerNum(), self.row, self.col);
     };
 
     this.shot = function shot(power, element) {

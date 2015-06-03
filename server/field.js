@@ -10,17 +10,6 @@ module.exports = function Field(io, config, game) {
         return self.grid;
     };
 
-    this.checkCanStand = function checkCanStand(player, newPanel) {
-        return (
-            ['blank', 'broken'].indexOf(newPanel.getType()) === -1 ||
-                player.hasStatus('airshoes')
-        );
-    };
-
-    this.checkPanelInBounds = function checkPanelInBounds(playerNum, newRow, newCol) {
-        return common.checkPanelInBounds(config, self.grid, playerNum, newRow, newCol);
-    };
-
     this.draw = function draw() {
         if (game.num === 1) {
             // Clear the console.
