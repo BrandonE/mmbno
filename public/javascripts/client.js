@@ -97,6 +97,7 @@ $(document).ready
                     for (c in player.chips) {
                         if (chip.name === player.chips[c].name) {
                             delete player.chips[c];
+                            break;
                         }
                     }
 
