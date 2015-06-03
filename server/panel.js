@@ -26,12 +26,14 @@ module.exports = function Panel(io, game, field, row, col) {
         self.character = character;
     };
 
-    this.getStolen = function getStolen() {
+    this.isStolen = function isStolen() {
         return self.stolen;
     };
 
-    this.setStolen = function setStolen(stolen) {
-        self.stolen = stolen;
+    this.flipStolen = function flipStolen() {
+        self.stolen = !self.stolen;
+        io.to(game.getId()).emit('panel flip stolen', self.row, self.col);
+        field.draw();
     };
 
     this.getType = function getType() {
@@ -40,7 +42,7 @@ module.exports = function Panel(io, game, field, row, col) {
 
     this.setType = function setType(type) {
         self.type = type;
-        io.to(game.getId()).emit('panel type changed', type);
+        io.to(game.getId()).emit('panel type changed', self.row, self.col, type);
         field.draw();
     };
 

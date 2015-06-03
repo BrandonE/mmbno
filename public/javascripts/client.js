@@ -109,8 +109,8 @@ $(document).ready
                 draw();
             });
 
-            socket.on('panel stolen changed', function(panelRow, panelCol, stolen) {
-                game.field[panelRow][panelCol].stolen = stolen;
+            socket.on('panel flip stolen', function(panelRow, panelCol) {
+                game.field[panelRow][panelCol].stolen = !game.field[panelRow][panelCol].stolen;
                 draw();
             });
 
