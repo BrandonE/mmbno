@@ -17,14 +17,14 @@ function AreaGrabConstructor(io, config, game, character) {
             stole = false;
 
         if (character.getPlayerNum() === 1) {
-            for (col = character.getCol(); col < config.cols; col++) {
+            for (col = 0; col < config.cols; col++) {
                 if (self.stealRows(col)) {
                     stole = true;
                     break;
                 }
             }
         } else {
-            for (col = character.getCol(); col >= 0; col--) {
+            for (col = config.cols - 1; col >= 0; col--) {
                 if (self.stealRows(col)) {
                     stole = true;
                     break;
