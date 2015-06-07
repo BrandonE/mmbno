@@ -22,7 +22,7 @@ module.exports = function Chip(io, config, game, character) {
 
     this.addPower = function addPower(powerPlus) {
         self.properties.power += powerPlus;
-    }
+    };
 
     this.chain = function chain() {
         // Handle a chip chain event.

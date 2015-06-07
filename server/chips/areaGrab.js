@@ -46,7 +46,7 @@ function AreaGrabConstructor(io, config, game, character) {
         if (panelsStolen) {
             game.getField().startStolenPanelTimeout();
         }
-    }
+    };
 
     this.stealCol = function stealCol(col) {
         var panelsGrabbed = false,
@@ -56,7 +56,7 @@ function AreaGrabConstructor(io, config, game, character) {
             stealPanelAttempt;
 
         for (row = 0; row < config.rows; row++) {
-            stealPanelAttempt = self.stealPanel(grid[row][col])
+            stealPanelAttempt = self.stealPanel(grid[row][col]);
 
             if (stealPanelAttempt.panelGrabbed) {
                 panelsGrabbed = true;
@@ -70,8 +70,8 @@ function AreaGrabConstructor(io, config, game, character) {
         return {
             panelsGrabbed  : panelsGrabbed,
             panelsReturned : panelsReturned
-        }
-    }
+        };
+    };
 }
 
 module.exports = function AreaGrab(io, config, game, character) {

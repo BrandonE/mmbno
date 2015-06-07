@@ -47,7 +47,7 @@ function AreaGrabConstructor(io, config, game, character) {
         if (stealPanelAttempt) {
             game.getField().startStolenPanelTimeout();
         }
-    }
+    };
 }
 
 module.exports = function AreaGrab(io, config, game, character) {

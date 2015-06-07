@@ -83,7 +83,7 @@ module.exports = function Field(io, config, game) {
         return {
             panelsStolen   : panelsStolen,
             panelsReturned : panelsReturned
-        }
+        };
     };
 
     this.startStolenPanelTimeout = function startStolenPanelTimeout() {
@@ -163,7 +163,7 @@ module.exports = function Field(io, config, game) {
         }
 
         return sendable;
-    }
+    };
 
     this.initialize();
 };

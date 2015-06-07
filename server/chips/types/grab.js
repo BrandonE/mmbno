@@ -33,8 +33,8 @@ function GrabConstructor(io, config, game, character) {
         return {
             panelGrabbed  : panelGrabbed,
             panelReturned : panelReturned
-        }
-    }
+        };
+    };
 }
 
 module.exports = function Grab(io, config, game, character) {

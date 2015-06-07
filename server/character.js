@@ -60,7 +60,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.addStatus = function addStatus(status) {
         self.statuses.push(status);
-    }
+    };
 
     this.removeStatus = function removeStatus(status) {
         var index = self.statuses.indexOf(status);
@@ -87,7 +87,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.busterShot = function busterShot() {
         self.shoot(self.busterPower);
-    }
+    };
 
     this.canStandOn = function canStandOn(panel) {
         return (
@@ -274,7 +274,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
         // Double the damage and revert if the character is frozen and the attack is break.
         if (self.hasStatus('frozen') && element === 'break') {
             damage *= 2;
-            self.removeStatus('frozen');;
+            self.removeStatus('frozen');
         }
 
         // Double the damage if the panel is grass and the attack has the fire element.
@@ -323,7 +323,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             chip.use();
             chip.used();
         }
-    }
+    };
 
     this.toSendable = function toSendable() {
         var chipsToSend = [],

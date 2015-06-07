@@ -39,7 +39,7 @@ function isPanelInBounds(config, grid, playerNum, row, col) {
     }
 
     return isInBounds;
-};
+}
 
 function gameToString(config, game, playerNumPerspective) {
     var response = EOL,
@@ -109,7 +109,7 @@ function gameToString(config, game, playerNumPerspective) {
     response += 'Observers: ' + game.observers;
 
     return response;
-};
+}
 
 exports.isPanelInBounds = isPanelInBounds;
 exports.gameToString = gameToString;
