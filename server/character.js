@@ -326,6 +326,20 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.toSendable = function toSendable() {
+        return {
+            id          : self.id,
+            playerNum   : self.playerNum,
+            maxHealth   : self.maxHealth,
+            health      : self.health,
+            element     : self.element,
+            statuses    : self.statuses,
+            busterPower : self.busterPower,
+            row         : self.row,
+            col         : self.col
+        };
+    };
+
+    this.chipsToSendable = function chipsToSendable() {
         var chipsToSend = [],
             chipToSend,
             c;
@@ -338,18 +352,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             }
         }
 
-        return {
-            id          : self.id,
-            playerNum   : self.playerNum,
-            maxHealth   : self.maxHealth,
-            health      : self.health,
-            element     : self.element,
-            statuses    : self.statuses,
-            busterPower : self.busterPower,
-            chips       : chipsToSend,
-            row         : self.row,
-            col         : self.col
-        };
+        return chipsToSend;
     };
 
     if (playerNum === 1) {

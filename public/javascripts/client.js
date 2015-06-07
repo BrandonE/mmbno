@@ -1,19 +1,18 @@
 var socket = io(),
     config,
-    game;
+    game,
+    chips;
 
 function draw() {
     $('#game').text(gameToString(config, game, game.clientPlayerNum));
 }
 
 function showChips() {
-    var chips,
-        chipNames,
+    var chipNames,
         chip,
         c;
 
-    if (game.clientPlayerNum) {
-        chips = game.players[game.clientPlayerNum - 1].chips;
+    if (chips) {
         chipNames = [];
 
         for (c in chips) {
@@ -64,7 +63,6 @@ $(document).ready
                     }
                 }
 
-                showChips();
                 draw();
             });
 
@@ -89,17 +87,19 @@ $(document).ready
                 $('#activeConnections').text(activeConnections);
             });
 
+            socket.on('chips', function(chipsSent) {
+                chips = chipsSent;
+                showChips();
+            });
+
             socket.on('chip used', function(playerNum, chip) {
-                var player,
-                    c;
+                var c;
 
-                if (playerNum) {
-                    player = game.players[playerNum - 1];
-
-                    for (c in player.chips) {
-                        if (player.chips.hasOwnProperty(c)) {
-                            if (chip.name === player.chips[c].name) {
-                                delete player.chips[c];
+                if (playerNum && game.clientPlayerNum === playerNum) {
+                    for (c in chips) {
+                        if (chips.hasOwnProperty(c)) {
+                            if (chip.name === chips[c].name) {
+                                delete chips[c];
                                 break;
                             }
                         }
