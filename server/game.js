@@ -12,7 +12,6 @@ module.exports = function Game(io, config, num) {
     this.players = [null, null];
     this.field = new Field(io, config, self);
     this.observers = 0;
-    this.yieldStolenPanels = false;
 
     this.getId = function getId() {
         return self.id;
@@ -43,14 +42,6 @@ module.exports = function Game(io, config, num) {
 
     this.isAvailable = function isAvailable() {
         return (!this.players[0] || !this.players[1]);
-    };
-
-    this.shouldYieldStolenPanels = function shouldYieldStolenPanels() {
-        return self.yieldStolenPanels;
-    };
-
-    this.setYieldStolenPanels = function setYieldStolenPanels(shouldYield) {
-        self.yieldStolenPanels = shouldYield;
     };
 
     this.connect = function connect(socket) {

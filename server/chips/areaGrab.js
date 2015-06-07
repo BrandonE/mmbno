@@ -33,7 +33,7 @@ function AreaGrabConstructor(io, config, game, character) {
         }
 
         if (stole) {
-            self.timeout();
+            game.getField().startStolenPanelTimeout();
         }
     }
 

@@ -174,10 +174,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 if (!self.hasStatus('floatshoes')) {
                     newPanelType = newPanel.getType();
 
-                    // Yield the current panel if it was previously stolen and the stealing timed out.
-                    if (currentPanel.isStolen() && game.shouldYieldStolenPanels()) {
-                        currentPanel.flipStolen();
-                    }
+                    field.updateStolenPanels();
 
                     // If the panel is cracked and the character moved, break it.
                     if (

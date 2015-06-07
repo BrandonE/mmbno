@@ -34,34 +34,8 @@ function AreaGrabConstructor(io, config, game, character) {
         }
 
         if (stole) {
-            self.timeout();
+            game.getField().startStolenPanelTimeout();
         }
-    }
-
-    this.stealRows = function stealRows(col) {
-        var grid = game.getField().getGrid(),
-            row,
-            panel,
-            panelCharacter,
-            stole = false;
-
-        for (row = 0; row < config.rows; row++) {
-            panel = grid[row][col];
-
-            if (!panel.isInBounds(character)) {
-                panelCharacter = panel.getCharacter();
-
-                if (panelCharacter) {
-                    panelCharacter.takeDamage(self.damage);
-                } else {
-                    panel.flipStolen();
-                }
-
-                stole = true;
-            }
-        }
-
-        return stole;
     }
 }
 
