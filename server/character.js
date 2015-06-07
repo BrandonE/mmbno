@@ -331,9 +331,11 @@ module.exports = function Character(io, config, game, id, playerNum) {
             c;
 
         for (c in self.chips) {
-            chipToSend = self.chips[c].toSendable();
+            if (self.chips.hasOwnProperty(c)) {
+                chipToSend = self.chips[c].toSendable();
 
-            chipsToSend.push(chipToSend);
+                chipsToSend.push(chipToSend);
+            }
         }
 
         return {

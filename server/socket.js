@@ -54,10 +54,12 @@ module.exports = function(config) {
             g;
 
         for (g in games) {
-            game = games[g];
+            if (games.hasOwnProperty(g)) {
+                game = games[g];
 
-            if (game.isAvailable()) {
-                return game;
+                if (game.isAvailable()) {
+                    return game;
+                }
             }
         }
 

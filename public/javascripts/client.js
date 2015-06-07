@@ -17,8 +17,10 @@ function showChips() {
         chipNames = [];
 
         for (c in chips) {
-            chip = chips[c];
-            chipNames.push(chip.name);
+            if (chips.hasOwnProperty(c)) {
+                chip = chips[c];
+                chipNames.push(chip.name);
+            }
         }
 
         $('#chips').text(chipNames.join(', '));
@@ -95,9 +97,11 @@ $(document).ready
                     player = game.players[playerNum - 1];
 
                     for (c in player.chips) {
-                        if (chip.name === player.chips[c].name) {
-                            delete player.chips[c];
-                            break;
+                        if (player.chips.hasOwnProperty(c)) {
+                            if (chip.name === player.chips[c].name) {
+                                delete player.chips[c];
+                                break;
+                            }
                         }
                     }
 

@@ -52,57 +52,63 @@ function gameToString(config, game, playerNumPerspective) {
         p;
 
     for (r in game.field) {
-        row = game.field[r];
+        if (game.field.hasOwnProperty(r)) {
+            row = game.field[r];
 
-        response += ' ----- ----- ----- ----- ----- -----' + EOL +
-            '|';
+            response += ' ----- ----- ----- ----- ----- -----' + EOL +
+                '|';
 
-        for (c in row) {
-            if (playerNumPerspective === 2) {
-                c = config.cols - c - 1;
-            }
+            for (c in row) {
+                if (row.hasOwnProperty(c)) {
+                    if (playerNumPerspective === 2) {
+                        c = config.cols - c - 1;
+                    }
 
-            panel = row[c];
-            panelType = panel.type;
+                    panel = row[c];
+                    panelType = panel.type;
 
-            if (playerNumPerspective === 2) {
-                if (panelType === 'left') {
-                    panelType = 'right';
-                } else if (panelType === 'right') {
-                    panelType = 'left';
+                    if (playerNumPerspective === 2) {
+                        if (panelType === 'left') {
+                            panelType = 'right';
+                        } else if (panelType === 'right') {
+                            panelType = 'left';
+                        }
+                    }
+
+                    response += ' ' + panelTypeLabels[panelType];
+
+                    if (panel.character && panel.character.health) {
+                        if (playerNumPerspective === panel.character.playerNum) {
+                            response += 'x';
+                        } else {
+                            response += 'o';
+                        }
+                    } else {
+                        response += ' ';
+                    }
+
+                    if (isPanelInBounds(config, game.field, playerNumPerspective, r, c)) {
+                        response += ' ';
+                    } else {
+                        response += 'R';
+                    }
+
+                    response += ' |';
                 }
             }
 
-            response += ' ' + panelTypeLabels[panelType];
-
-            if (panel.character && panel.character.health) {
-                if (playerNumPerspective === panel.character.playerNum) {
-                    response += 'x';
-                } else {
-                    response += 'o';
-                }
-            } else {
-                response += ' ';
-            }
-
-            if (isPanelInBounds(config, game.field, playerNumPerspective, r, c)) {
-                response += ' ';
-            } else {
-                response += 'R';
-            }
-
-            response += ' |';
+            response += EOL +
+                ' ----- ----- ----- ----- ----- -----' + EOL;
         }
-
-        response += EOL +
-            ' ----- ----- ----- ----- ----- -----' + EOL;
     }
 
     for (p in game.players) {
-        player = game.players[p];
+        if (game.players.hasOwnProperty(p)) {
+            player = game.players[p];
 
-        if (player && player.health) {
-            response += 'Player ' + player.playerNum + ': ' + player.health + 'HP' + EOL;
+            if (player && player.health) {
+                response += 'Player ' + player.playerNum + ': ' + player.health + 'HP' + EOL;
+            }
         }
     }
 
