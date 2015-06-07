@@ -56,6 +56,31 @@ module.exports = function Panel(io, config, game, field, row, col) {
         self.time = time;
     };
 
+    this.handleRoad = function handleRoad() {
+        var character = self.character,
+            type = self.type;
+
+        if (character && ['up', 'down', 'left', 'right'].indexOf(self.type) > -1) {
+            self.roadPanelTimeout = setTimeout(
+                function() {
+                    // Confirm that the character remained on this panel.
+                    if (self.character === character) {
+                        if (character.getPlayerNum() === 2) {
+                            if (type === 'left') {
+                                type = 'right';
+                            } else if (type === 'right') {
+                                type = 'left';
+                            }
+                        }
+
+                        self.character.move(type, 1, 1);
+                    }
+                },
+                500
+            );
+        }
+    };
+
     this.isInBounds = function isInBounds(player) {
         return common.isPanelInBounds(config, field.getGrid(), player.getPlayerNum(), self.row, self.col);
     };

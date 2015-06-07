@@ -198,25 +198,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                         self.move(direction, 1, 1);
                     }
 
-                    // Handle road panels.
-                    if (['up', 'down', 'left', 'right'].indexOf(newPanelType) > -1) {
-                        self.roadPanelTimeout = setTimeout(
-                            function() {
-                                if (newPanel.getCharacter() === self) {
-                                    if (self.getPlayerNum() === 2) {
-                                        if (newPanelType === 'left') {
-                                            newPanelType = 'right';
-                                        } else if (newPanelType === 'right') {
-                                            newPanelType = 'left';
-                                        }
-                                    }
-
-                                    self.move(newPanelType, 1, 1);
-                                }
-                            },
-                            500
-                        );
-                    }
+                    newPanel.handleRoad();
                 }
 
                 io.to(game.getId()).emit('player moved', self.playerNum, self.row, self.col);
