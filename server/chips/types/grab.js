@@ -9,10 +9,17 @@ function GrabConstructor(io, config, game, character) {
     this.damage = 10;
 
     this.stealPanel = function stealPanel(panel) {
-        var panelCharacter;
+        var panelGrabbed = false,
+            panelReturned = false,
+            panelCharacter;
 
         if (!panel.isInBounds(character)) {
             panelCharacter = panel.getCharacter();
+
+            // If this panel was already stolen, this is actually a return.
+            if (panel.isStolen()) {
+                panelReturned = true;
+            }
 
             if (panelCharacter) {
                 panelCharacter.takeDamage(self.damage);
@@ -20,9 +27,12 @@ function GrabConstructor(io, config, game, character) {
                 panel.flipStolen();
             }
 
-            return true;
-        } else {
-            return false;
+            panelGrabbed = true;
+        }
+
+        return {
+            panelGrabbed  : panelGrabbed,
+            panelReturned : panelReturned
         }
     }
 }

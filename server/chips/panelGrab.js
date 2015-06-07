@@ -12,28 +12,39 @@ function AreaGrabConstructor(io, config, game, character) {
     this.properties.short = 'PanlGrab';
 
     this.use = function use() {
-        var grid = game.getField().getGrid(),
+        var panelsStolen = false,
+            grid = game.getField().getGrid(),
             row = character.getRow(),
             col,
-            stole = false;
+            stealPanelAttempt;
 
         if (character.getPlayerNum() === 1) {
             for (col = character.getCol(); col < config.cols; col++) {
-                if (self.stealPanel(grid[row][col])) {
-                    stole = true;
+                stealPanelAttempt = self.stealPanel(grid[row][col]);
+
+                if (stealPanelAttempt.panelGrabbed) {
+                    if (!stealPanelAttempt.panelReturned) {
+                        panelsStolen = true;
+                    }
+
                     break;
                 }
             }
         } else {
             for (col = character.getCol(); col >= 0; col--) {
-                if (self.stealPanel(grid[row][col])) {
-                    stole = true;
+                stealPanelAttempt = self.stealPanel(grid[row][col]);
+
+                if (stealPanelAttempt.panelGrabbed) {
+                    if (!stealPanelAttempt.panelReturned) {
+                        panelsStolen = true;
+                    }
+
                     break;
                 }
             }
         }
 
-        if (stole) {
+        if (stealPanelAttempt) {
             game.getField().startStolenPanelTimeout();
         }
     }

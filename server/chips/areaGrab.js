@@ -13,45 +13,64 @@ function AreaGrabConstructor(io, config, game, character) {
     this.properties.stars = 2;
 
     this.use = function use() {
-        var col,
-            stole = false;
+        var panelsStolen = false,
+            col,
+            stealColAttempt;
 
         if (character.getPlayerNum() === 1) {
             for (col = 0; col < config.cols; col++) {
-                if (self.stealRows(col)) {
-                    stole = true;
+                stealColAttempt = self.stealCol(col);
+
+                if (stealColAttempt.panelsGrabbed) {
+                    if (!stealColAttempt.panelsReturned) {
+                        panelsStolen = true;
+                    }
+
                     break;
                 }
             }
         } else {
             for (col = config.cols - 1; col >= 0; col--) {
-                if (self.stealRows(col)) {
-                    stole = true;
+                stealColAttempt = self.stealCol(col);
+
+                if (stealColAttempt.panelsGrabbed) {
+                    if (!stealColAttempt.panelsReturned) {
+                        panelsStolen = true;
+                    }
+
                     break;
                 }
             }
         }
 
-        if (stole) {
+        if (panelsStolen) {
             game.getField().startStolenPanelTimeout();
         }
     }
 
-    this.stealRows = function stealRows(col) {
-        var grid = game.getField().getGrid(),
+    this.stealCol = function stealCol(col) {
+        var panelsGrabbed = false,
+            panelsReturned = false,
+            grid = game.getField().getGrid(),
             row,
-            panel,
-            stole = false;
+            stealPanelAttempt;
 
         for (row = 0; row < config.rows; row++) {
-            panel = grid[row][col];
+            stealPanelAttempt = self.stealPanel(grid[row][col])
 
-            if (self.stealPanel(panel)) {
-                stole = true;
+            if (stealPanelAttempt.panelGrabbed) {
+                panelsGrabbed = true;
+
+                if (stealPanelAttempt.panelReturned) {
+                    panelsReturned = true;
+                }
             }
         }
 
-        return stole;
+        return {
+            panelsGrabbed  : panelsGrabbed,
+            panelsReturned : panelsReturned
+        }
     }
 }
 
