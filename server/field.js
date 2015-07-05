@@ -23,36 +23,34 @@ module.exports = function Field(io, config, game) {
 
     this.handleAdjacentRoadPanels = function handleAdjacentRoadPanels(row, col) {
         var adjacentRow,
-            adjacentCol = col;
+            adjacentCol;
 
         // Check the panel above this one.
         adjacentRow = row - 1;
 
         if (adjacentRow > 0) {
-            self.grid[adjacentRow][adjacentCol].handleRoad();
+            self.grid[adjacentRow][col].handleRoad();
         }
 
         // Check the panel below this one.
         adjacentRow = row + 1;
 
         if (adjacentRow < config.rows) {
-            self.grid[adjacentRow][adjacentCol].handleRoad();
+            self.grid[adjacentRow][col].handleRoad();
         }
-
-        adjacentRow = row;
 
         // Check the panel to the left of this one.
         adjacentCol = col - 1;
 
         if (adjacentCol > 0) {
-            self.grid[adjacentRow][adjacentCol].handleRoad();
+            self.grid[row][adjacentCol].handleRoad();
         }
 
         // Check the panel to the right of this one.
         adjacentCol = col + 1;
 
         if (adjacentCol < config.cols) {
-            self.grid[adjacentRow][adjacentCol].handleRoad();
+            self.grid[row][adjacentCol].handleRoad();
         }
     };
 
