@@ -5,6 +5,7 @@ module.exports = function Chip(io, config, game, character) {
 
     this.properties = {
         codes          : [],
+        damage         : null,
         description    : '',
         name           : '',
         short          : '',

@@ -6,7 +6,7 @@ var Chip = require(__dirname + '/..'),
 function GrabConstructor(io, config, game, character) {
     var self = this;
 
-    this.damage = 10;
+    this.properties.damage = 10;
 
     this.stealPanel = function stealPanel(panel) {
         var panelGrabbed = false,
@@ -22,7 +22,7 @@ function GrabConstructor(io, config, game, character) {
             }
 
             if (panelCharacter) {
-                panelCharacter.takeDamage(self.damage);
+                panelCharacter.takeDamage(self.properties.damage);
             } else {
                 panel.flipStolen();
             }
