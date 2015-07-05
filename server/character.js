@@ -96,6 +96,17 @@ module.exports = function Character(io, config, game, id, playerNum) {
         );
     };
 
+    this.heal = function heal(health) {
+        self.health += health;
+
+        if (self.health > self.maxHealth) {
+            self.health = self.maxHealth;
+        }
+
+        io.to(game.getId()).emit('player health changed', self.playerNum, self.health);
+        game.getField().draw();
+    };
+
     this.move = function move(direction, rows, cols) {
         var playerNum = self.playerNum,
             playerElement = self.element,

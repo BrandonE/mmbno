@@ -7,6 +7,7 @@ module.exports = function Chip(io, config, game, character) {
         codes          : [],
         damage         : null,
         description    : '',
+        health         : null,
         name           : '',
         short          : '',
         power          : null,
