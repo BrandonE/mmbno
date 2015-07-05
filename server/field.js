@@ -28,7 +28,7 @@ module.exports = function Field(io, config, game) {
         // Check the panel above this one.
         adjacentRow = row - 1;
 
-        if (adjacentRow > 0) {
+        if (adjacentRow >= 0) {
             self.grid[adjacentRow][col].handleRoad();
         }
 
@@ -42,7 +42,7 @@ module.exports = function Field(io, config, game) {
         // Check the panel to the left of this one.
         adjacentCol = col - 1;
 
-        if (adjacentCol > 0) {
+        if (adjacentCol >= 0) {
             self.grid[row][adjacentCol].handleRoad();
         }
 
