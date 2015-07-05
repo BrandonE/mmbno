@@ -228,7 +228,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             element = 'none';
         }
 
-        if (self.hasStatus('paralyzed')) {
+        if (!self.hasStatus('paralyzed')) {
             row = self.row;
 
             if (self.playerNum === 1) {
