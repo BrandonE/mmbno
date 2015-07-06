@@ -18,6 +18,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
     this.playerNum = playerNum;
     this.maxHealth = 500;
     this.health = this.maxHealth;
+    this.damageHandler = null;
     this.element = 'none';
     this.statuses = [];
     this.busterPower = 1;
@@ -48,6 +49,10 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.getHealth = function getHealth() {
         return self.health;
+    };
+
+    this.setDamageHandler = function setDamageHandler(damageHandler) {
+        self.damageHandler = damageHandler;
     };
 
     this.getElement = function getElement() {
@@ -259,36 +264,40 @@ module.exports = function Character(io, config, game, id, playerNum) {
             element = 'none';
         }
 
-        // Double the damage if the attack is the character's weakness.
-        if (weaknesses.hasOwnProperty(self.element) && weaknesses[self.element] === element) {
-            damage *= 2;
-        }
+        if (self.damageHandler) {
+            self.damageHandler(damage, element, flinch);
+        } else {
+            // Double the damage if the attack is the character's weakness.
+            if (weaknesses.hasOwnProperty(self.element) && weaknesses[self.element] === element) {
+                damage *= 2;
+            }
 
-        // Double the damage and revert if the character is frozen and the attack is break.
-        if (self.hasStatus('frozen') && element === 'break') {
-            damage *= 2;
-            self.removeStatus('frozen');
-        }
+            // Double the damage and revert if the character is frozen and the attack is break.
+            if (self.hasStatus('frozen') && element === 'break') {
+                damage *= 2;
+                self.removeStatus('frozen');
+            }
 
-        // Double the damage if the panel is grass and the attack has the fire element.
-        panelType = field.getGrid()[self.row][self.col].getType();
+            // Double the damage if the panel is grass and the attack has the fire element.
+            panelType = field.getGrid()[self.row][self.col].getType();
 
-        if (panelType === 'grass' && element === 'fire') {
-            damage *= 2;
-        }
+            if (panelType === 'grass' && element === 'fire') {
+                damage *= 2;
+            }
 
-        // Half the damage if on a holy panel.
-        if (panelType === 'holy') {
-            damage = parseInt(Math.ceil(damage / 2));
-        }
+            // Halve the damage if on a holy panel.
+            if (panelType === 'holy') {
+                damage = parseInt(Math.ceil(damage / 2));
+            }
 
-        // If an active chip exists, override the original handling.
-        // TODO
+            // If an active chip exists, override the original handling.
+            // TODO
 
-        self.health -= damage;
+            self.health -= damage;
 
-        if (self.health < 0) {
-            self.health = 0;
+            if (self.health < 0) {
+                self.health = 0;
+            }
         }
 
         io.to(game.getId()).emit('player health changed', self.playerNum, self.health);
