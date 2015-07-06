@@ -85,7 +85,7 @@ module.exports = function Panel(io, config, game, field, row, col) {
         return common.isPanelInBounds(config, field.getGrid(), player.getPlayerNum(), self.row, self.col);
     };
 
-    this.shot = function shot(power, element, shotHook) {
+    this.shot = function shot(power, element, hitHook) {
         if (self.character) {
             self.character.takeDamage(power, element);
 
@@ -93,8 +93,8 @@ module.exports = function Panel(io, config, game, field, row, col) {
                 self.setType('normal');
             }
 
-            if (shotHook) {
-                shotHook(self);
+            if (hitHook) {
+                hitHook(self);
             }
 
             return true;

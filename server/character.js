@@ -235,8 +235,9 @@ module.exports = function Character(io, config, game, id, playerNum) {
         }
     };
 
-    this.shoot = function shoot(power, element, shotHook) {
-        var grid = game.getField().getGrid(),
+    this.shoot = function shoot(power, element, hitHook, missHook) {
+        var hit = false,
+            grid = game.getField().getGrid(),
             row,
             col,
             panel;
@@ -252,7 +253,8 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 for (col = self.col + 1; col < config.cols; col++) {
                     panel = grid[row][col];
 
-                    if (panel.shot(power, element, shotHook)) {
+                    if (panel.shot(power, element, hitHook)) {
+                        hit = true;
                         break;
                     }
                 }
@@ -260,11 +262,16 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 for (col = self.col - 1; col >= 0; col--) {
                     panel = grid[row][col];
 
-                    if (panel.shot(power, element, shotHook)) {
+                    if (panel.shot(power, element, hitHook)) {
+                        hit = true;
                         break;
                     }
                 }
             }
+        }
+
+        if (!hit && missHook) {
+            missHook();
         }
     };
 
