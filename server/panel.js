@@ -85,12 +85,16 @@ module.exports = function Panel(io, config, game, field, row, col) {
         return common.isPanelInBounds(config, field.getGrid(), player.getPlayerNum(), self.row, self.col);
     };
 
-    this.shot = function shot(power, element) {
+    this.shot = function shot(power, element, shotHook) {
         if (self.character) {
             self.character.takeDamage(power, element);
 
             if (self.getType() === 'grass' && element === 'fire') {
                 self.setType('normal');
+            }
+
+            if (shotHook) {
+                shotHook(self);
             }
 
             return true;

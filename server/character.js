@@ -218,7 +218,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
         }
     };
 
-    this.shoot = function shoot(power, element) {
+    this.shoot = function shoot(power, element, shotHook) {
         var grid = game.getField().getGrid(),
             row,
             col,
@@ -235,7 +235,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 for (col = self.col + 1; col < config.cols; col++) {
                     panel = grid[row][col];
 
-                    if (panel.shot(power, element)) {
+                    if (panel.shot(power, element, shotHook)) {
                         break;
                     }
                 }
@@ -243,7 +243,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 for (col = self.col - 1; col >= 0; col--) {
                     panel = grid[row][col];
 
-                    if (panel.shot(power, element)) {
+                    if (panel.shot(power, element, shotHook)) {
                         break;
                     }
                 }
