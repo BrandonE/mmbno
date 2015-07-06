@@ -45,6 +45,14 @@ module.exports = function(config) {
                         player.busterShot();
                     }
                 });
+
+                socket.on('use chip', function() {
+                    var player = game.getPlayerById(socket.id);
+
+                    if (player && player.getHealth()) {
+                        player.useChip();
+                    }
+                });
             });
         }
     };

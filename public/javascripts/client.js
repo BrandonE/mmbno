@@ -160,7 +160,13 @@ $(document).ready
                         socket.emit('move', 'down');
                         break;
 
+                    // A
                     case 65:
+                        socket.emit('use chip');
+                        break;
+
+                    // S
+                    case 83:
                         socket.emit('buster');
                         break;
 
