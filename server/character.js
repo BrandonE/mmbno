@@ -85,6 +85,10 @@ module.exports = function Character(io, config, game, id, playerNum) {
         return self.busterPower;
     };
 
+    this.boostBusterPower = function boostBusterPower(plus) {
+        self.busterPower += plus;
+    }
+
     this.enterField = function enterField(row, col) {
         self.setRow(row);
         self.setCol(col);
