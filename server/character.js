@@ -112,7 +112,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
         game.getField().draw();
     };
 
-    this.move = function move(direction, rows, cols) {
+    this.move = function move(direction, distance) {
         var playerNum = self.playerNum,
             playerElement = self.element,
             field = game.getField(),
@@ -125,16 +125,8 @@ module.exports = function Character(io, config, game, id, playerNum) {
             newPanel,
             newPanelType;
 
-        if (rows === undefined) {
-            rows = 1;
-        }
-
-        if (cols === undefined) {
-            cols = 1;
-        }
-
-        if (playerNum === 2) {
-            cols = -cols;
+        if (distance === undefined) {
+            distance = 1;
         }
 
         currentRow = self.row;
