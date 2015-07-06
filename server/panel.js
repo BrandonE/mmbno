@@ -10,7 +10,6 @@ module.exports = function Panel(io, config, game, field, row, col) {
     this.character = null;
     this.stolen = false;
     this.type = 'normal';
-    this.time = 0;
 
     this.getRow = function getRow() {
         return self.row;
@@ -48,23 +47,15 @@ module.exports = function Panel(io, config, game, field, row, col) {
         field.draw();
     };
 
-    this.getTime = function getTime() {
-        return self.time;
-    };
-
-    this.setTime = function setTime(time) {
-        self.time = time;
-    };
-
     this.handleRoad = function handleRoad() {
         var character = self.character,
             type = self.type;
 
-        if (character && ['up', 'down', 'left', 'right'].indexOf(self.type) > -1) {
+        if (character && ['up', 'down', 'left', 'right'].indexOf(type) > -1) {
             self.roadPanelTimeout = setTimeout(
                 function() {
-                    // Confirm that the character remained on this panel.
-                    if (self.character === character) {
+                    // Confirm that the character and panel type remained the same.
+                    if (self.character === character && self.type === type) {
                         if (character.getPlayerNum() === 2) {
                             if (type === 'left') {
                                 type = 'right';
