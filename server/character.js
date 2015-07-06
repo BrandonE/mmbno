@@ -142,19 +142,29 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
         switch (direction) {
             case 'up':
-                newRow -= rows;
+                newRow -= distance;
                 break;
 
             case 'down':
-                newRow += rows;
+                newRow += distance;
                 break;
 
             case 'left':
-                newCol -= cols;
+                if (playerNum === 1) {
+                    newCol -= distance;
+                } else {
+                    newCol += distance;
+                }
+
                 break;
 
             case 'right':
-                newCol += cols;
+                if (playerNum === 1) {
+                    newCol += distance;
+                } else {
+                    newCol -= distance;
+                }
+
                 break;
         }
 
