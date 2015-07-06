@@ -91,7 +91,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.busterShot = function busterShot() {
-        self.shoot(self.busterPower);
+        self.shoot(self.busterPower, self.element);
     };
 
     this.canStandOn = function canStandOn(panel) {
