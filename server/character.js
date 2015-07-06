@@ -223,7 +223,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
                     // Slide if the panel is frozen and the character does not have the aqua element.
                     if (newPanelType === 'frozen' && playerElement !== 'aqua') {
-                        self.move(direction, 1, 1);
+                        self.move(direction, 1);
                     }
 
                     newPanel.handleRoad();
@@ -301,9 +301,6 @@ module.exports = function Character(io, config, game, id, playerNum) {
             if (panelType === 'holy') {
                 damage = parseInt(Math.ceil(damage / 2));
             }
-
-            // If an active chip exists, override the original handling.
-            // TODO
 
             self.health -= damage;
 

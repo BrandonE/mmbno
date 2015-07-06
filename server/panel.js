@@ -73,7 +73,7 @@ module.exports = function Panel(io, config, game, field, row, col) {
                             }
                         }
 
-                        self.character.move(type, 1, 1);
+                        self.character.move(type, 1);
                     }
                 },
                 500
