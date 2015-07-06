@@ -53,6 +53,12 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.setDamageHandler = function setDamageHandler(damageHandler) {
         self.damageHandler = damageHandler;
+
+        io.to(game.getId()).emit(
+            'player damage handler changed', self.playerNum,
+            (damageHandler) ? damageHandler.name : null
+        );
+        game.getField().draw();
     };
 
     this.getElement = function getElement() {
@@ -267,7 +273,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
         }
 
         if (self.damageHandler) {
-            self.damageHandler(damage, element, flinch);
+            self.damageHandler.handler(damage, element, flinch);
         } else {
             // Double the damage if the attack is the character's weakness.
             if (weaknesses.hasOwnProperty(self.element) && weaknesses[self.element] === element) {
@@ -331,15 +337,16 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.toSendable = function toSendable() {
         return {
-            id          : self.id,
-            playerNum   : self.playerNum,
-            maxHealth   : self.maxHealth,
-            health      : self.health,
-            element     : self.element,
-            statuses    : self.statuses,
-            busterPower : self.busterPower,
-            row         : self.row,
-            col         : self.col
+            id            : self.id,
+            playerNum     : self.playerNum,
+            maxHealth     : self.maxHealth,
+            health        : self.health,
+            damageHandler : (self.damageHandler) ? self.damageHandler.name : null,
+            element       : self.element,
+            statuses      : self.statuses,
+            busterPower   : self.busterPower,
+            row           : self.row,
+            col           : self.col
         };
     };
 

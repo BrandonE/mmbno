@@ -119,6 +119,16 @@ $(document).ready
                 draw();
             });
 
+            socket.on('player damage handler changed', function(playerNum, damageHandler) {
+                var player;
+
+                if (playerNum) {
+                    player = game.players[playerNum - 1];
+                    player.damageHandler = damageHandler;
+                    draw();
+                }
+            });
+
             socket.on('player health changed', function(playerNum, health) {
                 var player;
 

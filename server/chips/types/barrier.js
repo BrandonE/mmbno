@@ -7,13 +7,16 @@ function BarrierConstructor(io, config, game, character) {
     var self = this;
 
     this.use = function use() {
-        character.setDamageHandler(function(damage, element, flinch) {
-            self.properties.health -= damage;
+        character.setDamageHandler({
+            name    : self.properties.name,
+            handler : function(damage, element, flinch) {
+                self.properties.health -= damage;
 
-            if (self.properties.health <= 0) {
-                character.setDamageHandler(null);
+                if (self.properties.health <= 0) {
+                    character.setDamageHandler(null);
+                }
             }
-        })
+        });
     };
 }
 

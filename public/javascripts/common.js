@@ -107,7 +107,13 @@ function gameToString(config, game, playerNumPerspective) {
             player = game.players[p];
 
             if (player && player.health) {
-                response += 'Player ' + player.playerNum + ': ' + player.health + 'HP' + EOL;
+                response += 'Player ' + player.playerNum + ': ' + player.health + 'HP';
+
+                if (player.damageHandler) {
+                    response += ', ' + player.damageHandler;
+                }
+
+                response += EOL;
             }
         }
     }
