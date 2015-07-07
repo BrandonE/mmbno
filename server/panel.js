@@ -84,7 +84,11 @@ module.exports = function Panel(io, config, game, field, row, col) {
         if (self.character) {
             self.character.takeDamage(power, element);
 
-            if (self.getType() === 'grass' && element === 'fire') {
+            if (self.type === 'grass' && element === 'fire') {
+                self.setType('normal');
+            }
+
+            if (['up', 'down', 'left', 'right'].indexOf(self.type) > -1 && element === 'wood') {
                 self.setType('normal');
             }
 
