@@ -2,6 +2,7 @@
 
 var exports = (typeof module !== 'undefined' && typeof module.exports !== 'undefined') ? module.exports : window,
     panelTypeLabels = {
+        blank   : '_',
         broken  : 'B',
         cracked : 'C',
         frozen  : 'F',

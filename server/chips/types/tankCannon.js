@@ -20,8 +20,7 @@ function TankCannonConstructor(io, config, game, character) {
                     rowOffset,
                     col,
                     panel,
-                    panelCharacter,
-                    panelType;
+                    panelCharacter;
 
                 // Hit the back column.
                 if (character.getPlayerNum() === 1) {
@@ -37,17 +36,12 @@ function TankCannonConstructor(io, config, game, character) {
                     if (row >= 0 && row < config.rows) {
                         panel = grid[row][col];
                         panelCharacter = panel.getCharacter();
-                        panelType = panel.getType();
 
                         if (panelCharacter) {
                             panelCharacter.takeDamage(self.properties.power, self.properties.element);
                         }
 
-                        if (panelType === 'cracked') {
-                            panel.setType('broken');
-                        } else if (panelType !== 'broken') {
-                            panel.setType('cracked');
-                        }
+                        panel.crackOrBreak();
                     }
                 }
             }

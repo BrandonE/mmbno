@@ -47,6 +47,14 @@ module.exports = function Panel(io, config, game, field, row, col) {
         field.draw();
     };
 
+    this.crackOrBreak = function crackOrBreak() {
+        if (self.type === 'cracked') {
+            self.setType('broken');
+        } else if (['blank', 'broken', 'metal'].indexOf(self.type) === -1) {
+            self.setType('cracked');
+        }
+    };
+
     this.handleRoad = function handleRoad() {
         var character = self.character,
             type = self.type;
