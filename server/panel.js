@@ -47,9 +47,20 @@ module.exports = function Panel(io, config, game, field, row, col) {
         field.draw();
     };
 
+    this.break = function breakPanel() {
+        self.setType('broken');
+
+        clearTimeout(self.brokenPanelTimeout);
+        self.brokenPanelTimeout = setTimeout(function() {
+            if (self.type === 'broken') {
+                self.setType('normal');
+            }
+        }, 10000);
+    };
+
     this.crackOrBreak = function crackOrBreak() {
         if (self.type === 'cracked') {
-            self.setType('broken');
+            self.break();
         } else if (['blank', 'broken', 'metal'].indexOf(self.type) === -1) {
             self.setType('cracked');
         }

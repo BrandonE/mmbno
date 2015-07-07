@@ -222,7 +222,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                         currentPanel.getType() === 'cracked' &&
                             (currentRow !== newRow || currentCol !== newCol)
                     ) {
-                        currentPanel.setType('broken');
+                        currentPanel.break();
                     }
 
                     /*
