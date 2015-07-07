@@ -80,11 +80,7 @@ module.exports = function Panel(io, config, game, field, row, col) {
         }
     };
 
-    this.isInBounds = function isInBounds(player) {
-        return common.isPanelInBounds(config, field.getGrid(), player.getPlayerNum(), self.row, self.col);
-    };
-
-    this.shot = function shot(power, element, hitHook) {
+    this.hit = function hit(power, element, hitHook) {
         if (self.character) {
             self.character.takeDamage(power, element);
 
@@ -100,6 +96,10 @@ module.exports = function Panel(io, config, game, field, row, col) {
         } else {
             return false;
         }
+    };
+
+    this.isInBounds = function isInBounds(player) {
+        return common.isPanelInBounds(config, field.getGrid(), player.getPlayerNum(), self.row, self.col);
     };
 
     this.toSendable = function toSendable() {

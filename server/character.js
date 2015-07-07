@@ -262,7 +262,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 for (col = self.col + 1; col < config.cols; col++) {
                     panel = grid[row][col];
 
-                    if (panel.shot(power, element, hitHook)) {
+                    if (panel.hit(power, element, hitHook)) {
                         hit = true;
                         break;
                     }
@@ -271,7 +271,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 for (col = self.col - 1; col >= 0; col--) {
                     panel = grid[row][col];
 
-                    if (panel.shot(power, element, hitHook)) {
+                    if (panel.hit(power, element, hitHook)) {
                         hit = true;
                         break;
                     }
@@ -310,6 +310,10 @@ module.exports = function Character(io, config, game, id, playerNum) {
             panelType = field.getGrid()[self.row][self.col].getType();
 
             if (panelType === 'grass' && element === 'fire') {
+                damage *= 2;
+            }
+
+            if (panelType === 'metal' && element === 'electric') {
                 damage *= 2;
             }
 
