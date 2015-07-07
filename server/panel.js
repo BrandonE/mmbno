@@ -86,7 +86,7 @@ module.exports = function Panel(io, config, game, field, row, col) {
 
             if (
                 (self.type === 'grass' && element === 'fire') ||
-                    (self.type === 'lava' && element === 'aqua') ||
+                    ((self.type === 'lava' || self.type === 'volcano') && element === 'aqua') ||
                     (['up', 'down', 'left', 'right'].indexOf(self.type) > -1 && element === 'wood')
             ) {
                 self.setType('normal');

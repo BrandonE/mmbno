@@ -13,9 +13,10 @@ var exports = (typeof module !== 'undefined' && typeof module.exports !== 'undef
         metal   : 'M',
         poison  : 'P',
         sand    : 'S',
+        volcano : 'V',
         water   : 'W',
         up      : '^',
-        down    : 'V',
+        down    : 'v',
         left    : '<',
         right   : '>'
     },
