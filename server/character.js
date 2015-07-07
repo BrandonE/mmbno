@@ -189,8 +189,10 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 newPanel.isInBounds(self) &&
                     self.canStandOn(newPanel) &&
                     !newPanel.getCharacter() &&
-                    !self.hasStatus('paralyzed') &&
-                    !self.hasStatus('frozen')
+                    !self.hasStatus('attacking') &&
+                    !self.hasStatus('flinching') &&
+                    !self.hasStatus('frozen') &&
+                    !self.hasStatus('paralyzed')
             ) {
                 currentPanel.setCharacter(null);
                 newPanel.setCharacter(self);
@@ -246,7 +248,10 @@ module.exports = function Character(io, config, game, id, playerNum) {
             element = 'none';
         }
 
-        if (!self.hasStatus('paralyzed')) {
+        if (
+            !self.hasStatus('attacking') && !self.hasStatus('flinching') && !self.hasStatus('frozen') &&
+                !self.hasStatus('paralyzed')
+        ) {
             row = self.row;
 
             if (self.playerNum === 1) {
@@ -325,7 +330,11 @@ module.exports = function Character(io, config, game, id, playerNum) {
             nextChip,
             chained = true;
 
-        if (chip) {
+        if (
+            chip &&
+                !self.hasStatus('attacking') && !self.hasStatus('flinching') && !self.hasStatus('frozen') &&
+                !self.hasStatus('paralyzed')
+        ) {
             // Handle a chip chain event.
             while (self.chips.length && chained) {
                 nextChip = self.chips[0];
