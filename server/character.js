@@ -268,10 +268,10 @@ module.exports = function Character(io, config, game, id, playerNum) {
                     }
                 }
             }
-        }
 
-        if (!hit && missHook) {
-            missHook();
+            if (!hit && missHook) {
+                missHook();
+            }
         }
     };
 
