@@ -152,6 +152,38 @@ $(document).ready
                 }
             });
 
+            socket.on('player status added', function(playerNum, status) {
+                var player,
+                    index;
+
+                if (playerNum) {
+                    player = game.players[playerNum - 1];
+                    index = player.statuses.indexOf(status);
+
+                    if (index === -1) {
+                        player.statuses.push(status);
+                    }
+
+                    draw();
+                }
+            });
+
+            socket.on('player status removed', function(playerNum, status) {
+                var player,
+                    index;
+
+                if (playerNum) {
+                    player = game.players[playerNum - 1];
+                    index = player.statuses.indexOf(status);
+
+                    if (index > -1) {
+                        player.statuses.splice(index, 1);
+                    }
+
+                    draw();
+                }
+            });
+
             $(document).keydown(function(e) {
                 switch(e.which) {
                     case 37:

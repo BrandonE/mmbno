@@ -76,6 +76,9 @@ module.exports = function Character(io, config, game, id, playerNum) {
         if (index === -1) {
             self.statuses.push(status);
         }
+
+        io.to(game.getId()).emit('player status added', self.playerNum, status);
+        game.getField().draw();
     };
 
     this.removeStatus = function removeStatus(status) {
@@ -84,6 +87,9 @@ module.exports = function Character(io, config, game, id, playerNum) {
         if (index > -1) {
             self.statuses.splice(index, 1);
         }
+
+        io.to(game.getId()).emit('player status removed', self.playerNum, status);
+        game.getField().draw();
     };
 
     this.getBusterPower = function getBusterPower() {

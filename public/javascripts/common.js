@@ -111,6 +111,10 @@ function gameToString(config, game, playerNumPerspective) {
             if (player && player.health) {
                 response += 'Player ' + player.playerNum + ': ' + player.health + 'HP';
 
+                if (player.statuses.length) {
+                    response += ', ' + player.statuses.join(', ');
+                }
+
                 if (player.damageHandler) {
                     response += ', ' + player.damageHandler;
                 }
