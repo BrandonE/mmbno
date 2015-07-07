@@ -82,7 +82,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
         var index = self.statuses.indexOf(status);
 
         if (index > -1) {
-            delete self.statuses[index];
+            self.statuses.splice(index, 1);
         }
     };
 

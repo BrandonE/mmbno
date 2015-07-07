@@ -99,7 +99,7 @@ $(document).ready
                     for (c in chips) {
                         if (chips.hasOwnProperty(c)) {
                             if (chip.name === chips[c].name) {
-                                delete chips[c];
+                                chips.splice(c, 1);
                                 break;
                             }
                         }
