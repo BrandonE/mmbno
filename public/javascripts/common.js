@@ -49,6 +49,7 @@ function gameToString(config, game, playerNumPerspective) {
         panel,
         panelType,
         player,
+        activeDamageHandlers = [],
         damageHandler,
         r,
         c,
@@ -111,21 +112,18 @@ function gameToString(config, game, playerNumPerspective) {
             player = game.players[p];
 
             if (player && player.health) {
-                response += 'Player ' + player.playerNum + ': ' + player.health + 'HP';
-
-                if (player.statuses.length) {
-                    response += ', ' + player.statuses.join(', ');
-                }
-
                 for (d in player.damageHandlers) {
                     damageHandler = player.damageHandlers[d];
 
                     if (damageHandler) {
-                        response += ', ' + damageHandler;
+                        activeDamageHandlers.push(damageHandler);
                     }
                 }
 
-                response += EOL;
+                response += 'Player ' + player.playerNum + ':' + EOL +
+                    '    ' + player.health + 'HP' + EOL +
+                    '    Statuses: ' + player.statuses.join(', ') + EOL +
+                    '    Damage Handlers: ' + activeDamageHandlers.join(', ') + EOL;
             }
         }
     }
