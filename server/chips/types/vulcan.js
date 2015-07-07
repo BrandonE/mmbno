@@ -37,7 +37,7 @@ function VulcanConstructor(io, config, game, character) {
             setTimeout(function() {
                 character.removeStatus('attacking');
                 self.shoot();
-            }, 250);
+            }, 150);
         } else {
             character.removeStatus('attacking');
         }
