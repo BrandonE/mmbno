@@ -49,9 +49,11 @@ function gameToString(config, game, playerNumPerspective) {
         panel,
         panelType,
         player,
+        damageHandler,
         r,
         c,
-        p;
+        p,
+        d;
 
     for (r in game.field) {
         if (game.field.hasOwnProperty(r)) {
@@ -115,8 +117,12 @@ function gameToString(config, game, playerNumPerspective) {
                     response += ', ' + player.statuses.join(', ');
                 }
 
-                if (player.damageHandler) {
-                    response += ', ' + player.damageHandler;
+                for (d in player.damageHandlers) {
+                    damageHandler = player.damageHandlers[d];
+
+                    if (damageHandler) {
+                        response += ', ' + damageHandler;
+                    }
                 }
 
                 response += EOL;

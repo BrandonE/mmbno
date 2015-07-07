@@ -52,12 +52,32 @@ module.exports = function Character(io, config, game, id, playerNum) {
         return self.health;
     };
 
-    this.setDamageHandler = function setDamageHandler(damageHandler) {
-        self.damageHandler = damageHandler;
+    this.getDamageHandler = function getDamageHandler(priority) {
+        return self.damageHandlers[priority];
+    };
+
+    this.getDamageHandlerWithTopPriority = function getDamageHandlerWithTopPriority() {
+        var damageHandler,
+            d;
+
+        for (d in self.damageHandlers) {
+            damageHandler = self.damageHandlers[d];
+
+            if (damageHandler) {
+                return damageHandler;
+            }
+        }
+
+        return null;
+    };
+
+    this.setDamageHandler = function setDamageHandler(damageHandler, priority) {
+        self.damageHandlers[priority] = damageHandler;
 
         io.to(game.getId()).emit(
             'player damage handler changed', self.playerNum,
-            (damageHandler) ? damageHandler.name : null
+            (damageHandler) ? damageHandler.name : null,
+            priority
         );
         game.getField().draw();
     };
@@ -293,14 +313,15 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.takeDamage = function takeDamage(damage, element, flinch) {
         var field = game.getField(),
+            damageHandler = self.getDamageHandlerWithTopPriority(),
             panelType;
 
         if (element === undefined) {
             element = 'none';
         }
 
-        if (self.damageHandler) {
-            self.damageHandler.handler(damage, element, flinch);
+        if (damageHandler) {
+            damageHandler.handler(damage, element, flinch);
         } else {
             // Double the damage if the attack is the character's weakness.
             if (weaknesses.hasOwnProperty(self.element) && weaknesses[self.element] === element) {
@@ -368,17 +389,31 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.toSendable = function toSendable() {
+        var damageHandlersToSendable = [],
+            damageHandler,
+            d;
+
+        for (d in self.damageHandlers) {
+            damageHandler = self.damageHandlers[d];
+
+            if (damageHandler) {
+                damageHandlersToSendable.push(damageHandler.name);
+            } else {
+                damageHandlersToSendable.push(undefined);
+            }
+        }
+
         return {
-            id            : self.id,
-            playerNum     : self.playerNum,
-            maxHealth     : self.maxHealth,
-            health        : self.health,
-            damageHandler : (self.damageHandler) ? self.damageHandler.name : null,
-            element       : self.element,
-            statuses      : self.statuses,
-            busterPower   : self.busterPower,
-            row           : self.row,
-            col           : self.col
+            id             : self.id,
+            playerNum      : self.playerNum,
+            maxHealth      : self.maxHealth,
+            health         : self.health,
+            damageHandlers : damageHandlersToSendable,
+            element        : self.element,
+            statuses       : self.statuses,
+            busterPower    : self.busterPower,
+            row            : self.row,
+            col            : self.col
         };
     };
 

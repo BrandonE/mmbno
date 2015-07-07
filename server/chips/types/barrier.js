@@ -13,10 +13,10 @@ function BarrierConstructor(io, config, game, character) {
                 self.properties.health -= damage;
 
                 if (self.properties.health <= 0) {
-                    character.setDamageHandler(null);
+                    character.setDamageHandler(null, 3);
                 }
             }
-        });
+        }, 3);
     };
 }
 

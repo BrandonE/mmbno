@@ -119,12 +119,12 @@ $(document).ready
                 draw();
             });
 
-            socket.on('player damage handler changed', function(playerNum, damageHandler) {
+            socket.on('player damage handler changed', function(playerNum, damageHandler, priority) {
                 var player;
 
                 if (playerNum) {
                     player = game.players[playerNum - 1];
-                    player.damageHandler = damageHandler;
+                    player.damageHandlers[priority] = damageHandler;
                     draw();
                 }
             });
