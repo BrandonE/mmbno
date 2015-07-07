@@ -309,7 +309,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             // Double the damage if the panel is grass and the attack has the fire element.
             panelType = field.getGrid()[self.row][self.col].getType();
 
-            if (panelType === 'grass' && element === 'fire') {
+            if (panelType === 'grass' && (element === 'fire' || element === 'tornado')) {
                 damage *= 2;
             }
 
