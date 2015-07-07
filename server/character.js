@@ -70,7 +70,11 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.addStatus = function addStatus(status) {
-        self.statuses.push(status);
+        var index = self.statuses.indexOf(status);
+
+        if (index === -1) {
+            self.statuses.push(status);
+        }
     };
 
     this.removeStatus = function removeStatus(status) {
