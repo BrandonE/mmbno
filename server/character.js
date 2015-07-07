@@ -319,7 +319,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
             // Halve the damage if on a holy panel.
             if (panelType === 'holy') {
-                damage = parseInt(Math.ceil(damage / 2));
+                damage = parseInt(Math.floor(damage / 2));
             }
 
             self.health -= damage;
