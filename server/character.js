@@ -1,6 +1,12 @@
 'use strict';
 
-var weaknesses = {
+var Cannon = require(__dirname + '/chips/cannon'),
+    Barrier = require(__dirname + '/chips/barrier'),
+    BusterUp = require(__dirname + '/chips/busterUp'),
+    AirShot = require(__dirname + '/chips/airshot'),
+    Vulcan1 = require(__dirname + '/chips/vulcan1'),
+    TankCannon1 = require(__dirname + '/chips/tankCannon1'),
+    weaknesses = {
     aqua     : 'electric',
     break    : 'cursor',
     cursor   : 'wind',
@@ -22,6 +28,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
     this.element = 'none';
     this.statuses = [];
     this.busterPower = 1;
+    this.chips = [new Barrier(io, config, game, self), new TankCannon1(io, config, game, self), new TankCannon1(io, config, game, self), new TankCannon1(io, config, game, self)];
 
     this.getId = function getId() {
         return self.id;
@@ -311,7 +318,8 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
             if (
                 ((panelType === 'frozen' || panelType === 'metal') && element === 'electric') ||
-                    (panelType === 'grass' && (element === 'fire' || element === 'tornado'))
+                    (panelType === 'grass' && (element === 'fire' || element === 'wind')) ||
+                    (panelType === 'sand' && element === 'wind')
             ) {
                 damage *= 2;
             }
