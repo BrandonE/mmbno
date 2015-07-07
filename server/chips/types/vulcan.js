@@ -19,7 +19,7 @@ function VulcanConstructor(io, config, game, character) {
                 newCol--;
             }
 
-            if (newCol >= 0 || newCol < config.cols) {
+            if (newCol >= 0 && newCol < config.cols) {
                 newPanel = grid[panel.getRow()][newCol];
                 newPanelCharacter = newPanel.getCharacter();
 
