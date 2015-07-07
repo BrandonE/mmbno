@@ -72,8 +72,6 @@ module.exports = function Field(io, config, game) {
 
             self.grid.push(cols);
         }
-
-    }
     };
 
     this.placeCharacter = function place(character, row, col) {
