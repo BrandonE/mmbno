@@ -15,7 +15,7 @@ function AirShotConstructor(io, config, game, character) {
     this.properties.stars = 2;
 
     this.use = function use() {
-        character.shoot(self.properties.power, self.properties.element, function onHit(panel) {
+        character.shoot(self.properties.power, self.properties.element, null, function onHit(panel) {
             // Knocking "back" relative to the character's perspective means moving left.
             panel.getCharacter().move('left', 1);
         });

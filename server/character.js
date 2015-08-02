@@ -268,12 +268,16 @@ module.exports = function Character(io, config, game, id, playerNum) {
         }
     };
 
-    this.shoot = function shoot(power, element, hitHook, missHook) {
+    this.shoot = function shoot(power, element, recoveryTime, hitHook, missHook) {
         var hit = false,
             grid = game.getField().getGrid(),
             row,
             col,
             panel;
+
+        if (recoveryTime === undefined) {
+            recoveryTime = 250;
+        }
 
         if (element === undefined) {
             element = 'none';
@@ -307,6 +311,14 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
             if (!hit && missHook) {
                 missHook();
+            }
+
+            if (recoveryTime) {
+                self.addStatus('attacking');
+
+                setTimeout(function() {
+                    self.removeStatus('attacking');
+                }, recoveryTime);
             }
         }
     };
