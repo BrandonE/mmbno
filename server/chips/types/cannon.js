@@ -7,7 +7,7 @@ function CannonConstructor(io, config, game, character) {
     var self = this;
 
     this.use = function use() {
-        character.shoot(self.properties.power, self.properties.element);
+        character.shoot(self.properties.power, self.properties.element, true);
     };
 }
 

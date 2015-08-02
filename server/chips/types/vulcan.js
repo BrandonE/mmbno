@@ -7,7 +7,7 @@ function VulcanConstructor(io, config, game, character) {
     var self = this;
 
     this.shoot = function shoot() {
-        character.shoot(self.properties.power, self.properties.element, 0, function onHit(panel) {
+        character.shoot(self.properties.power, self.properties.element, true, 0, function onHit(panel) {
             var grid = game.getField().getGrid(),
                 newCol = panel.getCol(),
                 newPanel,

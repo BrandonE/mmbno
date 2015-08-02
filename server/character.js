@@ -18,7 +18,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
     this.playerNum = playerNum;
     this.maxHealth = 500;
     this.health = this.maxHealth;
-    this.damageHandler = null;
+    this.damageHandlers = [];
     this.element = 'none';
     this.statuses = [];
     this.busterPower = 1;
@@ -268,7 +268,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
         }
     };
 
-    this.shoot = function shoot(power, element, recoveryTime, hitHook, missHook) {
+    this.shoot = function shoot(power, element, flinch, recoveryTime, hitHook, missHook) {
         var hit = false,
             grid = game.getField().getGrid(),
             row,
@@ -293,7 +293,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 for (col = self.col + 1; col < config.cols; col++) {
                     panel = grid[row][col];
 
-                    if (panel.hit(power, element, hitHook)) {
+                    if (panel.hit(power, element, flinch, hitHook)) {
                         hit = true;
                         break;
                     }
@@ -302,7 +302,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 for (col = self.col - 1; col >= 0; col--) {
                     panel = grid[row][col];
 
-                    if (panel.hit(power, element, hitHook)) {
+                    if (panel.hit(power, element, flinch, hitHook)) {
                         hit = true;
                         break;
                     }
@@ -332,45 +332,60 @@ module.exports = function Character(io, config, game, id, playerNum) {
             element = 'none';
         }
 
-        if (damageHandler) {
-            damageHandler.handler(damage, element, flinch);
-        } else {
-            // Double the damage if the attack is the character's weakness.
-            if (weaknesses.hasOwnProperty(self.element) && weaknesses[self.element] === element) {
-                damage *= 2;
+        if (!self.hasStatus('invincible')) {
+            if (damageHandler) {
+                damageHandler.handler(damage, element, flinch);
+            } else {
+                // Double the damage if the attack is the character's weakness.
+                if (weaknesses.hasOwnProperty(self.element) && weaknesses[self.element] === element) {
+                    damage *= 2;
+                }
+
+                // Double the damage and revert if the character is frozen and the attack is break.
+                if (self.hasStatus('frozen') && element === 'break') {
+                    damage *= 2;
+                    self.removeStatus('frozen');
+                }
+
+                // Double the damage if the panel is grass and the attack has the fire element.
+                panelType = field.getGrid()[self.row][self.col].getType();
+
+                if (
+                    ((panelType === 'frozen' || panelType === 'metal') && element === 'electric') ||
+                        (panelType === 'grass' && (element === 'fire' || element === 'wind')) ||
+                        (panelType === 'sand' && element === 'wind')
+                ) {
+                    damage *= 2;
+                }
+
+                // Halve the damage if on a holy panel.
+                if (panelType === 'holy') {
+                    damage = parseInt(Math.floor(damage / 2));
+                }
+
+                self.health -= damage;
+
+                if (self.health < 0) {
+                    self.health = 0;
+                }
+
+                if (flinch) {
+                    self.addStatus('flinching');
+                    self.addStatus('invincible');
+
+                    setTimeout(function() {
+                        self.removeStatus('flinching');
+                    }, 250);
+
+                    setTimeout(function() {
+                        self.removeStatus('invincible');
+                    }, 1000);
+                }
             }
 
-            // Double the damage and revert if the character is frozen and the attack is break.
-            if (self.hasStatus('frozen') && element === 'break') {
-                damage *= 2;
-                self.removeStatus('frozen');
-            }
-
-            // Double the damage if the panel is grass and the attack has the fire element.
-            panelType = field.getGrid()[self.row][self.col].getType();
-
-            if (
-                ((panelType === 'frozen' || panelType === 'metal') && element === 'electric') ||
-                    (panelType === 'grass' && (element === 'fire' || element === 'wind')) ||
-                    (panelType === 'sand' && element === 'wind')
-            ) {
-                damage *= 2;
-            }
-
-            // Halve the damage if on a holy panel.
-            if (panelType === 'holy') {
-                damage = parseInt(Math.floor(damage / 2));
-            }
-
-            self.health -= damage;
-
-            if (self.health < 0) {
-                self.health = 0;
-            }
+            io.to(game.getId()).emit('player health changed', self.playerNum, self.health);
+            field.draw();
         }
-
-        io.to(game.getId()).emit('player health changed', self.playerNum, self.health);
-        field.draw();
     };
 
     this.useChip = function useChip() {

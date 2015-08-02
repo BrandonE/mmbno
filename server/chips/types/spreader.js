@@ -7,7 +7,7 @@ function SpreaderConstructor(io, config, game, character) {
     var self = this;
 
     this.use = function use() {
-        character.shoot(self.properties.power, self.properties.element, null, function onHit(panel) {
+        character.shoot(self.properties.power, self.properties.element, true, null, function onHit(panel) {
             var grid = game.getField().getGrid(),
                 row,
                 rowOffset,

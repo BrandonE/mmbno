@@ -8,7 +8,7 @@ function TankCannonConstructor(io, config, game, character) {
 
     this.use = function use() {
         character.shoot(
-            self.properties.power, self.properties.element, null,
+            self.properties.power, self.properties.element, true, null,
             function onHit(panel) {
                 // Knocking "back" relative to the character's perspective means moving left.
                 panel.getCharacter().move('left', 1);

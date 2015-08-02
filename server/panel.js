@@ -91,9 +91,9 @@ module.exports = function Panel(io, config, game, field, row, col) {
         }
     };
 
-    this.hit = function hit(power, element, hitHook) {
+    this.hit = function hit(power, element, flinch, hitHook) {
         if (self.character) {
-            self.character.takeDamage(power, element);
+            self.character.takeDamage(power, element, flinch);
 
             if (
                 (self.type === 'grass' && element === 'fire') ||
