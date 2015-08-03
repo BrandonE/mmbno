@@ -69,8 +69,12 @@ function getRequestAnimationFrame() {
         };
 }
 
-function setPlayerSprite(playerNum) {
-    game.players[playerNum - 1].sprite = new Sprite('/images/spritesheets/megaman.png', -2, 0, 50, 64);
+function setPlayerSprite(player) {
+    if (game.clientPlayerNum === player.playerNum) {
+        player.sprite = new Sprite('/images/spritesheets/megaman.png', -2, 0, 50, 64);
+    } else {
+        player.sprite = new Sprite('/images/spritesheets/megaman_flipped.png', 802, 0, 50, 64);
+    }
 }
 
 function showChips() {
@@ -109,7 +113,8 @@ $(document).ready
             Image.load([
                 '/images/backgrounds/acdc.png',
                 '/images/spritesheets/panels_mmbn6.gif',
-                '/images/spritesheets/megaman.png'
+                '/images/spritesheets/megaman.png',
+                '/images/spritesheets/megaman_flipped.png',
             ]);
 
             Image.onReady(function() {
@@ -137,7 +142,7 @@ $(document).ready
                     game.players[playerIndex] = player;
                     game.field[player.row][player.col].character = player;
 
-                    setPlayerSprite(playerNum);
+                    setPlayerSprite(player);
                 } else {
                     game.observers++;
                 }
@@ -161,7 +166,7 @@ $(document).ready
                         player = game.players[p];
 
                         if (player) {
-                            setPlayerSprite(parseInt(p) + 1);
+                            setPlayerSprite(player);
                         }
                     }
                 }
@@ -270,9 +275,15 @@ $(document).ready
                 game.field[row][col].character = player;
 
                 if (ready) {
-                    player.sprite = new Sprite(
-                        '/images/spritesheets/megaman.png', -2, 0, 50, 64, 16, [3, 2, 1, 0], null, true
-                    );
+                    if (game.clientPlayerNum === playerNum) {
+                        player.sprite = new Sprite(
+                            '/images/spritesheets/megaman.png', -2, 0, 50, 64, 16, [3, 2, 1, 0], 'right', true
+                        );
+                    } else {
+                        player.sprite = new Sprite(
+                            '/images/spritesheets/megaman_flipped.png', 802, 0, 50, 64, 16, [3, 2, 1, 0], 'left', true
+                        );
+                    }
 
                     draw();
                 }

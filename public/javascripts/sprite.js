@@ -7,7 +7,7 @@ function Sprite(url, x, y, width, height, speed, frames, dir, once) {
     this.speed = speed;
     this.frames = frames;
     this.once = once;
-    this.dir = dir || 'horizontal';
+    this.dir = dir || 'right';
     this._index = 0;
 
     this.render = function render(ctx) {
@@ -34,10 +34,14 @@ function Sprite(url, x, y, width, height, speed, frames, dir, once) {
         x = this.x;
         y = this.y;
 
-        if (this.dir == 'horizontal') {
+        if (this.dir == 'right') {
             x += frame * this.width;
-        } else {
+        } else if (this.dir == 'left') {
+            x -= frame * this.width;
+        } else if (this.dir === 'down') {
             y += frame * this.height;
+        } else if (this.dir === 'up') {
+            y -= frame * this.height;
         }
 
         ctx.drawImage(
