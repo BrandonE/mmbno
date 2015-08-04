@@ -95,7 +95,7 @@ function gameToString(config, game, playerNumPerspective) {
                     if (isPanelInBounds(config, game.field, playerNumPerspective, r, c)) {
                         response += ' ';
                     } else {
-                        response += 'R';
+                        response += 'B';
                     }
 
                     response += ' |';

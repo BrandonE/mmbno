@@ -42,10 +42,6 @@ function draw() {
                 ctx.save();
                 ctx.translate(player.x, player.y);
 
-                if (game.clientPlayerNum !== player.playerNum) {
-                    // TODO: Use pre-rendered flipped sprite.
-                }
-
                 player.sprite.render(ctx);
                 ctx.restore();
             }
@@ -303,6 +299,18 @@ $(document).ready
                 }
 
                 if (ready) {
+                    if (status === 'attacking') {
+                        if (game.clientPlayerNum === playerNum) {
+                            player.sprite = new Sprite(
+                                '/images/spritesheets/megaman.png', 194, 0, 55, 64
+                            );
+                        } else {
+                            player.sprite = new Sprite(
+                                '/images/spritesheets/megaman_flipped.png', 606, 0, 55, 64
+                            );
+                        }
+                    }
+
                     draw();
                 }
             }
@@ -321,6 +329,10 @@ $(document).ready
                 }
 
                 if (ready) {
+                    if (status === 'attacking') {
+                        setPlayerSprite(player);
+                    }
+
                     draw();
                 }
             }
