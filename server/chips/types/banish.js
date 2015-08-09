@@ -25,14 +25,14 @@ function BanishConstructor(io, config, game, character, code) {
                 panelInBounds = panel.isInBounds(character);
 
                 if (panel.isStolen()) {
-                    stolenPanels++;
-
                     /*
-                     If this is the first stolen panel detected, check if it is in the bounds of the player using this
-                     chip. If so, the player using this chip is on the thieving side. This chip has no effect.
+                     Check if it is in the bounds of the player using this chip. If so, the player using this chip is on
+                     the thieving side. This chip has no effect.
                      */
-                    if (stolenPanels === 1 && panelInBounds) {
+                    if (panelInBounds) {
                         return;
+                    } else {
+                        stolenPanels++;
                     }
                 }
 
@@ -42,7 +42,6 @@ function BanishConstructor(io, config, game, character, code) {
             }
         }
 
-        console.log(self.properties.damage);
         // Deal the chip's damage to each thief for each stolen panel.
         for (t in thieves) {
             if (thieves.hasOwnProperty(t)) {
