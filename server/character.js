@@ -96,10 +96,6 @@ module.exports = function Character(io, config, game, id, playerNum) {
         game.getField().draw();
     };
 
-    this.getElement = function getElement() {
-        return self.element;
-    };
-
     this.hasStatus = function hasStatus(status) {
         return (self.statuses.indexOf(status) > -1);
     };
@@ -124,10 +120,6 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
         io.to(game.getId()).emit('player status removed', self.playerNum, status);
         game.getField().draw();
-    };
-
-    this.getBusterPower = function getBusterPower() {
-        return self.busterPower;
     };
 
     this.boostBusterPower = function boostBusterPower(plus) {
@@ -506,5 +498,4 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.chipFolder = this.createChipFolder();
     this.chips = this.getRandomChips(5);
-    console.log(this.chips);
 };

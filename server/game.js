@@ -21,10 +21,6 @@ module.exports = function Game(io, config, num) {
         return self.field;
     };
 
-    this.getPlayers = function getPlayers() {
-        return self.players;
-    };
-
     this.getPlayerById = function getPlayerById(id) {
         var player,
             p;
