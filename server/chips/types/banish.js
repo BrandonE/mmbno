@@ -26,8 +26,8 @@ function BanishConstructor(io, config, game, character, code) {
 
                 if (panel.isStolen()) {
                     /*
-                     Check if it is in the bounds of the player using this chip. If so, the player using this chip is on
-                     the thieving side. This chip has no effect.
+                     Check if this panel is in the bounds of the player using this chip. If so, the player using this
+                     chip is on the thieving side. This chip has no effect.
                      */
                     if (panelInBounds) {
                         return;

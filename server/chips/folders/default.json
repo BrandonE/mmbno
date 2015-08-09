@@ -25,6 +25,7 @@
     {"name": "recovery300", "code": "J"},
     {"name": "panelGrab", "code": "*"},
     {"name": "panelGrab", "code": "*"},
+    {"name": "panelReturn", "code": "*"},
     {"name": "grabRevenge", "code": "I"},
     {"name": "areaGrab", "code": "B"},
     {"name": "areaGrab", "code": "B"}
