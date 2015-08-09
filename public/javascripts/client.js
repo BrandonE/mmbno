@@ -24,26 +24,28 @@ function draw() {
     grid.render(ctx);
     ctx.restore();
 
-    for (p in game.players) {
-        if (game.players.hasOwnProperty(p)) {
-            player = game.players[p];
+    if (game) {
+        for (p in game.players) {
+            if (game.players.hasOwnProperty(p)) {
+                player = game.players[p];
 
-            if (player && player.health) {
-                col = player.col;
+                if (player && player.health) {
+                    col = player.col;
 
-                if (game.clientPlayerNum === 2) {
-                    col = config.cols - col - 1;
+                    if (game.clientPlayerNum === 2) {
+                        col = config.cols - col - 1;
+                    }
+
+                    player.x = 27 + (col * 40);
+                    player.y = 75 + (player.row * 25);
+
+                    player.sprite.update(dt);
+                    ctx.save();
+                    ctx.translate(player.x, player.y);
+
+                    player.sprite.render(ctx);
+                    ctx.restore();
                 }
-
-                player.x = 27 + (col * 40);
-                player.y = 75 + (player.row * 25);
-
-                player.sprite.update(dt);
-                ctx.save();
-                ctx.translate(player.x, player.y);
-
-                player.sprite.render(ctx);
-                ctx.restore();
             }
         }
     }
