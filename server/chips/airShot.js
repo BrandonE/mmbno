@@ -16,8 +16,12 @@ function AirShotConstructor(io, config, game, character, code) {
 
     this.use = function use() {
         character.shoot(self.properties.power, self.properties.element, true, null, function onHit(panel) {
+            var panelCharacter = panel.getCharacter();
+
             // Knocking "back" relative to the character's perspective means moving left.
-            panel.getCharacter().move('left', 1);
+            panelCharacter.removeStatus('flinching');
+            panelCharacter.move('left', 1);
+            panelCharacter.addStatus('flinching');
         });
     };
 }
