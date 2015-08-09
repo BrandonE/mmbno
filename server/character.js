@@ -425,15 +425,17 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.useChip = function useChip() {
-        var chip = self.chips.shift(),
+        var chip,
             nextChip,
             chained = true;
 
         if (
-            chip &&
+            self.chips[0] &&
                 !self.hasStatus('attacking') && !self.hasStatus('flinching') && !self.hasStatus('frozen') &&
                 !self.hasStatus('paralyzed')
         ) {
+            chip = self.chips.shift();
+
             // Handle a chip chain event.
             while (self.chips.length && chained) {
                 nextChip = self.chips[0];
