@@ -11,6 +11,10 @@ module.exports = function Field(io, config, game) {
         return self.grid;
     };
 
+    this.setShouldReturnStolenPanels = function setShouldReturnStolenPanels(shouldReturnStolenPanels) {
+        self.shouldReturnStolenPanels = shouldReturnStolenPanels;
+    };
+
     this.draw = function draw() {
         if (game.num === 1) {
             // Clear the console.
