@@ -3,7 +3,7 @@
 var SpreaderType = require(__dirname + '/types/spreader'),
     extend = require(__dirname + '/extend');
 
-function Spreader2Constructor(io, config, game, character) {
+function Spreader2Constructor(io, config, game, character, code) {
     this.properties.codes = ['A', 'B', 'C', '*'];
     this.properties.description = 'Spreads damage to adjacent panels';
     this.properties.name = 'Spreader 2';
@@ -12,6 +12,6 @@ function Spreader2Constructor(io, config, game, character) {
     this.properties.stars = 2;
 }
 
-module.exports = function Spreader2(io, config, game, character) {
-    return extend(Spreader2Constructor, SpreaderType, io, config, game, character);
+module.exports = function Spreader2(io, config, game, character, code) {
+    return extend(Spreader2Constructor, SpreaderType, io, config, game, character, code);
 };

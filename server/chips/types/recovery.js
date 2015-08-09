@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/..'),
     extend = require(__dirname + '/../extend');
 
-function RecoveryConstructor(io, config, game, character) {
+function RecoveryConstructor(io, config, game, character, code) {
     var self = this;
 
     this.use = function use() {
@@ -11,6 +11,6 @@ function RecoveryConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function Recovery(io, config, game, character) {
-    return extend(RecoveryConstructor, Chip, io, config, game, character);
+module.exports = function Recovery(io, config, game, character, code) {
+    return extend(RecoveryConstructor, Chip, io, config, game, character, code);
 };

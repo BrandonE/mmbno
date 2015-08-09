@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/..'),
     extend = require(__dirname + '/../extend');
 
-function BarrierConstructor(io, config, game, character) {
+function BarrierConstructor(io, config, game, character, code) {
     var self = this;
 
     this.use = function use() {
@@ -20,6 +20,6 @@ function BarrierConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function Barrier(io, config, game, character) {
-    return extend(BarrierConstructor, Chip, io, config, game, character);
+module.exports = function Barrier(io, config, game, character, code) {
+    return extend(BarrierConstructor, Chip, io, config, game, character, code);
 };

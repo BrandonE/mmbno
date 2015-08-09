@@ -3,7 +3,7 @@
 var VulcanType = require(__dirname + '/types/vulcan'),
     extend = require(__dirname + '/extend');
 
-function Vulcan2Constructor(io, config, game, character) {
+function Vulcan2Constructor(io, config, game, character, code) {
     this.properties.codes = ['D', 'F', 'L'];
     this.properties.description = '4-Shot to pierce one panel';
     this.properties.name = 'Vulcan 2';
@@ -13,6 +13,6 @@ function Vulcan2Constructor(io, config, game, character) {
     this.properties.stars = 2;
 }
 
-module.exports = function Vulcan2(io, config, game, character) {
-    return extend(Vulcan2Constructor, VulcanType, io, config, game, character);
+module.exports = function Vulcan2(io, config, game, character, code) {
+    return extend(Vulcan2Constructor, VulcanType, io, config, game, character, code);
 };

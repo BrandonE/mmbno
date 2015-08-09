@@ -3,7 +3,7 @@
 var RecoveryType = require(__dirname + '/types/recovery'),
     extend = require(__dirname + '/extend');
 
-function Recovery200Constructor(io, config, game, character) {
+function Recovery200Constructor(io, config, game, character, code) {
     this.properties.codes = ['I', 'Q', 'Z'];
     this.properties.description = 'Recovers 200HP';
     this.properties.health = 200;
@@ -12,6 +12,6 @@ function Recovery200Constructor(io, config, game, character) {
     this.properties.stars = 3;
 }
 
-module.exports = function Recovery200(io, config, game, character) {
-    return extend(Recovery200Constructor, RecoveryType, io, config, game, character);
+module.exports = function Recovery200(io, config, game, character, code) {
+    return extend(Recovery200Constructor, RecoveryType, io, config, game, character, code);
 };

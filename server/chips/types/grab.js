@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/..'),
     extend = require(__dirname + '/../extend');
 
-function GrabConstructor(io, config, game, character) {
+function GrabConstructor(io, config, game, character, code) {
     var self = this;
 
     this.properties.damage = 10;
@@ -37,6 +37,6 @@ function GrabConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function Grab(io, config, game, character) {
-    return extend(GrabConstructor, Chip, io, config, game, character);
+module.exports = function Grab(io, config, game, character, code) {
+    return extend(GrabConstructor, Chip, io, config, game, character, code);
 };

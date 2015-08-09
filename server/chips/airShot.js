@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/'),
     extend = require(__dirname + '/extend');
 
-function AirShotConstructor(io, config, game, character) {
+function AirShotConstructor(io, config, game, character, code) {
     var self = this;
 
     this.properties.codes = ['*'];
@@ -22,6 +22,6 @@ function AirShotConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function AirShot(io, config, game, character) {
-    return extend(AirShotConstructor, Chip, io, config, game, character);
+module.exports = function AirShot(io, config, game, character, code) {
+    return extend(AirShotConstructor, Chip, io, config, game, character, code);
 };

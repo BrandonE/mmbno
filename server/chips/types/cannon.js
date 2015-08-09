@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/..'),
     extend = require(__dirname + '/../extend');
 
-function CannonConstructor(io, config, game, character) {
+function CannonConstructor(io, config, game, character, code) {
     var self = this;
 
     this.use = function use() {
@@ -11,6 +11,6 @@ function CannonConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function Cannon(io, config, game, character) {
-    return extend(CannonConstructor, Chip, io, config, game, character);
+module.exports = function Cannon(io, config, game, character, code) {
+    return extend(CannonConstructor, Chip, io, config, game, character, code);
 };

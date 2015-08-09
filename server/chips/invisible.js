@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/'),
     extend = require(__dirname + '/extend');
 
-function InvisibleConstructor(io, config, game, character) {
+function InvisibleConstructor(io, config, game, character, code) {
     var self = this;
 
     this.properties.codes = ['*'];
@@ -29,6 +29,6 @@ function InvisibleConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function Invisible(io, config, game, character) {
-    return extend(InvisibleConstructor, Chip, io, config, game, character);
+module.exports = function Invisible(io, config, game, character, code) {
+    return extend(InvisibleConstructor, Chip, io, config, game, character, code);
 };

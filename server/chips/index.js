@@ -1,10 +1,11 @@
 'use strict';
 
-module.exports = function Chip(io, config, game, character) {
+module.exports = function Chip(io, config, game, character, code) {
     var self = this;
 
     this.properties = {
         codes          : [],
+        code           : code,
         damage         : null,
         description    : '',
         health         : null,
@@ -37,6 +38,12 @@ module.exports = function Chip(io, config, game, character) {
 
     this.used = function used() {
         io.to(game.getId()).emit('chip used', character.getPlayerNum(), self.toSendable());
+    };
+
+    this.validate = function validate() {
+        if (this.properties.codes.indexOf(code) <= -1) {
+            throw new Error('Invalid chip: ' + this.properties.name + ' ' + code);
+        }
     };
 
     this.toSendable = function toSendable() {

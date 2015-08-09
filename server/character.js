@@ -1,6 +1,10 @@
 'use strict';
 
-var weaknesses = {
+var fs = require('fs'),
+    shuffle = require('shuffle-array'),
+    chipClasses = {},
+    defaultChips = JSON.parse(fs.readFileSync(__dirname + '/chips/folders/default.json')),
+    weaknesses = {
     aqua     : 'electric',
     break    : 'cursor',
     cursor   : 'wind',
@@ -10,6 +14,17 @@ var weaknesses = {
     wind     : 'sword',
     wood     : 'fire'
 };
+
+fs.readdirSync(__dirname + '/chips')
+    .filter(function(file) {
+        return (file.indexOf('.') !== 0 && ['index.js', 'folders', 'types'].indexOf(file) <= -1);
+    })
+    .forEach(function(file) {
+        var ChipClass = require(__dirname + '/chips/' + file),
+            chipName = file.replace('.js', '');
+
+        chipClasses[chipName] = ChipClass;
+    });
 
 module.exports = function Character(io, config, game, id, playerNum) {
     var self = this;
@@ -22,7 +37,6 @@ module.exports = function Character(io, config, game, id, playerNum) {
     this.element = 'none';
     this.statuses = [];
     this.busterPower = 1;
-    this.chips = [];
 
     this.getId = function getId() {
         return self.id;
@@ -118,6 +132,28 @@ module.exports = function Character(io, config, game, id, playerNum) {
 
     this.boostBusterPower = function boostBusterPower(plus) {
         self.busterPower += plus;
+    };
+
+    this.createChipFolder = function createChipFolder() {
+        var chips = [],
+            chipRecord,
+            ChipClass,
+            chip,
+            c;
+
+        for (c in defaultChips) {
+            chipRecord = defaultChips[c];
+            ChipClass = chipClasses[chipRecord.name];
+            chip = new ChipClass(io, config, game, self, chipRecord.code);
+            chip.validate();
+            chips.push(chip);
+        }
+
+        return chips;
+    };
+
+    this.getRandomChips = function getRandomChips(num) {
+        return shuffle.pick(self.chipFolder, { picks : num });
     };
 
     this.enterField = function enterField(row, col) {
@@ -465,4 +501,8 @@ module.exports = function Character(io, config, game, id, playerNum) {
     } else if (playerNum === 2) {
         this.enterField(1, 4);
     }
+
+    this.chipFolder = this.createChipFolder();
+    this.chips = this.getRandomChips(5);
+    console.log(this.chips);
 };

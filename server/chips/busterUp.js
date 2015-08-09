@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/'),
     extend = require(__dirname + '/extend');
 
-function BusterUpConstructor(io, config, game, character) {
+function BusterUpConstructor(io, config, game, character, code) {
     var self = this;
 
     this.properties.codes = ['*'];
@@ -19,6 +19,6 @@ function BusterUpConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function BusterUp(io, config, game, character) {
-    return extend(BusterUpConstructor, Chip, io, config, game, character);
+module.exports = function BusterUp(io, config, game, character, code) {
+    return extend(BusterUpConstructor, Chip, io, config, game, character, code);
 };

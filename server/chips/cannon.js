@@ -3,7 +3,7 @@
 var CannonType = require(__dirname + '/types/cannon'),
     extend = require(__dirname + '/extend');
 
-function CannonConstructor(io, config, game, character) {
+function CannonConstructor(io, config, game, character, code) {
     this.properties.codes = ['A', 'B', 'C', '*'];
     this.properties.description = 'Cannon to attack 1 enemy';
     this.properties.name = 'Cannon';
@@ -11,6 +11,6 @@ function CannonConstructor(io, config, game, character) {
     this.properties.power = 40;
 }
 
-module.exports = function Cannon(io, config, game, character) {
-    return extend(CannonConstructor, CannonType, io, config, game, character);
+module.exports = function Cannon(io, config, game, character, code) {
+    return extend(CannonConstructor, CannonType, io, config, game, character, code);
 };

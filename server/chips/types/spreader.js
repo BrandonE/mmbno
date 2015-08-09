@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/..'),
     extend = require(__dirname + '/../extend');
 
-function SpreaderConstructor(io, config, game, character) {
+function SpreaderConstructor(io, config, game, character, code) {
     var self = this;
 
     this.use = function use() {
@@ -42,6 +42,6 @@ function SpreaderConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function Spreader(io, config, game, character) {
-    return extend(SpreaderConstructor, Chip, io, config, game, character);
+module.exports = function Spreader(io, config, game, character, code) {
+    return extend(SpreaderConstructor, Chip, io, config, game, character, code);
 };

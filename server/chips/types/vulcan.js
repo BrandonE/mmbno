@@ -3,7 +3,7 @@
 var Chip = require(__dirname + '/..'),
     extend = require(__dirname + '/../extend');
 
-function VulcanConstructor(io, config, game, character) {
+function VulcanConstructor(io, config, game, character, code) {
     var self = this;
 
     this.shoot = function shoot() {
@@ -48,6 +48,6 @@ function VulcanConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function Vulcan(io, config, game, character) {
-    return extend(VulcanConstructor, Chip, io, config, game, character);
+module.exports = function Vulcan(io, config, game, character, code) {
+    return extend(VulcanConstructor, Chip, io, config, game, character, code);
 };

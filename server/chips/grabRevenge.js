@@ -3,7 +3,7 @@
 var BanishType = require(__dirname + '/types/banish'),
     extend = require(__dirname + '/extend');
 
-function GrabRevengeConstructor(io, config, game, character) {
+function GrabRevengeConstructor(io, config, game, character, code) {
     this.properties.codes = ['I', 'Q', 'Z'];
     this.properties.damage = 40;
     this.properties.description = '40 damage for every stolen square';
@@ -12,6 +12,6 @@ function GrabRevengeConstructor(io, config, game, character) {
     this.properties.stars = 4;
 }
 
-module.exports = function GrabRevenge(io, config, game, character) {
-    return extend(GrabRevengeConstructor, BanishType, io, config, game, character);
+module.exports = function GrabRevenge(io, config, game, character, code) {
+    return extend(GrabRevengeConstructor, BanishType, io, config, game, character, code);
 };

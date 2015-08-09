@@ -3,7 +3,7 @@
 var BarrierType = require(__dirname + '/types/barrier'),
     extend = require(__dirname + '/extend');
 
-function BarrierConstructor(io, config, game, character) {
+function BarrierConstructor(io, config, game, character, code) {
     this.properties.codes = ['A', 'F', 'R', '*'];
     this.properties.description = 'Nullifies 10HP of damage';
     this.properties.health = 10;
@@ -12,6 +12,6 @@ function BarrierConstructor(io, config, game, character) {
     this.properties.stars = 2;
 }
 
-module.exports = function Barrier(io, config, game, character) {
-    return extend(BarrierConstructor, BarrierType, io, config, game, character);
+module.exports = function Barrier(io, config, game, character, code) {
+    return extend(BarrierConstructor, BarrierType, io, config, game, character, code);
 };

@@ -3,7 +3,7 @@
 var GrabType = require(__dirname + '/types/grab'),
     extend = require(__dirname + '/extend');
 
-function AreaGrabConstructor(io, config, game, character) {
+function AreaGrabConstructor(io, config, game, character, code) {
     var self = this;
 
     this.properties.codes = ['*'];
@@ -50,6 +50,6 @@ function AreaGrabConstructor(io, config, game, character) {
     };
 }
 
-module.exports = function AreaGrab(io, config, game, character) {
-    return extend(AreaGrabConstructor, GrabType, io, config, game, character);
+module.exports = function AreaGrab(io, config, game, character, code) {
+    return extend(AreaGrabConstructor, GrabType, io, config, game, character, code);
 };
