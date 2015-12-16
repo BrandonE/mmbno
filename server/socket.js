@@ -61,13 +61,11 @@ module.exports = function(config) {
         var game,
             g;
 
-        for (g in games) {
-            if (games.hasOwnProperty(g)) {
-                game = games[g];
+        for (g = 0; g < games.length; g++) {
+            game = games[g];
 
-                if (game.isAvailable()) {
-                    return game;
-                }
+            if (game.isAvailable()) {
+                return game;
             }
         }
 

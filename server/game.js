@@ -25,13 +25,11 @@ module.exports = function Game(io, config, num) {
         var player,
             p;
 
-        for (p in self.players) {
-            if (self.players.hasOwnProperty(p)) {
-                player = self.players[p];
+        for (p = 0; p < self.players.length; p++) {
+            player = self.players[p];
 
-                if (player.getId() === id) {
-                    return player;
-                }
+            if (player.getId() === id) {
+                return player;
             }
         }
 
@@ -108,16 +106,14 @@ module.exports = function Game(io, config, num) {
             playerToSend,
             p;
 
-        for (p in self.players) {
-            if (self.players.hasOwnProperty(p)) {
-                playerToSend = self.players[p];
+        for (p = 0; p < self.players.length; p++) {
+            playerToSend = self.players[p];
 
-                if (playerToSend) {
-                    playerToSend = playerToSend.toSendable();
-                }
-
-                playersToSend.push(playerToSend);
+            if (playerToSend) {
+                playerToSend = playerToSend.toSendable();
             }
+
+            playersToSend.push(playerToSend);
         }
 
         return {

@@ -43,12 +43,10 @@ function BanishConstructor(io, config, game, character, code) {
         }
 
         // Deal the chip's damage to each thief for each stolen panel.
-        for (t in thieves) {
-            if (thieves.hasOwnProperty(t)) {
-                thief = thieves[t];
+        for (t = 0; t < thieves.length; t++) {
+            thief = thieves[t];
 
-                thief.takeDamage(stolenPanels * self.properties.damage);
-            }
+            thief.takeDamage(stolenPanels * self.properties.damage);
         }
     };
 }

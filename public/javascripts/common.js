@@ -56,77 +56,72 @@ function gameToString(config, game, playerNumPerspective) {
         p,
         d;
 
-    for (r in game.field) {
-        if (game.field.hasOwnProperty(r)) {
-            row = game.field[r];
+    for (r = 0; r < game.field.length; r++) {
+        row = game.field[r];
 
-            response += ' ----- ----- ----- ----- ----- -----' + EOL +
-                '|';
+        response += ' ----- ----- ----- ----- ----- -----' + EOL +
+            '|';
 
-            for (c in row) {
-                if (row.hasOwnProperty(c)) {
-                    if (playerNumPerspective === 2) {
-                        c = config.cols - c - 1;
-                    }
+        for (c = 0; c < row.length; c++) {
+            if (playerNumPerspective === 1) {
+                panel = row[c];
+            } else {
+                panel = row[config.cols - c - 1];
+            }
 
-                    panel = row[c];
-                    panelType = panel.type;
+            panelType = panel.type;
 
-                    if (playerNumPerspective === 2) {
-                        if (panelType === 'left') {
-                            panelType = 'right';
-                        } else if (panelType === 'right') {
-                            panelType = 'left';
-                        }
-                    }
-
-                    response += ' ' + panelTypeLabels[panelType];
-
-                    if (panel.character && panel.character.health) {
-                        if (playerNumPerspective === panel.character.playerNum) {
-                            response += 'x';
-                        } else {
-                            response += 'o';
-                        }
-                    } else {
-                        response += ' ';
-                    }
-
-                    if (isPanelInBounds(config, game.field, playerNumPerspective, r, c)) {
-                        response += ' ';
-                    } else {
-                        response += 'B';
-                    }
-
-                    response += ' |';
+            if (playerNumPerspective === 2) {
+                if (panelType === 'left') {
+                    panelType = 'right';
+                } else if (panelType === 'right') {
+                    panelType = 'left';
                 }
             }
 
-            response += EOL +
-                ' ----- ----- ----- ----- ----- -----' + EOL;
+            response += ' ' + panelTypeLabels[panelType];
+
+            if (panel.character && panel.character.health) {
+                if (playerNumPerspective === panel.character.playerNum) {
+                    response += 'x';
+                } else {
+                    response += 'o';
+                }
+            } else {
+                response += ' ';
+            }
+
+            if (isPanelInBounds(config, game.field, playerNumPerspective, r, c)) {
+                response += ' ';
+            } else {
+                response += 'B';
+            }
+
+            response += ' |';
         }
+
+        response += EOL +
+            ' ----- ----- ----- ----- ----- -----' + EOL;
     }
 
-    for (p in game.players) {
-        if (game.players.hasOwnProperty(p)) {
-            activeDamageHandlers = [];
+    for (p = 0; p < game.players.length; p++) {
+        activeDamageHandlers = [];
 
-            player = game.players[p];
+        player = game.players[p];
 
-            if (player && player.health) {
-                for (d in player.damageHandlers) {
-                    damageHandler = player.damageHandlers[d];
+        if (player && player.health) {
+            for (d = 0; d < player.damageHandlers.length; d++) {
+                damageHandler = player.damageHandlers[d];
 
-                    if (damageHandler) {
-                        activeDamageHandlers.push(damageHandler);
-                    }
+                if (damageHandler) {
+                    activeDamageHandlers.push(damageHandler);
                 }
-
-                response += 'Player ' + player.playerNum + ':' + EOL +
-                    '    ' + player.health + 'HP' + EOL +
-                    '    Statuses: ' + player.statuses.join(', ') + EOL +
-                    '    Damage Handlers: ' + activeDamageHandlers.join(', ') + EOL;
             }
+
+            response += 'Player ' + player.playerNum + ':' + EOL +
+                '    ' + player.health + 'HP' + EOL +
+                '    Statuses: ' + player.statuses.join(', ') + EOL +
+                '    Damage Handlers: ' + activeDamageHandlers.join(', ') + EOL;
         }
     }
 

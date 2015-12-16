@@ -26,27 +26,25 @@ function draw() {
     ctx.restore();
 
     if (game) {
-        for (p in game.players) {
-            if (game.players.hasOwnProperty(p)) {
-                player = game.players[p];
+        for (p = 0; p < game.players.length; p++) {
+            player = game.players[p];
 
-                if (player && player.health) {
-                    col = player.col;
+            if (player && player.health) {
+                col = player.col;
 
-                    if (game.clientPlayerNum === 2) {
-                        col = config.cols - col - 1;
-                    }
-
-                    player.x = 27 + (col * 40);
-                    player.y = 75 + (player.row * 25);
-
-                    player.sprite.update(dt);
-                    ctx.save();
-                    ctx.translate(player.x, player.y);
-
-                    player.sprite.render(ctx);
-                    ctx.restore();
+                if (game.clientPlayerNum === 2) {
+                    col = config.cols - col - 1;
                 }
+
+                player.x = 27 + (col * 40);
+                player.y = 75 + (player.row * 25);
+
+                player.sprite.update(dt);
+                ctx.save();
+                ctx.translate(player.x, player.y);
+
+                player.sprite.render(ctx);
+                ctx.restore();
             }
         }
     }
@@ -84,11 +82,9 @@ function showChips() {
     if (chips) {
         chipNames = [];
 
-        for (c in chips) {
-            if (chips.hasOwnProperty(c)) {
-                chip = chips[c];
-                chipNames.push(chip.name);
-            }
+        for (c = 0; c < chips.length; c++) {
+            chip = chips[c];
+            chipNames.push(chip.name);
         }
 
         $('#chips').text(chipNames.join(', '));
@@ -160,13 +156,11 @@ $(document).ready
                     $('.observing').show();
                 }
 
-                for (p in game.players) {
-                    if (game.players.hasOwnProperty(p)) {
-                        player = game.players[p];
+                for (p = 0; p < game.players.length; p++) {
+                    player = game.players[p];
 
-                        if (player) {
-                            setPlayerSprite(player);
-                        }
+                    if (player) {
+                        setPlayerSprite(player);
                     }
                 }
             }
@@ -211,12 +205,10 @@ $(document).ready
             var c;
 
             if (playerNum && game.clientPlayerNum === playerNum) {
-                for (c in chips) {
-                    if (chips.hasOwnProperty(c)) {
-                        if (chip.name === chips[c].name) {
-                            chips.splice(c, 1);
-                            break;
-                        }
+                for (c = 0; c < chips.length; c++) {
+                    if (chip.name === chips[c].name) {
+                        chips.splice(c, 1);
+                        break;
                     }
                 }
 
@@ -387,7 +379,7 @@ $(document).ready
             if (chipSelectionTime < 0) {
                 chipSelectionTime = 0;
             }
-            
+
             $('#chipSelectionTime').text(chipSelectionTime);
         }, 1000);
     }

@@ -73,7 +73,7 @@ module.exports = function Character(io, config, game, socket, playerNum) {
         var damageHandler,
             d;
 
-        for (d in self.damageHandlers) {
+        for (d = 0; d < self.damageHandlers.length; d++) {
             damageHandler = self.damageHandlers[d];
 
             if (damageHandler) {
@@ -133,7 +133,7 @@ module.exports = function Character(io, config, game, socket, playerNum) {
             chip,
             c;
 
-        for (c in defaultChips) {
+        for (c = 0; c < defaultChips.length; c++) {
             chipRecord = defaultChips[c];
             ChipClass = chipClasses[chipRecord.name];
             chip = new ChipClass(io, config, game, self, chipRecord.code);
@@ -476,7 +476,7 @@ module.exports = function Character(io, config, game, socket, playerNum) {
             damageHandler,
             d;
 
-        for (d in self.damageHandlers) {
+        for (d = 0; d < self.damageHandlers.length; d++) {
             damageHandler = self.damageHandlers[d];
 
             if (damageHandler) {
@@ -505,12 +505,10 @@ module.exports = function Character(io, config, game, socket, playerNum) {
             chipToSend,
             c;
 
-        for (c in self.chips) {
-            if (self.chips.hasOwnProperty(c)) {
-                chipToSend = self.chips[c].toSendable();
+        for (c = 0; c < self.chips.length; c++) {
+            chipToSend = self.chips[c].toSendable();
 
-                chipsToSend.push(chipToSend);
-            }
+            chipsToSend.push(chipToSend);
         }
 
         return chipsToSend;
