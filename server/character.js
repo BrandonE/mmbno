@@ -1,7 +1,6 @@
 'use strict';
 
 var fs = require('fs'),
-    shuffle = require('shuffle-array'),
     chipClasses = {},
     defaultChips = JSON.parse(fs.readFileSync(__dirname + '/chips/folders/default.json')),
     weaknesses = {
@@ -145,7 +144,22 @@ module.exports = function Character(io, config, game, id, playerNum) {
     };
 
     this.getRandomChips = function getRandomChips(num) {
-        return shuffle.pick(self.chipFolder, { picks : num });
+        var chips = [],
+            chipNum,
+            chip,
+            c;
+
+        for (chipNum = 0; chipNum < num; chipNum++) {
+            c = Math.floor(Math.random() * this.chipFolder.length);
+            chip = this.chipFolder[c];
+
+            // Remove the chip from the folder.
+            this.chipFolder.splice(c, 1);
+
+            chips.push(chip);
+        }
+
+        return chips;
     };
 
     this.enterField = function enterField(row, col) {

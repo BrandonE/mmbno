@@ -21,7 +21,6 @@
   "author": "Brandon Evans",
   "dependencies": {
     "express": "^4.12.4",
-    "shuffle-array": "^0.1.0",
     "socket.io": "^1.3.5",
     "uuid": "^2.0.1"
   },
