@@ -49,7 +49,7 @@ function gameToString(config, game, playerNumPerspective) {
         panel,
         panelType,
         player,
-        activeDamageHandlers = [],
+        activeDamageHandlers,
         damageHandler,
         r,
         c,
@@ -109,6 +109,8 @@ function gameToString(config, game, playerNumPerspective) {
 
     for (p in game.players) {
         if (game.players.hasOwnProperty(p)) {
+            activeDamageHandlers = [];
+
             player = game.players[p];
 
             if (player && player.health) {
