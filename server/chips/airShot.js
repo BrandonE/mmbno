@@ -15,13 +15,17 @@ function AirShotConstructor(io, config, game, character, code) {
     this.properties.stars = 2;
 
     this.use = function use() {
-        character.shoot(self.properties.power, self.properties.element, true, null, function onHit(panel) {
-            var panelCharacter = panel.getCharacter();
+        character.shoot(self.properties.power, self.properties.element, true, null, function onHit(panel, damage) {
+            var panelCharacter;
 
-            // Knocking "back" relative to the character's perspective means moving left.
-            panelCharacter.removeStatus('flinching');
-            panelCharacter.move('left', 1);
-            panelCharacter.addStatus('flinching');
+            if (damage) {
+                panelCharacter = panel.getCharacter();
+
+                // Knocking "back" relative to the character's perspective means moving left.
+                panelCharacter.removeStatus('flinching');
+                panelCharacter.move('left', 1);
+                panelCharacter.addStatus('flinching');
+            }
         });
     };
 }

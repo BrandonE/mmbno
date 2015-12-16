@@ -384,7 +384,7 @@ module.exports = function Character(io, config, game, socket, playerNum) {
 
         if (!self.hasStatus('invincible')) {
             if (damageHandler) {
-                damageHandler.handler(damage, element, flinch);
+                damage = damageHandler.handler(damage, element, flinch);
             } else {
                 // Double the damage if the attack is the character's weakness.
                 if (weaknesses.hasOwnProperty(self.element) && weaknesses[self.element] === element) {
@@ -435,7 +435,11 @@ module.exports = function Character(io, config, game, socket, playerNum) {
 
             io.to(game.getId()).emit('player health changed', self.playerNum, self.health);
             field.draw();
+        } else {
+            damage = 0;
         }
+
+        return damage;
     };
 
     this.useChip = function useChip() {

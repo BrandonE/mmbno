@@ -15,6 +15,8 @@ function BarrierConstructor(io, config, game, character, code) {
                 if (self.properties.health <= 0) {
                     character.setDamageHandler(null, 3);
                 }
+
+                return 0;
             }
         }, 3);
     };

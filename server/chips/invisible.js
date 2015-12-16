@@ -17,6 +17,7 @@ function InvisibleConstructor(io, config, game, character, code) {
             name    : self.properties.name,
             handler : function(damage, element, flinch) {
                 // Ignore damage while invisible.
+                return 0;
             }
         }, 2);
 

@@ -92,8 +92,10 @@ module.exports = function Panel(io, config, game, field, row, col) {
     };
 
     this.hit = function hit(power, element, flinch, onHit) {
+        var damage;
+
         if (self.character) {
-            self.character.takeDamage(power, element, flinch);
+            damage = self.character.takeDamage(power, element, flinch);
 
             if (
                 (self.type === 'grass' && element === 'fire') ||
@@ -104,7 +106,7 @@ module.exports = function Panel(io, config, game, field, row, col) {
             }
 
             if (onHit) {
-                onHit(self);
+                onHit(self, damage);
             }
 
             return true;
