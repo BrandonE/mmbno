@@ -91,7 +91,7 @@ module.exports = function Panel(io, config, game, field, row, col) {
         }
     };
 
-    this.hit = function hit(power, element, flinch, hitHook) {
+    this.hit = function hit(power, element, flinch, onHit) {
         if (self.character) {
             self.character.takeDamage(power, element, flinch);
 
@@ -103,8 +103,8 @@ module.exports = function Panel(io, config, game, field, row, col) {
                 self.setType('normal');
             }
 
-            if (hitHook) {
-                hitHook(self);
+            if (onHit) {
+                onHit(self);
             }
 
             return true;

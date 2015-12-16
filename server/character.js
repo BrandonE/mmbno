@@ -318,7 +318,7 @@ module.exports = function Character(io, config, game, socket, playerNum) {
         socket.emit('chips', self.chipsToSendable());
     };
 
-    this.shoot = function shoot(power, element, flinch, recoveryTime, hitHook, missHook) {
+    this.shoot = function shoot(power, element, flinch, recoveryTime, onHit, onMiss) {
         var hit = false,
             grid = game.getField().getGrid(),
             row,
@@ -343,7 +343,7 @@ module.exports = function Character(io, config, game, socket, playerNum) {
                 for (col = self.col + 1; col < config.cols; col++) {
                     panel = grid[row][col];
 
-                    if (panel.hit(power, element, flinch, hitHook)) {
+                    if (panel.hit(power, element, flinch, onHit)) {
                         hit = true;
                         break;
                     }
@@ -352,15 +352,15 @@ module.exports = function Character(io, config, game, socket, playerNum) {
                 for (col = self.col - 1; col >= 0; col--) {
                     panel = grid[row][col];
 
-                    if (panel.hit(power, element, flinch, hitHook)) {
+                    if (panel.hit(power, element, flinch, onHit)) {
                         hit = true;
                         break;
                     }
                 }
             }
 
-            if (!hit && missHook) {
-                missHook();
+            if (!hit && onMiss) {
+                onMiss();
             }
 
             if (recoveryTime) {
