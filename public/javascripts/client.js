@@ -383,6 +383,11 @@ $(document).ready
 
         setInterval(function chipSelectionInterval() {
             chipSelectionTime--;
+
+            if (chipSelectionTime < 0) {
+                chipSelectionTime = 0;
+            }
+            
             $('#chipSelectionTime').text(chipSelectionTime);
         }, 1000);
     }
