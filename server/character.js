@@ -25,10 +25,10 @@ fs.readdirSync(__dirname + '/chips')
         chipClasses[chipName] = ChipClass;
     });
 
-module.exports = function Character(io, config, game, id, playerNum) {
+module.exports = function Character(io, config, game, socket, playerNum) {
     var self = this;
 
-    this.id = id;
+    this.id = socket.id;
     this.playerNum = playerNum;
     this.maxHealth = 500;
     this.health = this.maxHealth;
@@ -92,6 +92,7 @@ module.exports = function Character(io, config, game, id, playerNum) {
             (damageHandler) ? damageHandler.name : null,
             priority
         );
+
         game.getField().draw();
     };
 
@@ -150,13 +151,15 @@ module.exports = function Character(io, config, game, id, playerNum) {
             c;
 
         for (chipNum = 0; chipNum < num; chipNum++) {
-            c = Math.floor(Math.random() * this.chipFolder.length);
-            chip = this.chipFolder[c];
+            if (this.chipFolder.length) {
+                c = Math.floor(Math.random() * this.chipFolder.length);
+                chip = this.chipFolder[c];
 
-            // Remove the chip from the folder.
-            this.chipFolder.splice(c, 1);
+                // Remove the chip from the folder.
+                this.chipFolder.splice(c, 1);
 
-            chips.push(chip);
+                chips.push(chip);
+            }
         }
 
         return chips;
@@ -308,6 +311,11 @@ module.exports = function Character(io, config, game, id, playerNum) {
                 field.draw();
             }
         }
+    };
+
+    this.selectChips = function selectChips() {
+        self.chips = self.getRandomChips(5);
+        socket.emit('chips', self.chipsToSendable());
     };
 
     this.shoot = function shoot(power, element, flinch, recoveryTime, hitHook, missHook) {
@@ -511,5 +519,6 @@ module.exports = function Character(io, config, game, id, playerNum) {
     }
 
     this.chipFolder = this.createChipFolder();
-    this.chips = this.getRandomChips(5);
+    this.selectChips();
+    setInterval(this.selectChips, 15000);
 };

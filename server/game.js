@@ -53,7 +53,7 @@ module.exports = function Game(io, config, num) {
         }
 
         if (playerNum) {
-            player = new Character(io, config, self, socket.id, playerNum);
+            player = new Character(io, config, self, socket, playerNum);
             self.players[playerNum - 1] = player;
             socket.emit('chips', player.chipsToSendable());
         } else {
