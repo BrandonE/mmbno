@@ -1,4 +1,5 @@
 var socket = io(),
+    chipSelectionTime = 0,
     config,
     game,
     chips,
@@ -201,6 +202,9 @@ $(document).ready
         socket.on('chips', function(chipsSent) {
             chips = chipsSent;
             showChips();
+
+            chipSelectionTime = 15;
+            $('#chipSelectionTime').text(chipSelectionTime);
         });
 
         socket.on('chip used', function(playerNum, chip) {
@@ -374,5 +378,12 @@ $(document).ready
 
             e.preventDefault();
         });
+
+        $('#chipSelectionTime').text(chipSelectionTime);
+
+        setInterval(function chipSelectionInterval() {
+            chipSelectionTime--;
+            $('#chipSelectionTime').text(chipSelectionTime);
+        }, 1000);
     }
 );
