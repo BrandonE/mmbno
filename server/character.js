@@ -520,5 +520,5 @@ module.exports = function Character(io, config, game, socket, playerNum) {
 
     this.chipFolder = this.createChipFolder();
     this.selectChips();
-    setInterval(this.selectChips, 15000);
+    setInterval(this.selectChips, config.chipSelectionInterval);
 };

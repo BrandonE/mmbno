@@ -1,5 +1,6 @@
 {
-    "port" : 5000,
-    "rows" : 3,
-    "cols" : 6
+    "port"                  : 5000,
+    "rows"                  : 3,
+    "cols"                  : 6,
+    "chipSelectionInterval" : 15000
 }

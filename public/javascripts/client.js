@@ -203,7 +203,7 @@ $(document).ready
             chips = chipsSent;
             showChips();
 
-            chipSelectionTime = 15;
+            chipSelectionTime = Math.floor(config.chipSelectionInterval / 1000);
             $('#chipSelectionTime').text(chipSelectionTime);
         });
 
