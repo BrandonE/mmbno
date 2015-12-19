@@ -28,7 +28,7 @@ module.exports = function Game(io, config, num) {
         for (p = 0; p < self.players.length; p++) {
             player = self.players[p];
 
-            if (player.getId() === id) {
+            if (player && player.getId() === id) {
                 return player;
             }
         }
