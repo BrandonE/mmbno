@@ -1,51 +1,43 @@
-function Sprite(url, x, y, width, height, speed, frames, dir, once) {
-    this.url = url;
+function Sprite(path, x, y, width, height, speed, frames, spacing, direction, once) {
+    this.path = path;
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.speed = speed;
     this.frames = frames;
+    this.spacing = spacing;
     this.once = once;
-    this.dir = dir || 'right';
+    this.direction = direction || 'right';
     this._index = 0;
 
     this.render = function render(ctx) {
-        var max,
-            idx,
-            frame,
-            x,
-            y;
+        var x = this.x,
+            y = this.y,
+            index,
+            frame;
 
-        if (this.speed > 0 && !this.done) {
-            max = this.frames.length - 1;
-            idx = Math.floor(this._index);
-            frame = this.frames[idx % max];
+        if (this.speed && this.frames && this.spacing) {
+            index = Math.floor(this._index);
+            frame = this.frames[index % this.frames.length];
 
-            if (this.once && idx >= max) {
-                this.done = true;
-                return;
+            if (this.direction == 'right') {
+                x += frame * this.spacing;
+            } else if (this.direction == 'left') {
+                x -= frame * this.spacing;
+            } else if (this.direction === 'down') {
+                y += frame * this.spacing;
+            } else if (this.direction === 'up') {
+                y -= frame * this.spacing;
             }
-        } else {
-            frame = 0;
-        }
 
-
-        x = this.x;
-        y = this.y;
-
-        if (this.dir == 'right') {
-            x += frame * this.width;
-        } else if (this.dir == 'left') {
-            x -= frame * this.width;
-        } else if (this.dir === 'down') {
-            y += frame * this.height;
-        } else if (this.dir === 'up') {
-            y -= frame * this.height;
+            if (this.once && index >= this.frames.length - 1) {
+                this.done = true;
+            }
         }
 
         ctx.drawImage(
-            Image.get(this.url),
+            Image.get(this.path),
             x, y,
             this.width, this.height,
             0, 0,
@@ -54,6 +46,8 @@ function Sprite(url, x, y, width, height, speed, frames, dir, once) {
     };
 
     this.update = function update(dt) {
-        this._index += this.speed * dt;
+        if (!this.done) {
+            this._index += this.speed * dt;
+        }
     };
 }

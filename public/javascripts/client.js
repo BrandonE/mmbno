@@ -1,14 +1,61 @@
 var socket = io(),
     chipSelectionTime = 0,
+    ready = false,
     config,
     game,
     chips,
     canvas,
     ctx,
-    ready = false,
     background,
     grid,
-    lastTime;
+    lastTime,
+    SPRITE_SHEETS = {
+        megaman : {
+            neutral  : {
+                x      : 10,
+                y      : 0,
+                width  : 38,
+                height : 52
+            },
+            moving   : {
+                x       : 12,
+                y       : 179,
+                width   : 38,
+                height  : 52,
+                speed   : 16,
+                frames  : [0, 1, 2, 3],
+                spacing : 43,
+                once    : true
+            },
+            shooting : {
+                x       : 8,
+                y       : 526,
+                width   : 44,
+                height  : 52,
+                speed   : 16,
+                frames  : [0, 1, 2, 3],
+                spacing : 43,
+                once    : true
+            }
+        }
+    };
+
+function createSprite(spriteSheet, spriteName, flip) {
+    var spriteDefinition = SPRITE_SHEETS[spriteSheet][spriteName];
+
+    return new Sprite(
+        '/images/spritesheets/' + spriteSheet + '.png',
+        spriteDefinition.x,
+        spriteDefinition.y,
+        spriteDefinition.width,
+        spriteDefinition.height,
+        spriteDefinition.speed,
+        spriteDefinition.frames,
+        spriteDefinition.spacing,
+        (flip) ? 'left' : 'right',
+        spriteDefinition.once
+    );
+}
 
 function draw() {
     var now = Date.now(),
@@ -36,8 +83,8 @@ function draw() {
                     col = config.cols - col - 1;
                 }
 
-                player.x = 27 + (col * 40);
-                player.y = 75 + (player.row * 25);
+                player.x = 36 + (col * 40);
+                player.y = 84 + (player.row * 25);
 
                 player.sprite.update(dt);
                 ctx.save();
@@ -67,11 +114,7 @@ function getRequestAnimationFrame() {
 }
 
 function setPlayerSprite(player) {
-    if (game.clientPlayerNum === player.playerNum) {
-        player.sprite = new Sprite('/images/spritesheets/megaman.png', -2, 0, 50, 64);
-    } else {
-        player.sprite = new Sprite('/images/spritesheets/megaman_flipped.png', 802, 0, 50, 64);
-    }
+    player.sprite = createSprite('megaman', 'neutral', game.clientPlayerNum !== player.playerNum);
 }
 
 function showChips() {
@@ -269,15 +312,7 @@ $(document).ready
                 game.field[row][col].character = player;
 
                 if (ready) {
-                    if (game.clientPlayerNum === playerNum) {
-                        player.sprite = new Sprite(
-                            '/images/spritesheets/megaman.png', -2, 0, 50, 64, 16, [3, 2, 1, 0], 'right', true
-                        );
-                    } else {
-                        player.sprite = new Sprite(
-                            '/images/spritesheets/megaman_flipped.png', 802, 0, 50, 64, 16, [3, 2, 1, 0], 'left', true
-                        );
-                    }
+                    player.sprite = createSprite('megaman', 'moving', game.clientPlayerNum !== playerNum);
 
                     draw();
                 }
@@ -298,15 +333,7 @@ $(document).ready
 
                 if (ready) {
                     if (status === 'attacking') {
-                        if (game.clientPlayerNum === playerNum) {
-                            player.sprite = new Sprite(
-                                '/images/spritesheets/megaman.png', 194, 0, 55, 64
-                            );
-                        } else {
-                            player.sprite = new Sprite(
-                                '/images/spritesheets/megaman_flipped.png', 606, 0, 55, 64
-                            );
-                        }
+                        player.sprite = createSprite('megaman', 'shooting', game.clientPlayerNum !== playerNum);
                     }
 
                     draw();
