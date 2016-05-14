@@ -26,3 +26,5 @@ node server/
 - [gulp.js](http://gulpjs.com/)
 
 The [first version of MMBNO](https://github.com/BrandonE/mmbno/tree/1.0.0) was made by Brandon Evans and Chris Santiago using Python and Pyglet.
+
+[Mega Man](https://en.wikipedia.org/wiki/Mega_Man) and all related properties are owned by [Capcom](https://en.wikipedia.org/wiki/Capcom).
