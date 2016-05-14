@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require(__dirname + '/../public/javascripts/common');
+module.exports = require(__dirname + '/../client/scripts/common');
