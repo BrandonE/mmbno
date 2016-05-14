@@ -3,7 +3,7 @@
 var fs = require('fs'),
     express = require('express'),
     app = express(),
-    config = JSON.parse(fs.readFileSync(__dirname + '/../public/config.json')),
+    config = JSON.parse(fs.readFileSync(__dirname + '/../client/assets/config.json')),
     http = require('http').Server(app),
     io = require('socket.io')(http),
     socket = require(__dirname + '/socket')(config),
@@ -13,13 +13,7 @@ if (process.env.PORT) {
     config.port = process.env.PORT;
 }
 
-app.set('views', __dirname, '../views');
-
-app.use(express.static(__dirname + '/../public'));
-
-app.get('/', function(req, res) {
-    res.sendFile('index.html', {root : __dirname + '/../views'});
-});
+app.use(express.static(__dirname + '/../client/build'));
 
 socket.attach(io);
 

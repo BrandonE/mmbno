@@ -1,0 +1,6 @@
+{
+    "port"                  : 8080,
+    "rows"                  : 3,
+    "cols"                  : 6,
+    "chipSelectionInterval" : 15000
+}

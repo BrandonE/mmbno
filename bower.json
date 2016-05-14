@@ -1,0 +1,20 @@
+{
+  "name": "Mega Man Battle Network Online",
+  "version": "2.0.0",
+  "authors": [
+    "Brandon Evans <admin@brandonevans.org>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "phaser": "~2.4.3",
+    "socket.io-client": "~1.4.5"
+  }
+}
