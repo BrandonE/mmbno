@@ -22,9 +22,8 @@ var exports = (typeof module !== 'undefined' && typeof module.exports !== 'undef
     },
     EOL = '\n';
 
-function isPanelInBounds(config, grid, playerNum, row, col) {
-    var panel = grid[row][col],
-        isInBounds,
+function isPanelInBounds(config, col, stolen, playerNum) {
+    var isInBounds,
         // Check if the player is on the left side of the field.
         isNormalSide = (col < (config.cols / 2));
 
@@ -36,7 +35,7 @@ function isPanelInBounds(config, grid, playerNum, row, col) {
     isInBounds = isNormalSide;
 
     // Flip the result if this panel is stolen.
-    if (panel.stolen) {
+    if (stolen) {
         isInBounds = !isInBounds;
     }
 
@@ -91,7 +90,7 @@ function gameToString(config, game, playerNumPerspective) {
                 response += ' ';
             }
 
-            if (isPanelInBounds(config, game.field, playerNumPerspective, r, c)) {
+            if (isPanelInBounds(config, c, game.field[r][c].stolen, playerNumPerspective)) {
                 response += ' ';
             } else {
                 response += 'B';

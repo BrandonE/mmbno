@@ -72,6 +72,14 @@ gulp.task('socket.io-client', function () {
         .pipe(gulp.dest(Config.build + 'scripts/'));
 });
 
+// Migrate common files
+gulp.task('common', function () {
+    return gulp.src(Config.source + 'scripts/common.js')
+        .pipe(concat('common.min.js'))
+        .pipe(uglify())
+        .pipe(gulp.dest(Config.build + 'scripts/'));
+});
+
 // Assets
 gulp.task('assets', function () {
     return gulp.src(Config.source + 'assets/**/*.*')
@@ -83,5 +91,8 @@ gulp.task('watch', function() {
     return gulp.watch(Config.source + '**/*.ts', ['ts-crunch']);
 });
 
-gulp.task('default', ['watch', 'ts-crunch', 'html-crunch', 'css-crunch', 'phaser', 'socket.io-client', 'assets']);
-gulp.task('build', ['ts-crunch', 'html-crunch', 'css-crunch', 'phaser', 'socket.io-client', 'assets']);
+gulp.task(
+    'default', ['watch', 'ts-crunch', 'html-crunch', 'css-crunch', 'phaser', 'socket.io-client', 'common', 'assets']
+);
+
+gulp.task('build', ['ts-crunch', 'html-crunch', 'css-crunch', 'phaser', 'socket.io-client', 'common', 'assets']);

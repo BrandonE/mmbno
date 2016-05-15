@@ -116,7 +116,9 @@ module.exports = function Panel(io, config, game, field, row, col) {
     };
 
     this.isInBounds = function isInBounds(player) {
-        return common.isPanelInBounds(config, field.getGrid(), player.getPlayerNum(), self.row, self.col);
+        return common.isPanelInBounds(
+            config, self.col, field.getGrid()[self.row][self.col].stolen, player.getPlayerNum()
+        );
     };
 
     this.toSendable = function toSendable() {
