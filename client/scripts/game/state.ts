@@ -63,6 +63,8 @@ namespace Game {
 
                     if (self.field) {
                     } else {
+                        self.clientPlayerNum = playerNum;
+                        
                         if (game.field.length === self.config.rows) {
                             self.field = [];
 
