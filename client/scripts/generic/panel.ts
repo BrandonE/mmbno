@@ -10,7 +10,15 @@ namespace Generic {
         layer: string;
 
         constructor(state: Phaser.State, row: number, col: number, type: string, stolen: boolean) {
-            super(state.game, col * 40, row * 25, 'panels');
+            super(state.game, null, row * 25, 'panels');
+
+            var colPerspective = col;
+
+            if (this.game.state.states.Game.clientPlayerNum !== 1) {
+                colPerspective = this.game.state.states.Game.config.cols - col - 1;
+            }
+
+            this.x = colPerspective * 40;
 
             this.row = row;
             this.col = col;
