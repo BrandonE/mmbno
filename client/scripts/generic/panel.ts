@@ -28,6 +28,18 @@ namespace Generic {
             this.updateFrame();
         }
 
+        flipStolen(): void {
+            this.stolen = !this.stolen;
+
+            this.updateFrame();
+        }
+
+        setType(type): void {
+            this.panelType = type;
+
+            this.updateFrame();
+        }
+
         updateFrame(): void {
             var color;
 

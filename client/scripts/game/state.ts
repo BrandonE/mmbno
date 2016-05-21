@@ -94,6 +94,14 @@ namespace Game {
                     }
                 }
             );
+
+            this.socket.on('panel type changed', function(panelRow, panelCol, type) {
+                self.field[panelRow][panelCol].setType(type);
+            });
+
+            this.socket.on('panel flip stolen', function(panelRow, panelCol) {
+                self.field[panelRow][panelCol].flipStolen();
+            });
         }
     }
 }
