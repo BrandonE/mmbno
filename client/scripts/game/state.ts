@@ -84,8 +84,6 @@ namespace Game {
                         self.clientPlayerNum = playerNum;
                         
                         if (game.field.length === self.config.rows) {
-                            self.field;
-
                             for (row = 0; row < game.field.length; row++) {
                                 if (game.field[row].length === self.config.cols) {
                                     panels = [];
@@ -116,12 +114,26 @@ namespace Game {
                             playerData = game.players[p];
 
                             if (playerData) {
-                                self.addPlayer(playerData, playerNum);
+                                self.addPlayer(playerData, p + 1);
                             }
                         }
                     }
                 }
             );
+
+            this.socket.on('user disconnected', function(playerNum) {
+                var player;
+
+                if (playerNum) {
+                    player = self.players[playerNum - 1];
+
+                    if (player) {
+                        player.kill();
+                    }
+                } else {
+                    self.observers--;
+                }
+            });
 
             this.socket.on('panel type changed', function(panelRow, panelCol, type) {
                 self.field[panelRow][panelCol].setType(type);
@@ -152,10 +164,10 @@ namespace Game {
                 playerData.statuses
             );
 
+            this.game.add.existing(player);
+
             this.players[playerNum - 1] = player;
             this.field[player.row][player.col].character = player;
-
-            this.game.add.existing(player);
         }
     }
 }
