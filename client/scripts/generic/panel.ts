@@ -11,7 +11,7 @@ namespace Generic {
         layer: string;
 
         constructor(state: Phaser.State, row: number, col: number, type: string, stolen: boolean) {
-            super(state.game, null, row * 25, 'panels');
+            super(state.game, null, (row * 25) + 65, 'panels');
 
             var colPerspective = col;
 

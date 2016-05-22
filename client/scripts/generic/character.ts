@@ -39,7 +39,7 @@ namespace Generic {
             }
 
             this.x = (colPerspective * 40) - 24;
-            this.y = ((this.row - 1) * 25) - 23;
+            this.y = ((this.row - 1) * 25) + 65 - 23;
         }
     }
 }
