@@ -121,18 +121,33 @@ namespace Game {
                 }
             );
 
-            this.socket.on('user disconnected', function(playerNum) {
-                var player;
+            this.socket.on('user disconnected', function(playerNum: number) {
+                var player: Generic.Character,
+                    playerIndex: number = playerNum - 1;
 
                 if (playerNum) {
-                    player = self.players[playerNum - 1];
+                    player = self.players[playerIndex];
 
                     if (player) {
+                        self.players[playerIndex] = null;
+                        self.field[player.row][player.col].character = null;
                         player.kill();
                     }
                 } else {
                     self.observers--;
                 }
+            });
+
+            this.socket.on('active connections', function(activeConnections) {
+                // TODO
+            });
+
+            this.socket.on('chips', function(chipsSent) {
+                // TODO
+            });
+
+            this.socket.on('chip used', function(playerNum, chip) {
+                // TODO
             });
 
             this.socket.on('panel type changed', function(panelRow, panelCol, type) {
@@ -141,6 +156,41 @@ namespace Game {
 
             this.socket.on('panel flip stolen', function(panelRow, panelCol) {
                 self.field[panelRow][panelCol].flipStolen();
+            });
+
+            this.socket.on('player damage handler changed', function(playerNum, damageHandler, priority) {
+                // TODO
+            });
+
+            this.socket.on('player health changed', function(playerNum, health) {
+                // TODO
+            });
+
+            this.socket.on('player moved', function(playerNum: number, row: number, col: number) {
+                var player: Generic.Character;
+
+                if (playerNum) {
+                    player = self.players[playerNum - 1];
+
+                    if (player) {
+                        self.field[player.row][player.col].character = null;
+
+                        player.row = row;
+                        player.col = col;
+
+                        player.updatePosition();
+
+                        self.field[row][col].character = player;
+                    }
+                }
+            });
+
+            this.socket.on('player status added', function(playerNum, status) {
+                // TODO
+            });
+
+            this.socket.on('player status removed', function(playerNum, status) {
+                // TODO
             });
         }
 
