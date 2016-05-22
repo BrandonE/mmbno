@@ -178,7 +178,7 @@ namespace Game {
                         player.row = row;
                         player.col = col;
 
-                        player.updatePosition();
+                        player.updatePosition(true);
 
                         self.field[row][col].character = player;
                     }
