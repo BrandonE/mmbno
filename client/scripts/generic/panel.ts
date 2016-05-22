@@ -7,6 +7,7 @@ namespace Generic {
         col: number;
         panelType: string;
         stolen: boolean;
+        character: Generic.Character;
         layer: string;
 
         constructor(state: Phaser.State, row: number, col: number, type: string, stolen: boolean) {
